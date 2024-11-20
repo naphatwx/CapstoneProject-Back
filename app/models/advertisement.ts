@@ -6,6 +6,7 @@ import Package from './package.js'
 import Log from './log.js'
 import User from './user.js'
 import AdsPackage from './ads_package.js'
+import mediaService from '#services/media_service'
 
 export default class Advertisement extends BaseModel {
     public static table = 'CMS_MASTER_ADS'
@@ -117,16 +118,7 @@ export default class Advertisement extends BaseModel {
             return
         }
 
-        let mediaList = []
-        for (let i = 0; i < this.packages.length; i++) {
-            let media = {
-                mediaId: `${this.packages[i].media.mediaId}`,
-                mediaDesc: `${this.packages[i].media.mediaDesc}`
-            }
-            mediaList.push(media)
-        }
-
-        return mediaList
+        return mediaService.getMedia(this.packages)
     }
 
     // Override toJSON to exclude `packages` from serialization

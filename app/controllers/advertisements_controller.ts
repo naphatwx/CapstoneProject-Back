@@ -109,12 +109,10 @@ export default class AdvertisementsController {
             rgsStrDate: payload.rgsStrDate == null ? null : timeService.changeDateTimeFormat(payload.rgsStrDate),
             rgsExpDate: payload.rgsExpDate == null ? null : timeService.changeDateTimeFormat(payload.rgsExpDate)
         })
-        console.log('Create ads pass')
 
         if (payload.adsPackages) {
             await adsPackageService.createAdsPackage(payload.adsPackages, newAds.adsId)
         }
-        console.log('Create ads package pass')
 
         await Log.create({
             logHeader: payload.logHeader,
@@ -122,7 +120,6 @@ export default class AdvertisementsController {
             updatedDate: timeService.getDateTimeNow(),
             adsId: newAds.adsId
         })
-        console.log('Create log pass')
 
         return response.status(201).json({ message: 'Created advertisement successfully.' })
     }
