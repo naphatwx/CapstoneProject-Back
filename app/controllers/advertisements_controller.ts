@@ -5,7 +5,6 @@ import adsPackageService from '#services/ads_package_service'
 import timeService from '#services/time_service'
 import { createUpdateAdvertisementValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
-import { DateTime } from 'luxon'
 
 export default class AdvertisementsController {
     private defaultPage: number = 1
