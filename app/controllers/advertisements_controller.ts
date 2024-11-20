@@ -39,7 +39,7 @@ export default class AdvertisementsController {
                 userQuery.whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", [`%${search}%`])
             })
 
-            .orderBy('adsId', 'asc')
+            .orderBy('adsId', 'desc')
             .paginate(page, perPage)
 
         return ads
@@ -72,7 +72,7 @@ export default class AdvertisementsController {
             .first()
 
         if (!ad) {
-            return response.status(404).json({ message: 'Advertisment not found.' })
+            return response.status(404).json({ message: 'Advertisement not found.' })
         }
 
         if (ad?.approveUser) {
@@ -82,7 +82,7 @@ export default class AdvertisementsController {
         return ad
     }
 
-    async createAds({ request, response, auth }: HttpContext) {
+    async createAds({ request, response }: HttpContext) {
         const data = request.body()
         // const user = auth.getUserOrFail()
         const user = {
@@ -109,10 +109,12 @@ export default class AdvertisementsController {
             rgsStrDate: payload.rgsStrDate == null ? null : timeService.changeDateTimeFormat(payload.rgsStrDate),
             rgsExpDate: payload.rgsExpDate == null ? null : timeService.changeDateTimeFormat(payload.rgsExpDate)
         })
+        console.log('Create ads pass')
 
         if (payload.adsPackages) {
             await adsPackageService.createAdsPackage(payload.adsPackages, newAds.adsId)
         }
+        console.log('Create ads package pass')
 
         await Log.create({
             logHeader: payload.logHeader,
@@ -120,59 +122,57 @@ export default class AdvertisementsController {
             updatedDate: timeService.getDateTimeNow(),
             adsId: newAds.adsId
         })
+        console.log('Create log pass')
 
-        return response.status(201).json({ message: 'Created advertisment successfully.' })
+        return response.status(201).json({ message: 'Created advertisement successfully.' })
     }
 
-    async updateAds({ params, request, response, auth }: HttpContext) {
+    async updateAds({ params, request, response }: HttpContext) {
         const adsId = params.adsId
         const data = request.body()
-        // const user = auth.getUserOrFail()
         const user = {
             userId: 'ADMIN_1'
         }
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
-        const ads = await Advertisement.query().where('adsId', adsId).first()
+        const ad = await Advertisement.query().where('adsId', adsId).first()
 
-        if (!ads) {
+        if (!ad) {
             return response.status(404).json({ message: 'Advertisement not found.' })
         }
 
-        ads.adsName = payload.adsName
-        ads.adsCond = payload.adsCond
-        ads.status = payload.status
-        ads.periodId = payload.periodId
-        ads.redeemCode = payload.redeemCode
-        ads.packageId = payload.packageId
-        ads.regisLimit = payload.regisLimit
-        ads.updatedUser = user.userId
-        ads.updatedDate = timeService.getDateTimeNow()
-        ads.imageName = payload.imageName
-        ads.refAdsId = payload.refAdsId
-        ads.consentDesc = payload.consentDesc
-        ads.recInMth = payload.recInMth
-        ads.recNextMth = payload.recNextMth
-        ads.nextMth = payload.nextMth
-        ads.rgsStrDate = payload.rgsStrDate == null ? null : timeService.changeDateTimeFormat(payload.rgsStrDate)
-        ads.rgsExpDate = payload.rgsExpDate == null ? null : timeService.changeDateTimeFormat(payload.rgsExpDate)
+        ad.adsName = payload.adsName
+        ad.adsCond = payload.adsCond
+        ad.status = payload.status
+        ad.periodId = payload.periodId
+        ad.redeemCode = payload.redeemCode
+        ad.packageId = payload.packageId
+        ad.regisLimit = payload.regisLimit
+        ad.updatedUser = user.userId
+        ad.updatedDate = timeService.getDateTimeNow()
+        ad.imageName = payload.imageName
+        ad.refAdsId = payload.refAdsId
+        ad.consentDesc = payload.consentDesc
+        ad.recInMth = payload.recInMth
+        ad.recNextMth = payload.recNextMth
+        ad.nextMth = payload.nextMth
+        ad.rgsStrDate = payload.rgsStrDate == null ? null : timeService.changeDateTimeFormat(payload.rgsStrDate)
+        ad.rgsExpDate = payload.rgsExpDate == null ? null : timeService.changeDateTimeFormat(payload.rgsExpDate)
 
-        await ads.save()
+        await ad.save()
 
         if (payload.adsPackages) {
-            await AdsPackage.query().where('adsId', ads.adsId).delete()
-            await adsPackageService.createAdsPackage(payload.adsPackages, ads.adsId)
+            await AdsPackage.query().where('adsId', ad.adsId).delete()
+            await adsPackageService.createAdsPackage(payload.adsPackages, ad.adsId)
         }
 
         await Log.create({
             logHeader: payload.logHeader,
             updatedUser: user.userId,
             updatedDate: timeService.getDateTimeNow(),
-            adsId: ads.adsId
+            adsId: ad.adsId
         })
 
-        return response.status(200).json({ message: 'Updated advertisment successfully.' })
-
-
+        return response.status(200).json({ message: 'Updated advertisement successfully.' })
     }
 }

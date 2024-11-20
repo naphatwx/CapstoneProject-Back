@@ -1,11 +1,14 @@
 import { DateTime } from "luxon"
 
-const getDateTimeNow = (zone: string = 'Asia/Bangkok') => {
-    return DateTime.now().setZone(zone).toFormat('yyyy-MM-dd HH:mm:ss')
+const defaultFormat = 'yyyy-MM-dd HH:mm:ss'
+const defaultZone = 'Asia/Bangkok'
+
+const getDateTimeNow = (zone: string = defaultZone) => {
+    return DateTime.now().setZone(zone).toFormat(defaultFormat)
 }
 
-const changeDateTimeFormat = (dateTime: string, zone: string = 'Asia/Bangkok') => {
-    return DateTime.fromISO(dateTime).setZone(zone).toFormat('yyyy-MM-dd HH:mm:ss')
+const changeDateTimeFormat = (dateTime: string) => {
+    return DateTime.fromISO(dateTime).toFormat(defaultFormat)
 }
 
 export default { getDateTimeNow, changeDateTimeFormat }

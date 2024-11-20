@@ -15,8 +15,8 @@ export default class Log extends BaseModel {
     @column({ columnName: 'UPDATED_USER' })
     declare updatedUser: string
 
-    @column.dateTime({ columnName: 'UPDATED_DATE' })
-    declare updatedDate: DateTime
+    @column({ columnName: 'UPDATED_DATE' })
+    declare updatedDate: DateTime | string
 
     @column({ columnName: 'ADS_ID', serializeAs: null })
     declare adsId: number

@@ -32,16 +32,16 @@ export default class User extends BaseModel {
     @column({ columnName: 'TELPHONE' })
     declare telphone: string | null
 
-    @column.dateTime({ columnName: 'LOGIN_TIME' })
+    @column({ columnName: 'LOGIN_TIME' })
     declare loginTime: DateTime | null
 
-    @column.dateTime({ columnName: 'LOGOUT_TIME' })
+    @column({ columnName: 'LOGOUT_TIME' })
     declare logoutTime: DateTime | null
 
     @column({ columnName: 'UPDATED_USER' })
     declare updatedUser: string | null
 
-    @column.dateTime({ columnName: 'UPDATED_DATE', autoCreate: true, autoUpdate: true })
+    @column({ columnName: 'UPDATED_DATE' })
     declare updatedDate: DateTime | null
 
     static accessTokens = DbAccessTokensProvider.forModel(User)
