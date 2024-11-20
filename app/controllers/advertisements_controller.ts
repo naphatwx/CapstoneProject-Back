@@ -2,6 +2,7 @@ import AdsPackage from '#models/ads_package'
 import Advertisement from '#models/advertisement'
 import Log from '#models/log'
 import adsPackageService from '#services/ads_package_service'
+import timeService from '#services/time_service'
 import { createUpdateAdvertisementValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
@@ -16,7 +17,7 @@ export default class AdvertisementsController {
         const search: string = request.input('search') || ''
 
         const ads = await Advertisement.query()
-            .select('adsId', 'adsName', 'redeemCode', 'packageId', 'periodId', 'status', 'updatedUser', 'updatedDate')
+            .select('adsId', 'adsName', 'redeemCode', 'packageId', 'periodId', 'rgsStrDate', 'status', 'updatedUser', 'updatedDate')
             .where('adsName', 'LIKE', `%${search}%`)
             .orWhere('redeemCode', search)
 
@@ -45,7 +46,7 @@ export default class AdvertisementsController {
         return ads
     }
 
-    async getAdsDetail({ params }: HttpContext) {
+    async getAdsDetail({ params, response }: HttpContext) {
         const adsId = params.adsId
 
         const ad = await Advertisement.query()
@@ -71,6 +72,10 @@ export default class AdvertisementsController {
             .preload('userUpdate')
             .first()
 
+        if (!ad) {
+            return response.status(404).json({ message: 'Advertisment not found.' })
+        }
+
         if (ad?.approveUser) {
             await ad.load('userApprove')
         }
@@ -95,15 +100,15 @@ export default class AdvertisementsController {
             packageId: payload.packageId,
             regisLimit: payload.regisLimit,
             updatedUser: user.userId,
-            updatedDate: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
+            updatedDate: timeService.getDateTimeNow(),
             imageName: payload.imageName,
             refAdsId: payload.refAdsId,
             consentDesc: payload.consentDesc,
             recInMth: payload.recInMth,
             recNextMth: payload.recNextMth,
             nextMth: payload.nextMth,
-            rgsStrDate: payload.rgsStrDate == null ? null : DateTime.fromISO(payload.rgsStrDate).toFormat('yyyy-MM-dd HH:mm:ss'),
-            rgsExpDate: payload.rgsExpDate == null ? null : DateTime.fromISO(payload.rgsExpDate).toFormat('yyyy-MM-dd HH:mm:ss')
+            rgsStrDate: payload.rgsStrDate == null ? null : timeService.changeDateTimeFormat(payload.rgsStrDate),
+            rgsExpDate: payload.rgsExpDate == null ? null : timeService.changeDateTimeFormat(payload.rgsExpDate)
         })
 
         if (payload.adsPackages) {
@@ -113,58 +118,62 @@ export default class AdvertisementsController {
         await Log.create({
             logHeader: payload.logHeader,
             updatedUser: user.userId,
-            updatedDate: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
+            updatedDate: timeService.getDateTimeNow(),
             adsId: newAds.adsId
         })
 
-        response.ok('Created advertisement successfully')
+        return response.status(201).json({ message: 'Created advertisment successfully.' })
     }
 
     async updateAds({ params, request, response, auth }: HttpContext) {
-        try {
-            const adsId = params.adsId
-            const data = request.body()
-            // const user = auth.getUserOrFail()
-            const user = {
-                userId: 'ADMIN_1'
-            }
-            const payload = await createUpdateAdvertisementValidator.validate(data)
-
-            const ads = await Advertisement.query().where('adsId', adsId).first()
-            ads!.adsName = payload.adsName
-            ads!.adsCond = payload.adsCond
-            ads!.status = payload.status
-            ads!.periodId = payload.periodId
-            ads!.redeemCode = payload.redeemCode
-            ads!.packageId = payload.packageId
-            ads!.regisLimit = payload.regisLimit
-            ads!.updatedUser = user.userId
-            ads!.updatedDate = DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')
-            ads!.imageName = payload.imageName
-            ads!.refAdsId = payload.refAdsId
-            ads!.consentDesc = payload.consentDesc
-            ads!.recInMth = payload.recInMth
-            ads!.recNextMth = payload.recNextMth
-            ads!.nextMth = payload.nextMth
-            ads!.rgsStrDate = payload.rgsStrDate == null ? null : DateTime.fromISO(payload.rgsStrDate).toFormat('yyyy-MM-dd HH:mm:ss')
-            ads!.rgsExpDate = payload.rgsExpDate == null ? null : DateTime.fromISO(payload.rgsExpDate).toFormat('yyyy-MM-dd HH:mm:ss')
-
-            if (payload.adsPackages) {
-                await AdsPackage.query().where('adsId', ads!.adsId).delete()
-                await adsPackageService.createAdsPackage(payload.adsPackages, ads!.adsId)
-            }
-
-            await Log.create({
-                logHeader: payload.logHeader,
-                updatedUser: user.userId,
-                updatedDate: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
-                adsId: ads!.adsId
-            })
-
-            response.ok('Updated advertisement successfully')
-        } catch (error) {
-            return error
+        const adsId = params.adsId
+        const data = request.body()
+        // const user = auth.getUserOrFail()
+        const user = {
+            userId: 'ADMIN_1'
         }
+        const payload = await createUpdateAdvertisementValidator.validate(data)
+
+        const ads = await Advertisement.query().where('adsId', adsId).first()
+
+        if (!ads) {
+            return response.status(404).json({ message: 'Advertisement not found.' })
+        }
+
+        ads.adsName = payload.adsName
+        ads.adsCond = payload.adsCond
+        ads.status = payload.status
+        ads.periodId = payload.periodId
+        ads.redeemCode = payload.redeemCode
+        ads.packageId = payload.packageId
+        ads.regisLimit = payload.regisLimit
+        ads.updatedUser = user.userId
+        ads.updatedDate = timeService.getDateTimeNow()
+        ads.imageName = payload.imageName
+        ads.refAdsId = payload.refAdsId
+        ads.consentDesc = payload.consentDesc
+        ads.recInMth = payload.recInMth
+        ads.recNextMth = payload.recNextMth
+        ads.nextMth = payload.nextMth
+        ads.rgsStrDate = payload.rgsStrDate == null ? null : timeService.changeDateTimeFormat(payload.rgsStrDate)
+        ads.rgsExpDate = payload.rgsExpDate == null ? null : timeService.changeDateTimeFormat(payload.rgsExpDate)
+
+        await ads.save()
+
+        if (payload.adsPackages) {
+            await AdsPackage.query().where('adsId', ads.adsId).delete()
+            await adsPackageService.createAdsPackage(payload.adsPackages, ads.adsId)
+        }
+
+        await Log.create({
+            logHeader: payload.logHeader,
+            updatedUser: user.userId,
+            updatedDate: timeService.getDateTimeNow(),
+            adsId: ads.adsId
+        })
+
+        return response.status(200).json({ message: 'Updated advertisment successfully.' })
+
 
     }
 }

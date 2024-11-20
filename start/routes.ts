@@ -9,3 +9,5 @@
 
 import "./routes/advertisement.js"
 import "./routes/user.js"
+import "./routes/period.js"
+import "./routes/package.js"
