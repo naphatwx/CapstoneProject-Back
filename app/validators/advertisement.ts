@@ -24,6 +24,6 @@ export const createUpdateAdvertisementValidator = vine.compile(
         rgsStrDate: vine.string().trim().regex(regesDateTime).nullable(),
         rgsExpDate: vine.string().trim().regex(regesDateTime).nullable(),
         logHeader: vine.string().trim().maxLength(250),
-        adsPackages: vine.array(vine.number()).optional()
+        adsPackages: vine.array(vine.number()).nullable()
     })
 )

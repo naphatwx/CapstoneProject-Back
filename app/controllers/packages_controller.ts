@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
 import Package from "#models/package";
-import mediaService from '#services/media_service';
+import media_service from '#services/media_service';
 
 export default class PackagesController {
     async index({ }) {
@@ -18,7 +18,7 @@ export default class PackagesController {
             return response.status(404).json({ message: 'Package not found.' })
         }
 
-        const medias = mediaService.getMedia(packages)
+        const medias = media_service.changeMediaFormat(packages)
 
         return { packageId: packages[0].packageId, packageDesc: packages[0].packageDesc, medias: medias }
     }

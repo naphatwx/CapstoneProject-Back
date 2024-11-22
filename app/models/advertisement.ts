@@ -39,10 +39,10 @@ export default class Advertisement extends BaseModel {
     declare updatedUser: string | null
 
     @column({ columnName: 'UPDATED_DATE' })
-    declare updatedDate: DateTime | null | string
+    declare updatedDate: string | DateTime | null
     
     @column({ columnName: 'APPROVE_DATE' })
-    declare approveDate: DateTime | null | string
+    declare approveDate: string | DateTime | null
 
     @column({ columnName: 'APPROVE_USER' })
     declare approveUser: string | null
@@ -108,7 +108,7 @@ export default class Advertisement extends BaseModel {
     declare logs: HasMany<typeof Log>
 
     @computed()
-    public get package() {
+    public get packageDesc() {
         return `${this.packages[0].packageDesc}`
     }
 
@@ -118,7 +118,7 @@ export default class Advertisement extends BaseModel {
             return
         }
 
-        return mediaService.getMedia(this.packages)
+        return mediaService.changeMediaFormat(this.packages)
     }
 
     // Override toJSON to exclude `packages` from serialization

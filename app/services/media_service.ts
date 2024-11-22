@@ -1,4 +1,4 @@
-const getMedia = (packages: Array<any>) => {
+const changeMediaFormat = (packages: Array<any>) => {
     let mediaList = []
     for (let i = 0; i < packages.length; i++) {
         let media = {
@@ -11,4 +11,4 @@ const getMedia = (packages: Array<any>) => {
     return mediaList
 }
 
-export default { getMedia }
+export default { changeMediaFormat }

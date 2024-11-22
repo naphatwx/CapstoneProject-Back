@@ -2,10 +2,14 @@ import router from '@adonisjs/core/services/router'
 
 const AdsController = () => import('#controllers/advertisements_controller')
 
-router.get('/ads', [AdsController, 'getAds']).as('ads.all')
+router.group(() => {
+    router.get('', [AdsController, 'getAds']).as('ads.all')
 
-router.get('/ads/:adsId', [AdsController, 'getAdsDetail']).as('ads.detail')
+    router.get('/:adsId', [AdsController, 'getAdsDetail']).as('ads.detail')
 
-router.post('/ads', [AdsController, 'createAds']).as('ads.create')
+    router.post('', [AdsController, 'storeAds']).as('ads.create')
 
-router.put('/ads/:adsId', [AdsController, 'updateAds']).as('ads.update')
+    router.put('/:adsId', [AdsController, 'updateAds']).as('ads.update')
+
+    router.patch('/approve/:adsId', [AdsController, 'approveAds']).as('ads.approve')
+}).prefix('/ads')
