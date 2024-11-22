@@ -1,7 +1,7 @@
 import advertisement_service from '#services/advertisement_service'
 import { createUpdateAdvertisementValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
-import { CreateOrUpdateAdvertisementDTO } from '../DTOs/advertisement_dto.js'
+import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 
 export default class AdvertisementsController {
     private defaultPage: number = 1
