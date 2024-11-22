@@ -4,7 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class UsersController {
     async getUsers({ response }: HttpContext) {
         const users = await user_service.getUsers()
-        if (!users || users.length == 0) {
+        if (!users || users.length === 0) {
             return response.status(404).json({ message: 'Users not found.' })
         }
         return response.ok(users)
