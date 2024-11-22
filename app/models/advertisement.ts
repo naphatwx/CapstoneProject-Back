@@ -40,7 +40,7 @@ export default class Advertisement extends BaseModel {
 
     @column({ columnName: 'UPDATED_DATE' })
     declare updatedDate: string | DateTime | null
-    
+
     @column({ columnName: 'APPROVE_DATE' })
     declare approveDate: string | DateTime | null
 
@@ -73,37 +73,37 @@ export default class Advertisement extends BaseModel {
 
     @hasOne(() => Period, {
         foreignKey: 'periodId',
-        localKey: 'periodId'
+        localKey: 'periodId',
     })
     declare period: HasOne<typeof Period>
 
     @hasOne(() => User, {
         foreignKey: 'userId',
-        localKey: 'updatedUser'
+        localKey: 'updatedUser',
     })
     declare userUpdate: HasOne<typeof User>
 
     @hasOne(() => User, {
         foreignKey: 'userId',
-        localKey: 'approveUser'
+        localKey: 'approveUser',
     })
     declare userApprove: HasOne<typeof User>
 
     @hasMany(() => Package, {
         foreignKey: 'packageId', // packageId of Package
-        localKey: 'packageId' // packageId of Advertisement
+        localKey: 'packageId', // packageId of Advertisement
     })
     declare packages: HasMany<typeof Package>
 
     @hasMany(() => AdsPackage, {
         foreignKey: 'adsId',
-        localKey: 'adsId'
+        localKey: 'adsId',
     })
     declare adsPackages: HasMany<typeof AdsPackage>
 
     @hasMany(() => Log, {
         foreignKey: 'adsId', // adsId of Log
-        localKey: 'adsId' // adsId of Advertisement
+        localKey: 'adsId', // adsId of Advertisement
     })
     declare logs: HasMany<typeof Log>
 

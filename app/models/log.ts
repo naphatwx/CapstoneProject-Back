@@ -23,7 +23,7 @@ export default class Log extends BaseModel {
 
     @hasOne(() => User, {
         foreignKey: 'userId',
-        localKey: 'updatedUser'
+        localKey: 'updatedUser',
     })
     declare user: HasOne<typeof User>
 }

@@ -14,7 +14,7 @@ export default class AdvertisementsController {
 
         const adsList = await advertisement_service.getAdsList(page, perPage, search)
 
-        if (!adsList.data || adsList.data.length == 0) {
+        if (!adsList.data || adsList.data.length === 0) {
             return response.status(404).json({ message: 'Advertiesment list not found.' })
         }
 
@@ -36,7 +36,7 @@ export default class AdvertisementsController {
         const data = request.body()
         // const user = auth.getUserOrFail()
         const user = {
-            userId: 'ADMIN_1'
+            userId: 'ADMIN_1',
         }
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
@@ -52,7 +52,7 @@ export default class AdvertisementsController {
         const adsId = params.adsId
         const data = request.body()
         const user = {
-            userId: 'ADMIN_1'
+            userId: 'ADMIN_1',
         }
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
@@ -68,7 +68,7 @@ export default class AdvertisementsController {
         const adsId = params.adsId
         const data = request.only(['logHeader'])
         const user = {
-            userId: 'ADMIN_1'
+            userId: 'ADMIN_1',
         }
 
         await advertisement_service.approveAds(adsId, data.logHeader, user.userId)
@@ -76,4 +76,3 @@ export default class AdvertisementsController {
         return response.status(200).json({ message: 'Updated advertisement successfully.' })
     }
 }
-
