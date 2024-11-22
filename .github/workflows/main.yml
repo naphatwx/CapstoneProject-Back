@@ -1,0 +1,33 @@
+name: Back-Deploy
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install OpenVPN
+        run: |
+         sudo apt update
+         sudo apt install -y openvpn openvpn-systemd-resolved
+         
+      - name: Connect to VPN
+        uses: "kota65535/github-openvpn-connect-action@v2"
+        with:
+          config_file: .github/workflows/sitst-client.ovpn
+          username: ${{ secrets.OVPN_USERNAME }}
+          password: ${{ secrets.OVPN_PASSWORD }}
+          
+      - name: Use SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with: 
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: mkdir "$(date +"%d-%m-%Y %H:%M:%S")"
+
+    
