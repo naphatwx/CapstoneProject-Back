@@ -1,11 +1,12 @@
-// import type { HttpContext } from '@adonisjs/core/http'
-
-import Period from "#models/period";
+import type { HttpContext } from '@adonisjs/core/http'
+import period_service from "#services/period_service";
 
 export default class PeriodsController {
-    async index({}) {
-        const periods = await Period.query().select('periodId', 'periodDesc', 'period')
-
-        return periods
+    async index({ response }: HttpContext) {
+        const periods = await period_service.getPeriods()
+        if (!periods || periods.length == 0) {
+            return response.status(404).json({ message: 'Periods not found.' })
+        }
+        return response.ok(periods)
     }
 }

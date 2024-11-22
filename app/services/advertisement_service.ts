@@ -1,5 +1,5 @@
 import Advertisement from "#models/advertisement"
-import { AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from "../DTOs/AdvertisementDTO.js"
+import { AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from "../DTOs/advertisement_dto.js"
 import ads_package_service from "./ads_package_service.js"
 import log_service from "./log_service.js"
 import time_service from "./time_service.js"

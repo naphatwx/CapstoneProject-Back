@@ -1,7 +1,7 @@
 import advertisement_service from '#services/advertisement_service'
 import { createUpdateAdvertisementValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
-import { CreateOrUpdateAdvertisementDTO } from '../DTOs/AdvertisementDTO.js'
+import { CreateOrUpdateAdvertisementDTO } from '../DTOs/advertisement_dto.js'
 
 export default class AdvertisementsController {
     private defaultPage: number = 1
@@ -14,10 +14,9 @@ export default class AdvertisementsController {
 
         const adsList = await advertisement_service.getAdsList(page, perPage, search)
 
-        // if (!adsList || adsList.length == 0) {
-        //     return response.status(404).json({ message: 'Advertiesment list not found.' })
-        // }
-        // console.log(adsList)
+        if (!adsList.data || adsList.data.length == 0) {
+            return response.status(404).json({ message: 'Advertiesment list not found.' })
+        }
 
         return response.ok(adsList)
     }

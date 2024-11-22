@@ -1,25 +1,23 @@
 import type { HttpContext } from '@adonisjs/core/http'
-
-import Package from "#models/package";
-import media_service from '#services/media_service';
+import package_service from '#services/package_service';
 
 export default class PackagesController {
-    async index({ }) {
-        const packages = await Package.query().select('packageId', 'packageDesc').groupBy('packageId', 'packageDesc')
-
-        return packages
-    }
-
-    async getMediasByPackage({ request, response }: HttpContext) {
-        const packageId = request.input('packageId')
-        const packages = await Package.query().where('packageId', packageId).preload('media')
-
-        if (packages.length == 0) {
-            return response.status(404).json({ message: 'Package not found.' })
+    async index({ response }: HttpContext) {
+        const packages = await package_service.getPackages()
+        if (!packages || packages.length == 0) {
+            return response.status(404).json({ message: 'Packages not found.' })
         }
 
-        const medias = media_service.changeMediaFormat(packages)
+        return response.ok(packages)
+    }
 
-        return { packageId: packages[0].packageId, packageDesc: packages[0].packageDesc, medias: medias }
+    async getPackageById({ params, response }: HttpContext) {
+        const packageId = params.packageId
+        const pk = await package_service.getPackageById(packageId)
+
+        if (!pk) {
+            return response.status(404).json({message: 'Package not found.'})
+        }
+        return response.ok(pk)
     }
 }
