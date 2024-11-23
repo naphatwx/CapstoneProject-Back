@@ -39,10 +39,10 @@ export default class Advertisement extends BaseModel {
     declare updatedUser: string | null
 
     @column({ columnName: 'UPDATED_DATE' })
-    declare updatedDate: string | DateTime | null
+    declare updatedDate: DateTime | string | null
 
     @column({ columnName: 'APPROVE_DATE' })
-    declare approveDate: string | DateTime | null
+    declare approveDate: DateTime | string | null
 
     @column({ columnName: 'APPROVE_USER' })
     declare approveUser: string | null
@@ -66,10 +66,10 @@ export default class Advertisement extends BaseModel {
     declare nextMth: number | null
 
     @column({ columnName: 'RGS_STR_DATE' })
-    declare rgsStrDate: DateTime | null | string
+    declare rgsStrDate: DateTime | string | null
 
     @column({ columnName: 'RGS_EXP_DATE' })
-    declare rgsExpDate: DateTime | null | string
+    declare rgsExpDate: DateTime | string | null
 
     @hasOne(() => Period, {
         foreignKey: 'periodId',
