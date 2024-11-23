@@ -23,7 +23,7 @@ export class AdvertisementListDTO {
     constructor(data: Partial<AdvertisementListDTO>) {
         this.adsId = data.adsId || null
         this.adsName = data.adsName || null
-        this.redeemCode = data.redeemCode || null
+        this.redeemCode = data.redeemCode  || null
         this.packageId = data.packageId || null
         this.packageDesc = data.packageDesc || null
         this.periodId = data.periodId || null
@@ -64,22 +64,22 @@ export class CreateOrUpdateAdvertisementDTO {
     adsPackages: Array<number> | null
 
     constructor(data: Partial<CreateOrUpdateAdvertisementDTO>) {
-        this.adsName = data.adsName || ''
-        this.adsCond = data.adsCond || ''
-        this.status = data.status || ''
+        this.adsName = data.adsName?.trim() || ''
+        this.adsCond = data.adsCond?.trim() || ''
+        this.status = data.status?.trim() || ''
         this.periodId = data.periodId || 1
-        this.redeemCode = data.redeemCode || ''
+        this.redeemCode = data.redeemCode?.trim() || ''
         this.packageId = data.packageId || 1
         this.regisLimit = data.regisLimit || null
-        this.imageName = data.imageName || null
+        this.imageName = data.imageName?.trim() || null
         this.refAdsId = data.refAdsId || null
-        this.consentDesc = data.consentDesc || null
+        this.consentDesc = data.consentDesc?.trim() || null
         this.recInMth = data.recInMth || false
         this.recNextMth = data.recNextMth || false
         this.nextMth = data.nextMth || null
-        this.rgsStrDate = data.rgsStrDate || null
-        this.rgsExpDate = data.rgsExpDate || null
-        this.logHeader = data.logHeader || ''
+        this.rgsStrDate = data.rgsStrDate?.trim() || null
+        this.rgsExpDate = data.rgsExpDate?.trim() || null
+        this.logHeader = data.logHeader?.trim() || ''
         this.adsPackages = data.adsPackages || null
     }
 

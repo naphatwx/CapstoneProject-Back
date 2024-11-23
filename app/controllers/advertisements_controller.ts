@@ -1,33 +1,37 @@
 import advertisement_service from '#services/advertisement_service'
-import { createUpdateAdvertisementValidator } from '#validators/advertisement'
+import { adsIdValidator, createUpdateAdvertisementValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
 import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
+import { paginationAndSearchValidator } from '#validators/pagination'
 
 export default class AdvertisementsController {
     private defaultPage: number = 1
-    private defaultPerPage: number = 5
+    private defaultPerPage: number = 10
 
     async getAds({ request, response }: HttpContext) {
         const page: number = request.input('page') || this.defaultPage
         const perPage: number = request.input('perPage') || this.defaultPerPage
         const search: string = request.input('search') || ''
 
-        const adsList = await advertisement_service.getAdsList(page, perPage, search)
-
-        if (!adsList.data || adsList.data.length === 0) {
-            return response.status(404).json({ message: 'Advertiesment list not found.' })
+        const data = {
+            page: page,
+            perPage: perPage,
+            search: search
         }
+
+        const payload = await paginationAndSearchValidator.validate(data)
+
+        const adsList = await advertisement_service.getAdsList(payload.page, payload.perPage, payload.search)
 
         return response.ok(adsList)
     }
 
     async getAdsDetail({ params, response }: HttpContext) {
-        const adsId = params.adsId
-        const ads = await advertisement_service.getAdsDetail(adsId)
+        const adsId: number = params.adsId
 
-        if (!ads) {
-            return response.status(404).json({ message: 'Advertisement not found.' })
-        }
+        const paylaod = await adsIdValidator.validate(adsId)
+
+        const ads = await advertisement_service.getAdsDetail(paylaod)
 
         return response.ok(ads)
     }
