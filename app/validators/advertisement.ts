@@ -27,3 +27,5 @@ export const createUpdateAdvertisementValidator = vine.compile(
         adsPackages: vine.array(vine.number()).nullable()
     })
 )
+
+export const adsIdValidator = vine.compile(vine.number())
