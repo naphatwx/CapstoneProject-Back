@@ -1,15 +1,20 @@
+import DatabaseException from "#exceptions/database_exception"
 import Log from "#models/log"
 import time_service from "./time_service.js"
 
 const createLog = async (logHeader: string, userId: string, adsId: number) => {
-    const log = await Log.create({
-        logHeader: logHeader,
-        updatedUser: userId,
-        updatedDate: time_service.getDateTimeNow(),
-        adsId: adsId
-    })
+    try {
+        const log = await Log.create({
+            logHeader: logHeader,
+            updatedUser: userId,
+            updatedDate: time_service.getDateTimeNow(),
+            adsId: adsId
+        })
 
-    return log
+        return log
+    } catch (error) {
+        throw new DatabaseException(error.status)
+    }
 }
 
 export default { createLog }

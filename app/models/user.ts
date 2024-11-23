@@ -33,16 +33,16 @@ export default class User extends BaseModel {
     declare telphone: string | null
 
     @column({ columnName: 'LOGIN_TIME' })
-    declare loginTime: DateTime | null
+    declare loginTime: DateTime | string | null
 
     @column({ columnName: 'LOGOUT_TIME' })
-    declare logoutTime: DateTime | null
+    declare logoutTime: DateTime | string | null
 
     @column({ columnName: 'UPDATED_USER' })
     declare updatedUser: string | null
 
     @column({ columnName: 'UPDATED_DATE' })
-    declare updatedDate: DateTime | null
+    declare updatedDate: DateTime | string | null
 
     static accessTokens = DbAccessTokensProvider.forModel(User)
 }

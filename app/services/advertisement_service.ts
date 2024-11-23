@@ -1,5 +1,5 @@
 import Advertisement from '#models/advertisement'
-import { AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
+import { AdvertisementDetailDTO, AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 import ads_package_service from './ads_package_service.js'
 import log_service from './log_service.js'
 import time_service from './time_service.js'
@@ -13,7 +13,7 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
             .orWhere('redeemCode', search)
 
             .preload('period', (periodQuery) => {
-                periodQuery.select('periodDesc', 'period').where('status', true)
+                periodQuery.where('status', true)
             })
             .orWhereHas('period', (periodQuery) => {
                 periodQuery.where('periodDesc', 'LIKE', `%${search}%`)
@@ -24,9 +24,7 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
             .orWhereHas('packages', (packageQuery) => {
                 packageQuery.where('packageDesc', 'LIKE', `%${search}%`)
             })
-            .preload('userUpdate', (userQuery) => {
-                userQuery.select('comCode', 'userId', 'firstname', 'lastname')
-            })
+            .preload('userUpdate')
             .orWhereHas('userUpdate', (userQuery) => {
                 userQuery.whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", [`%${search}%`])
             })
@@ -47,22 +45,20 @@ const getAdsDetail = async (adsId: number) => {
         const ads = await Advertisement.query()
             .where('adsId', adsId)
             .preload('period', (periodQuery) => {
-                periodQuery.select('periodDesc', 'period').where('status', true)
+                periodQuery.where('status', true)
             })
             .preload('packages', (packageQuery) => {
-                packageQuery.where('status', true).preload('media', (mediaQuery) => {
-                    mediaQuery.where('status', true)
-                })
+                packageQuery
+                    .where('status', true)
+                    .preload('media', (mediaQuery) => {
+                        mediaQuery.where('status', true)
+                    })
             })
             .preload('adsPackages', (adsPackageQuery) => {
-                adsPackageQuery.select('mediaId', 'mediaDesc').where('status', true)
+                adsPackageQuery.where('status', true)
             })
             .preload('logs', (logQuery) => {
-                logQuery
-                    .select('itemNo', 'logHeader', 'updatedUser', 'updatedDate')
-                    .preload('user', (userQuery) => {
-                        userQuery.select('userId', 'firstname', 'lastname')
-                    })
+                logQuery.preload('user')
             })
             .preload('userUpdate')
             .firstOrFail()
@@ -71,7 +67,9 @@ const getAdsDetail = async (adsId: number) => {
             await ads.load('userApprove')
         }
 
-        return ads
+        const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
+
+        return adsDTO
     } catch (error) {
         throw new DatabaseException(error.status)
     }
