@@ -1,6 +1,7 @@
 import Advertisement from "#models/advertisement"
 import { DateTime } from "luxon"
-import { UserDTO, UserShortDTO } from "./user_dto.js"
+import { UserShortDTO } from "./user_dto.js"
+import User from "#models/user"
 
 export class AdvertisementListDTO {
     adsId: number | null
@@ -77,8 +78,8 @@ export class AdvertisementDetailDTO {
         mediaId: number | null
         mediaDesc: string | null
     }[]
-    userUpdate: UserDTO
-    userApprove: UserDTO | null
+    userUpdate: User | null
+    userApprove: User | null
     logs: {
         itemNo: number | null
         logHeader: string | null
@@ -109,42 +110,54 @@ export class AdvertisementDetailDTO {
         this.nextMth = data.nextMth || null
         this.rgsStrDate = data.rgsStrDate || null
         this.rgsExpDate = data.rgsExpDate || null
+
         this.period = {
             periodDesc: data.period?.periodDesc || null,
             period: data.period?.period || null
         }
+
         this.medias = data.medias?.map((media) => ({
             mediaId: media.mediaId,
             mediaDesc: media.mediaDesc
         })) || []
+
         this.adsPackages = data.adsPackages?.map((adsPackage) => ({
             mediaId: adsPackage.mediaId,
             mediaDesc: adsPackage.mediaDesc
         })) || []
-        this.userUpdate = {
-            comCode: data.userUpdate?.comCode || null,
-            userId: data.userUpdate?.userId || '',
-            firstname: data.userUpdate?.firstname || null,
-            lastname: data.userUpdate?.lastname || null,
-            email: data.userUpdate?.email || null,
-            telphone: data.userUpdate?.telphone || null,
-            loginTime: data.userUpdate?.loginTime || null,
-            logoutTime: data.userUpdate?.logoutTime || null,
-            updatedUser: data.userUpdate?.updatedUser || null,
-            updatedDate: data.userUpdate?.updatedDate || null
+
+        if (data.userUpdate) {
+            this.userUpdate = new User()
+            this.userUpdate.comCode = data.userUpdate.comCode || null
+            this.userUpdate.userId = data.userUpdate.userId
+            this.userUpdate.firstname = data.userUpdate.firstname || null
+            this.userUpdate.lastname = data.userUpdate.lastname || null
+            this.userUpdate.email = data.userUpdate.email || null
+            this.userUpdate.telphone = data.userUpdate.telphone || null
+            this.userUpdate.loginTime = data.userUpdate.loginTime || null
+            this.userUpdate.logoutTime = data.userUpdate.logoutTime || null
+            this.userUpdate.updatedUser = data.userUpdate.updatedUser || null
+            this.userUpdate.updatedDate = data.userUpdate.updatedDate || null
+        } else {
+            this.userUpdate = null
         }
-        this.userApprove = data.userApprove ? {
-            comCode: data.userApprove?.comCode || null,
-            userId: data.userApprove?.userId || '',
-            firstname: data.userApprove?.firstname || null,
-            lastname: data.userApprove?.lastname || null,
-            email: data.userApprove?.email || null,
-            telphone: data.userApprove?.telphone || null,
-            loginTime: data.userApprove?.loginTime || null,
-            logoutTime: data.userApprove?.logoutTime || null,
-            updatedUser: data.userApprove?.updatedUser || null,
-            updatedDate: data.userApprove?.updatedDate || null
-        } : null
+
+        if (data.userApprove) {
+            this.userApprove = new User()
+            this.userApprove.comCode = data.userApprove.comCode || null
+            this.userApprove.userId = data.userApprove.userId
+            this.userApprove.firstname = data.userApprove.firstname || null
+            this.userApprove.lastname = data.userApprove.lastname || null
+            this.userApprove.email = data.userApprove.email || null
+            this.userApprove.telphone = data.userApprove.telphone || null
+            this.userApprove.loginTime = data.userApprove.loginTime || null
+            this.userApprove.logoutTime = data.userApprove.logoutTime || null
+            this.userApprove.updatedUser = data.userApprove.updatedUser || null
+            this.userApprove.updatedDate = data.userApprove.updatedDate || null
+        } else {
+            this.userApprove = null
+        }
+
         this.logs = data.logs?.map((log) => ({
             itemNo: log.itemNo,
             logHeader: log.logHeader,

@@ -15,14 +15,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
      */
     async handle(error: any, ctx: HttpContext) {
         if (error instanceof errors.E_VALIDATION_ERROR) {
-            const errorMessages = error.messages.map((err: any) => ({
-                message: err.message,
-                rule: err.rule,
-                field: err.field
-            }))
             return ctx.response.status(400).send({
-                message: error.message,
-                details: errorMessages,
+                message: 'Validate Failure',
+                details: error.messages,
             })
         }
 
