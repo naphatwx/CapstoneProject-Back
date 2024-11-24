@@ -29,9 +29,11 @@ export default class AdvertisementsController {
     async getAdsDetail({ params, response }: HttpContext) {
         const adsId: number = params.adsId
 
-        const paylaod = await adsIdValidator.validate(adsId)
+        const paylaod = await adsIdValidator.validate({
+            adsId: adsId
+        })
 
-        const ads = await advertisement_service.getAdsDetail(paylaod)
+        const ads = await advertisement_service.getAdsDetail(paylaod.adsId)
 
         return response.ok(ads)
     }

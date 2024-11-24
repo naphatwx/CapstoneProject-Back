@@ -28,4 +28,6 @@ export const createUpdateAdvertisementValidator = vine.compile(
     })
 )
 
-export const adsIdValidator = vine.compile(vine.number())
+export const adsIdValidator = vine.compile(vine.object({
+    adsId: vine.number()
+}))
