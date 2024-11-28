@@ -6,4 +6,4 @@ router.group(() => {
     router.get('', [UsersController, 'getUsers']).as('users')
 
     router.get('/:userId', [UsersController, 'getUserById']).as('users.id')
-}).prefix('/users')
+}).prefix('/api/users')

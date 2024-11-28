@@ -4,4 +4,4 @@ const PeriodsController = () => import('#controllers/periods_controller')
 
 router.group(() => {
     router.get('', [PeriodsController, 'index']).as('periods.index')
-}).prefix('/periods')
+}).prefix('/api/periods')

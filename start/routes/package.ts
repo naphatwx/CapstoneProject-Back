@@ -6,4 +6,4 @@ router.group(() => {
     router.get('', [PackagesController, 'index']).as('packages.index')
 
     router.get('/:packageId', [PackagesController, 'getPackageById']).as('packages.medias')
-}).prefix('/packages')
+}).prefix('/api/packages')

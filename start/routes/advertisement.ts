@@ -12,4 +12,4 @@ router.group(() => {
     router.put('/:adsId', [AdsController, 'updateAds']).as('ads.update')
 
     router.patch('/approve/:adsId', [AdsController, 'approveAds']).as('ads.approve')
-}).prefix('/ads')
+}).prefix('/api/ads')
