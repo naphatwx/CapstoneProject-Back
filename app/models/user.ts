@@ -1,15 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
-import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
-import hash from '@adonisjs/core/services/hash'
-import { compose } from '@adonisjs/core/helpers'
-import Advertisement from './advertisement.js'
-
-// const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
-//     uids: ['userId'],
-//     passwordColumnName
-// })
 
 export default class User extends BaseModel {
     public static table = 'CMS_USER_MASTER'
@@ -43,6 +34,4 @@ export default class User extends BaseModel {
 
     @column({ columnName: 'UPDATED_DATE' })
     declare updatedDate: DateTime | string | null
-
-    static accessTokens = DbAccessTokensProvider.forModel(User)
 }
