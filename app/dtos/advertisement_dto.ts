@@ -21,7 +21,11 @@ export class AdvertisementListDTO {
     userUpdate: UserShortDTO
 
     constructor(data: Partial<AdvertisementListDTO>) {
-        this.adsId = data.adsId || null
+        if (data.adsId === 0) {
+            this.adsId = 0
+        } else {
+            this.adsId = data.adsId || null
+        }
         this.adsName = data.adsName || null
         this.status = data.status || null
         this.periodId = data.periodId || null
@@ -89,7 +93,11 @@ export class AdvertisementDetailDTO {
     }[]
 
     constructor(data: Partial<Advertisement>) {
-        this.adsId = data.adsId || null
+        if (data.adsId === 0) {
+            this.adsId = 0
+        } else {
+            this.adsId = data.adsId || null
+        }
         this.adsName = data.adsName || null
         this.adsCond = data.adsCond || null
         this.status = data.status || null
