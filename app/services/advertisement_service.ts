@@ -77,10 +77,33 @@ const getAdsDetail = async (adsId: number) => {
 
 const createAds = async (adsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
-        const ads = new Advertisement()
-        const newAds = setValueForCreateOrUpdate(ads, adsData, userId)
+        // const ads = new Advertisement()
+        // const newAds = setValueForCreateOrUpdate(ads, adsData, userId)
 
-        await newAds.save()
+        const newAds = await Advertisement.create({
+            adsName: adsData.adsName,
+            adsCond: adsData.adsCond,
+            status: adsData.status,
+            periodId: adsData.periodId,
+            redeemCode :adsData.redeemCode,
+            packageId : adsData.packageId,
+            regisLimit : adsData.regisLimit,
+            updatedUser : userId,
+            updatedDate : time_service.getDateTimeNow(),
+            approveDate : checkAdsApprove(adsData.status) ? time_service.getDateTimeNow() : null,
+            approveUser : checkAdsApprove(adsData.status) ? userId : null,
+            imageName : adsData.imageName,
+            refAdsId : adsData.refAdsId,
+            consentDesc : adsData.consentDesc,
+            recInMth : adsData.recInMth,
+            recNextMth : adsData.recNextMth,
+            nextMth : adsData.nextMth,
+            rgsStrDate : adsData.rgsStrDate == null ? null : time_service.changeDateTimeFormat(adsData.rgsStrDate),
+            rgsExpDate : adsData.rgsExpDate == null ? null : time_service.changeDateTimeFormat(adsData.rgsExpDate),
+
+        })
+
+        // await newAds.save()
 
         if (adsData.adsPackages) {
             await ads_package_service.createAdsPackage(adsData.adsPackages, newAds.adsId)
