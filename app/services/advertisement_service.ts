@@ -134,8 +134,13 @@ const approveAds = async (adsId: number, logHeader: string, userId: string) => {
     }
 }
 
-const checkAdsApprove = (status: string) => {
-    if (status == 'A') {
+const checkAdsApprove = (oldStatus: string, newStatus: string) => {
+    // Already approved
+    if (oldStatus === 'A') {
+        return false
+    }
+
+    if (newStatus === 'A') {
         return true
     }
 
@@ -152,8 +157,8 @@ const setValueForCreateOrUpdate = (ads: Advertisement, adsData: CreateOrUpdateAd
     ads.regisLimit = adsData.regisLimit
     ads.updatedUser = userId
     ads.updatedDate = time_service.getDateTimeNow()
-    ads.approveDate = checkAdsApprove(adsData.status) ? time_service.getDateTimeNow() : null
-    ads.approveUser = checkAdsApprove(adsData.status) ? userId : null
+    ads.approveDate = checkAdsApprove(ads.status, adsData.status) ? time_service.getDateTimeNow() : null
+    ads.approveUser = checkAdsApprove(ads.status, adsData.status) ? userId : null
     ads.imageName = adsData.imageName
     ads.refAdsId = adsData.refAdsId
     ads.consentDesc = adsData.consentDesc
