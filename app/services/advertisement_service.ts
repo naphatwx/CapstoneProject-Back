@@ -75,39 +75,38 @@ const getAdsDetail = async (adsId: number) => {
     }
 }
 
-const createAds = async (adsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
-
-    const ads = new Advertisement()
-    const newAds = setValueForCreateOrUpdate(ads, adsData, userId)
-
-    await newAds.save()
-
-    if (adsData.adsPackages) {
-        await ads_package_service.createAdsPackage(adsData.adsPackages, newAds?.adsId)
-    }
-
-    await log_service.createLog(adsData.logHeader, userId, newAds?.adsId)
-
-    return newAds?.adsId
-    // try {
-    // } catch (error) {
-    //     throw new DatabaseException(error.status)
-    // }
-}
-
-const updateAds = async (adsId: number, adsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
-        const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
-        const newAds = setValueForCreateOrUpdate(ads, adsData, userId)
+        const ads = new Advertisement()
+        const newAds = setNewAdsValue(ads, newAdsData, userId)
 
         await newAds.save()
 
-        if (adsData.adsPackages) {
-            await AdsPackage.query().where('adsId', newAds.adsId).delete()
-            await ads_package_service.createAdsPackage(adsData.adsPackages, newAds.adsId)
+        if (newAdsData.adsPackages) {
+            await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
         }
 
-        await log_service.createLog(adsData.logHeader, userId, newAds.adsId)
+        await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
+
+        return newAds.adsId
+    } catch (error) {
+        throw new DatabaseException(error.status)
+    }
+}
+
+const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+    try {
+        const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
+        const newAds = setNewAdsValue(ads, newAdsData, userId)
+
+        await newAds.save()
+
+        if (newAdsData.adsPackages) {
+            await AdsPackage.query().where('adsId', newAds.adsId).delete()
+            await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
+        }
+
+        await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
 
         return newAds.adsId
     } catch (error) {
@@ -135,44 +134,47 @@ const approveAds = async (adsId: number, logHeader: string, userId: string) => {
     }
 }
 
-const checkAdsApprove = (newStatus: string) => {
+const checkNewAdsStatus = (newStatus: string) => {
     if (newStatus === 'A') {
         return true
+    } else {
+        return false
     }
 
-    return false
 }
 
-const checkAdsAlredyApproved = (oldStatus: string) => {
-    if (oldStatus === 'A') {
+const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
+    if (oldStatus && oldStatus === 'A' && newStatus === 'A') {
         return true
+    } else {
+        return false
     }
-
-    return false
 }
 
-const setValueForCreateOrUpdate = (ads: Advertisement, adsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
-    ads.adsName = adsData.adsName
-    ads.adsCond = adsData.adsCond
-    ads.status = adsData.status
-    ads.periodId = adsData.periodId
-    ads.redeemCode = adsData.redeemCode
-    ads.packageId = adsData.packageId
-    ads.regisLimit = adsData.regisLimit
+const setNewAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+    ads.adsName = newAdsData.adsName
+    ads.adsCond = newAdsData.adsCond
+
+    ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveUser : (checkNewAdsStatus(newAdsData.status) ? userId : null)
+    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveDate : (checkNewAdsStatus(newAdsData.status) ? time_service.getDateTimeNow() : null)
+
+    ads.status = newAdsData.status
+    ads.periodId = newAdsData.periodId
+    ads.redeemCode = newAdsData.redeemCode
+    ads.packageId = newAdsData.packageId
+    ads.regisLimit = newAdsData.regisLimit
     ads.updatedUser = userId
     ads.updatedDate = time_service.getDateTimeNow()
-    ads.approveUser = checkAdsAlredyApproved(ads.status) ? ads.approveUser : checkAdsApprove(adsData.status) ? userId : null
-    ads.approveDate = checkAdsAlredyApproved(ads.status) ? ads.approveDate : checkAdsApprove(adsData.status) ? time_service.getDateTimeNow() : null
-    ads.imageName = adsData.imageName
-    ads.refAdsId = adsData.refAdsId
-    ads.consentDesc = adsData.consentDesc
-    ads.recInMth = adsData.recInMth
-    ads.recNextMth = adsData.recNextMth
-    ads.nextMth = adsData.nextMth
-    ads.rgsStrDate = adsData.rgsStrDate == null ? null : time_service.changeDateTimeFormat(adsData.rgsStrDate)
-    ads.rgsExpDate = adsData.rgsExpDate == null ? null : time_service.changeDateTimeFormat(adsData.rgsExpDate)
+    ads.imageName = newAdsData.imageName
+    ads.refAdsId = newAdsData.refAdsId
+    ads.consentDesc = newAdsData.consentDesc
+    ads.recInMth = newAdsData.recInMth
+    ads.recNextMth = newAdsData.recNextMth
+    ads.nextMth = newAdsData.nextMth
+    ads.rgsStrDate = newAdsData.rgsStrDate == null ? null : time_service.changeDateTimeFormat(newAdsData.rgsStrDate)
+    ads.rgsExpDate = newAdsData.rgsExpDate == null ? null : time_service.changeDateTimeFormat(newAdsData.rgsExpDate)
 
     return ads
 }
 
-export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds, checkAdsApprove }
+export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds, checkAdsApprove: checkNewAdsStatus }
