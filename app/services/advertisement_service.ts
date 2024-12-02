@@ -76,22 +76,23 @@ const getAdsDetail = async (adsId: number) => {
 }
 
 const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
-    try {
-        const ads = new Advertisement()
-        const newAds = setNewAdsValue(ads, newAdsData, userId)
+    const ads = new Advertisement()
+    const newAds = setNewAdsValue(ads, newAdsData, userId)
 
-        await newAds.save()
+    await newAds.save()
 
-        if (newAdsData.adsPackages) {
-            await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
-        }
-
-        await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
-
-        return newAds.adsId
-    } catch (error) {
-        throw new DatabaseException(error.status)
+    if (newAdsData.adsPackages) {
+        await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds!.adsId)
     }
+
+    await log_service.createLog(newAdsData.logHeader, userId, newAds!.adsId)
+
+    return newAds!.adsId
+    // try {
+
+    // } catch (error) {
+    //     throw new DatabaseException(error.status)
+    // }
 }
 
 const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
