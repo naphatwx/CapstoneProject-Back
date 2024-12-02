@@ -114,12 +114,12 @@ const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementD
     }
 }
 
-const approveAds = async (adsId: number, logHeader: string, userId: string) => {
+const approveAds = async (adsId: number, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
-        if (ads.status == 'A') {
-            throw new Error('Advertisement already approved.')
+        if (ads.status === 'A') {
+            return { isAlreadyApproved: true }
         }
 
         ads.status = 'A'
@@ -128,35 +128,35 @@ const approveAds = async (adsId: number, logHeader: string, userId: string) => {
 
         await ads.save()
 
-        await log_service.createLog(logHeader, userId, ads.adsId)
+        await log_service.createLog('Approve advertisement.', userId, ads.adsId)
     } catch (error) {
         throw new DatabaseException(error.status)
     }
 }
 
-const checkNewAdsStatus = (newStatus: string) => {
-    if (newStatus === 'A') {
-        return true
-    } else {
-        return false
-    }
+// const checkNewAdsStatus = (newStatus: string) => {
+//     if (newStatus === 'A') {
+//         return true
+//     } else {
+//         return false
+//     }
 
-}
+// }
 
-const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
-    if (oldStatus && oldStatus === 'A' && newStatus === 'A') {
-        return true
-    } else {
-        return false
-    }
-}
+// const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
+//     if (oldStatus && oldStatus === 'A' && newStatus === 'A') {
+//         return true
+//     } else {
+//         return false
+//     }
+// }
 
 const setNewAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     ads.adsName = newAdsData.adsName
     ads.adsCond = newAdsData.adsCond
 
-    ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveUser : (checkNewAdsStatus(newAdsData.status) ? userId : null)
-    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveDate : (checkNewAdsStatus(newAdsData.status) ? time_service.getDateTimeNow() : null)
+    // ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveUser : (checkNewAdsStatus(newAdsData.status) ? userId : null)
+    // ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveDate : (checkNewAdsStatus(newAdsData.status) ? time_service.getDateTimeNow() : null)
 
     ads.status = newAdsData.status
     ads.periodId = newAdsData.periodId
@@ -165,6 +165,8 @@ const setNewAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisem
     ads.regisLimit = newAdsData.regisLimit
     ads.updatedUser = userId
     ads.updatedDate = time_service.getDateTimeNow()
+    ads.approveUser = null
+    ads.approveDate = null
     ads.imageName = newAdsData.imageName
     ads.refAdsId = newAdsData.refAdsId
     ads.consentDesc = newAdsData.consentDesc
@@ -177,4 +179,4 @@ const setNewAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisem
     return ads
 }
 
-export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds, checkAdsApprove: checkNewAdsStatus }
+export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds }

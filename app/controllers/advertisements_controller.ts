@@ -40,7 +40,6 @@ export default class AdvertisementsController {
 
     async storeAds({ request, response }: HttpContext) {
         const data = request.body()
-        // const user = auth.getUserOrFail()
         const user = {
             userId: 'ADMIN_1',
         }
@@ -70,15 +69,17 @@ export default class AdvertisementsController {
         return response.status(200).json({ message: 'Updated advertisement successfully.' })
     }
 
-    async approveAds({ params, request, response }: HttpContext) {
+    async approveAds({ params, response }: HttpContext) {
         const adsId = params.adsId
-        const data = request.only(['logHeader'])
         const user = {
             userId: 'ADMIN_1',
         }
 
-        await advertisement_service.approveAds(adsId, data.logHeader, user.userId)
+        const approve = await advertisement_service.approveAds(adsId, user.userId)
 
-        return response.status(200).json({ message: 'Updated advertisement successfully.' })
+        return response.status(200).json({
+            message: approve?.isAlreadyApproved ?
+                'Advertisement is already approved.' : 'Approved advertisement successfully.'
+        })
     }
 }
