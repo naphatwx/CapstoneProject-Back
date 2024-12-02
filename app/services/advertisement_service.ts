@@ -83,12 +83,12 @@ const createAds = async (adsData: CreateOrUpdateAdvertisementDTO, userId: string
         await newAds.save()
 
         if (adsData.adsPackages) {
-            await ads_package_service.createAdsPackage(adsData.adsPackages, newAds.adsId)
+            await ads_package_service.createAdsPackage(adsData.adsPackages, newAds?.adsId)
         }
 
-        await log_service.createLog(adsData.logHeader, userId, newAds.adsId)
+        await log_service.createLog(adsData.logHeader, userId, newAds?.adsId)
 
-        return newAds.adsId
+        return newAds?.adsId
     } catch (error) {
         throw new DatabaseException(error.status)
     }

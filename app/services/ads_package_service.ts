@@ -5,7 +5,7 @@ import Media from "#models/media"
 const createAdsPackage = async (adsPackages: Array<any>, adsId: number) => {
     try {
         for (let i = 0; i < adsPackages.length; i++) {
-            const media = await Media.query().where('mediaId', adsPackages[i]).first()
+            const media = await Media.query().where('mediaId', adsPackages[i]).firstOrFail()
 
             await AdsPackage.create({
                 adsId: adsId,
