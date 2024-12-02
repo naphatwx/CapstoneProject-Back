@@ -76,22 +76,23 @@ const getAdsDetail = async (adsId: number) => {
 }
 
 const createAds = async (adsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
-    try {
-        const ads = new Advertisement()
-        const newAds = setValueForCreateOrUpdate(ads, adsData, userId)
 
-        await newAds.save()
+    const ads = new Advertisement()
+    const newAds = setValueForCreateOrUpdate(ads, adsData, userId)
 
-        if (adsData.adsPackages) {
-            await ads_package_service.createAdsPackage(adsData.adsPackages, newAds?.adsId)
-        }
+    await newAds.save()
 
-        await log_service.createLog(adsData.logHeader, userId, newAds?.adsId)
-
-        return newAds?.adsId
-    } catch (error) {
-        throw new DatabaseException(error.status)
+    if (adsData.adsPackages) {
+        await ads_package_service.createAdsPackage(adsData.adsPackages, newAds?.adsId)
     }
+
+    await log_service.createLog(adsData.logHeader, userId, newAds?.adsId)
+
+    return newAds?.adsId
+    // try {
+    // } catch (error) {
+    //     throw new DatabaseException(error.status)
+    // }
 }
 
 const updateAds = async (adsId: number, adsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
@@ -134,13 +135,16 @@ const approveAds = async (adsId: number, logHeader: string, userId: string) => {
     }
 }
 
-const checkAdsApprove = (oldStatus: string, newStatus: string) => {
-    // Already approved
-    if (oldStatus === 'A') {
-        return false
+const checkAdsApprove = (newStatus: string) => {
+    if (newStatus === 'A') {
+        return true
     }
 
-    if (newStatus === 'A') {
+    return false
+}
+
+const checkAdsAlredyApproved = (oldStatus: string) => {
+    if (oldStatus === 'A') {
         return true
     }
 
@@ -157,8 +161,8 @@ const setValueForCreateOrUpdate = (ads: Advertisement, adsData: CreateOrUpdateAd
     ads.regisLimit = adsData.regisLimit
     ads.updatedUser = userId
     ads.updatedDate = time_service.getDateTimeNow()
-    ads.approveDate = checkAdsApprove(ads.status, adsData.status) ? time_service.getDateTimeNow() : null
-    ads.approveUser = checkAdsApprove(ads.status, adsData.status) ? userId : null
+    ads.approveUser = checkAdsAlredyApproved(ads.status) ? ads.approveUser : checkAdsApprove(adsData.status) ? userId : null
+    ads.approveDate = checkAdsAlredyApproved(ads.status) ? ads.approveDate : checkAdsApprove(adsData.status) ? time_service.getDateTimeNow() : null
     ads.imageName = adsData.imageName
     ads.refAdsId = adsData.refAdsId
     ads.consentDesc = adsData.consentDesc
