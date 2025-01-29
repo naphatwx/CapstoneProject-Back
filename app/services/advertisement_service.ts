@@ -5,6 +5,7 @@ import log_service from './log_service.js'
 import time_service from './time_service.js'
 import AdsPackage from '#models/ads_package'
 import DatabaseException from '#exceptions/database_exception'
+import { DateTime } from 'luxon'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
     try {
@@ -32,7 +33,9 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
             .orderBy('adsId', 'desc')
             .paginate(page, perPage)
 
-        const adsDTO: Array<AdvertisementListDTO> = adsList.all().map((ads) => new AdvertisementListDTO(ads.toJSON()))
+        const adsDTO: Array<AdvertisementListDTO> = adsList.all().map((ads) =>
+            new AdvertisementListDTO(ads.toJSON())
+        )
 
         return { meta: adsList.getMeta(), data: adsDTO }
     } catch (error) {
@@ -78,7 +81,8 @@ const getAdsDetail = async (adsId: number) => {
 const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
         const ads = new Advertisement()
-        const newAds = setNewAdsValue(ads, newAdsData, userId)
+
+        const newAds = setAdsValue(ads, newAdsData, userId)
 
         await newAds.save()
 
@@ -97,7 +101,8 @@ const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: str
 const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
-        const newAds = setNewAdsValue(ads, newAdsData, userId)
+
+        const newAds = setAdsValue(ads, newAdsData, userId)
 
         await newAds.save()
 
@@ -134,6 +139,49 @@ const approveAds = async (adsId: number, userId: string) => {
     }
 }
 
+const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
+    const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC')
+    const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC')
+
+    if (rgsStrDate && rgsExpDate) {
+        if (newRgsStrDate > DateTime.now() && newRgsExpDate > DateTime.now()) {
+            if (newRgsStrDate < newRgsExpDate) {
+                return { result: true }
+            } else {
+                return {
+                    result: false,
+                    message: 'Register start date must be before register expire date.'
+                }
+            }
+        } else {
+            return {
+                result: false,
+                message: 'Register start date and register expire date must be after now.'
+            }
+        }
+    } else if (rgsStrDate && !rgsExpDate) {
+        if (newRgsStrDate > DateTime.now()) {
+            return { result: true }
+        } else {
+            return {
+                result: false,
+                message: 'Register start date must be after now.'
+            }
+        }
+    } else if (!rgsStrDate && rgsExpDate) {
+        if (newRgsExpDate > DateTime.now()) {
+            return { result: true }
+        } else {
+            return {
+                result: false,
+                message: 'Register expire date must be after now.'
+            }
+        }
+    } else {
+        return { result: true }
+    }
+}
+
 const checkNewAdsStatus = (newStatus: string) => {
     if (newStatus === 'A') {
         return true
@@ -151,7 +199,7 @@ const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
     }
 }
 
-const setNewAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     ads.adsName = newAdsData.adsName
     ads.adsCond = newAdsData.adsCond
 
@@ -177,4 +225,4 @@ const setNewAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisem
     return ads
 }
 
-export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds }
+export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds, compareDate }

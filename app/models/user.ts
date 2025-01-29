@@ -1,11 +1,22 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, computed, hasOne } from '@adonisjs/lucid/orm'
+import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
+import hash from '@adonisjs/core/services/hash'
+import { compose } from '@adonisjs/core/helpers'
+import type { HasOne } from '@adonisjs/lucid/types/relations'
+import Company from './company.js'
+import UserRole from './user_role.js'
 
-export default class User extends BaseModel {
+const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
+    uids: ['email'],
+    passwordColumnName: 'password',
+})
+
+export default class User extends compose(BaseModel, AuthFinder) {
     public static table = 'CMS_USER_MASTER'
 
     @column({ columnName: 'COM_CODE' })
-    declare comCode: string | null
+    declare comCode: string
 
     @column({ columnName: 'USER_ID', isPrimary: true })
     declare userId: string
@@ -17,7 +28,10 @@ export default class User extends BaseModel {
     declare lastname: string | null
 
     @column({ columnName: 'EMAIL' })
-    declare email: string | null
+    declare email: string
+
+    @column({ columnName: 'PASSWORD', serializeAs: null })
+    declare password: string
 
     @column({ columnName: 'TELPHONE' })
     declare telphone: string | null
@@ -29,8 +43,42 @@ export default class User extends BaseModel {
     declare logoutTime: DateTime | string | null
 
     @column({ columnName: 'UPDATED_USER' })
-    declare updatedUser: string | null
+    declare updatedUser: string
 
     @column({ columnName: 'UPDATED_DATE' })
-    declare updatedDate: DateTime | string | null
+    declare updatedDate: DateTime | string
+
+    @hasOne(() => User, {
+        foreignKey: 'userId',
+        localKey: 'updatedUser',
+    })
+    declare userUpdate: HasOne<typeof User>
+
+    @hasOne(() => Company, {
+        foreignKey: 'comCode',
+        localKey: 'comCode'
+    })
+    declare company: HasOne<typeof Company>
+
+    @hasOne(() => UserRole, {
+        foreignKey: 'userId',
+        localKey: 'userId'
+    })
+    declare userRole: HasOne<typeof UserRole>
+
+    @computed()
+    public get userRoleId() {
+        if (this.userRole) {
+            return this.userRole.role.roleId
+        }
+        return
+    }
+
+    @computed()
+    public get userRoleName() {
+        if (this.userRole) {
+            return this.userRole.role.roleName
+        }
+        return
+    }
 }

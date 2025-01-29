@@ -3,6 +3,7 @@ import { adsIdValidator, createUpdateAdvertisementValidator } from '#validators/
 import type { HttpContext } from '@adonisjs/core/http'
 import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 import { paginationAndSearchValidator } from '#validators/pagination'
+import BadRequestException from '#exceptions/badrequest_exception'
 
 export default class AdvertisementsController {
     private defaultPage: number = 1
@@ -46,6 +47,12 @@ export default class AdvertisementsController {
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
+        const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
+
+        if (!result.result) {
+            throw new BadRequestException(result.message)
+        }
+
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
 
         await advertisement_service.createAds(adsDTO, user.userId)
@@ -61,6 +68,12 @@ export default class AdvertisementsController {
         }
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
+
+        const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
+
+        if (!result.result) {
+            throw new BadRequestException(result.message)
+        }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
 
@@ -78,8 +91,7 @@ export default class AdvertisementsController {
         const approve = await advertisement_service.approveAds(adsId, user.userId)
 
         return response.status(200).json({
-            message: approve?.isAlreadyApproved ?
-                'Advertisement is already approved.' : 'Approved advertisement successfully.'
+            message: approve?.isAlreadyApproved ? 'Advertisement is already approved.' : 'Approved advertisement successfully.'
         })
     }
 }

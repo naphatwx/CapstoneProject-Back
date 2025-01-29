@@ -128,32 +128,32 @@ export class AdvertisementDetailDTO {
 
         if (data.userUpdate) {
             this.userUpdate = new User()
-            this.userUpdate.comCode = data.userUpdate.comCode || null
+            this.userUpdate.comCode = data.userUpdate.comCode || ''
             this.userUpdate.userId = data.userUpdate.userId
             this.userUpdate.firstname = data.userUpdate.firstname || null
             this.userUpdate.lastname = data.userUpdate.lastname || null
-            this.userUpdate.email = data.userUpdate.email || null
+            this.userUpdate.email = data.userUpdate.email || ''
             this.userUpdate.telphone = data.userUpdate.telphone || null
             this.userUpdate.loginTime = data.userUpdate.loginTime || null
             this.userUpdate.logoutTime = data.userUpdate.logoutTime || null
-            this.userUpdate.updatedUser = data.userUpdate.updatedUser || null
-            this.userUpdate.updatedDate = data.userUpdate.updatedDate || null
+            this.userUpdate.updatedUser = data.userUpdate.updatedUser || ''
+            this.userUpdate.updatedDate = data.userUpdate.updatedDate || ''
         } else {
             this.userUpdate = null
         }
 
         if (data.userApprove) {
             this.userApprove = new User()
-            this.userApprove.comCode = data.userApprove.comCode || null
+            this.userApprove.comCode = data.userApprove.comCode || ''
             this.userApprove.userId = data.userApprove.userId
             this.userApprove.firstname = data.userApprove.firstname || null
             this.userApprove.lastname = data.userApprove.lastname || null
-            this.userApprove.email = data.userApprove.email || null
+            this.userApprove.email = data.userApprove.email || ''
             this.userApprove.telphone = data.userApprove.telphone || null
             this.userApprove.loginTime = data.userApprove.loginTime || null
             this.userApprove.logoutTime = data.userApprove.logoutTime || null
-            this.userApprove.updatedUser = data.userApprove.updatedUser || null
-            this.userApprove.updatedDate = data.userApprove.updatedDate || null
+            this.userApprove.updatedUser = data.userApprove.updatedUser || ''
+            this.userApprove.updatedDate = data.userApprove.updatedDate || ''
         } else {
             this.userApprove = null
         }
