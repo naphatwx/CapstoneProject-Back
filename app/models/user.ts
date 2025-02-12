@@ -1,18 +1,10 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, computed, hasOne } from '@adonisjs/lucid/orm'
-import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
-import hash from '@adonisjs/core/services/hash'
-import { compose } from '@adonisjs/core/helpers'
+import { BaseModel, beforeFetch, beforeFind, column, computed, hasOne } from '@adonisjs/lucid/orm'
 import type { HasOne } from '@adonisjs/lucid/types/relations'
 import Company from './company.js'
 import UserRole from './user_role.js'
 
-const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
-    uids: ['email'],
-    passwordColumnName: 'password',
-})
-
-export default class User extends compose(BaseModel, AuthFinder) {
+export default class User extends BaseModel {
     public static table = 'CMS_USER_MASTER'
 
     @column({ columnName: 'COM_CODE' })
@@ -30,11 +22,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
     @column({ columnName: 'EMAIL' })
     declare email: string
 
-    @column({ columnName: 'PASSWORD', serializeAs: null })
-    declare password: string
-
     @column({ columnName: 'TELPHONE' })
     declare telphone: string | null
+
+    @column({columnName: 'STATUS'})
+    declare status: boolean
 
     @column({ columnName: 'LOGIN_TIME' })
     declare loginTime: DateTime | string | null
@@ -65,6 +57,14 @@ export default class User extends compose(BaseModel, AuthFinder) {
         localKey: 'userId'
     })
     declare userRole: HasOne<typeof UserRole>
+
+    @beforeFind()
+    @beforeFetch()
+    public static async preloadUserRole(query: any) {
+        query.preload('userRole', (userRoleQuery: any) => {
+            userRoleQuery.preload('role')
+        })
+    }
 
     @computed()
     public get userRoleId() {

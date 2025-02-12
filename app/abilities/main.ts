@@ -12,12 +12,31 @@
 |
 */
 
+import User from '#models/user'
+import role_service from '#services/role_service'
 import { Bouncer } from '@adonisjs/bouncer'
 
-/**
- * Delete the following ability to start from
- * scratch
- */
+// Delete the following ability to start from scratch
 export const editUser = Bouncer.ability(() => {
-  return true
+    return true
+})
+
+export const isAccess = Bouncer.ability(async (user: User, field: string, abilityId: number) => {
+    const role = await role_service.getRoleByRoleIdAndAbilityId(user.userRole.roleId, abilityId)
+    switch (field) {
+        case 'viewed':
+            return role.viewed
+        case 'created':
+            return role.created
+        case 'updated':
+            return role.updated
+        case 'deleted':
+            return role.deleted
+        case 'approve':
+            return role.approve
+        case 'export':
+            return role.export
+        default:
+            return false
+    }
 })

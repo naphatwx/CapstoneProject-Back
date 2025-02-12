@@ -28,12 +28,27 @@ export default class HttpExceptionHandler extends ExceptionHandler {
             })
         }
 
+        if (error.status === 401) {
+            return ctx.response.status(401).send({
+                message: 'Unauthorized',
+                details: error.message,
+            })
+        }
+
+        if (error.status === 403) {
+            return ctx.response.status(403).send({
+                message: 'Forbidden',
+                details: error.message,
+            })
+        }
+
         if (error.status === 404) {
             return ctx.response.status(404).send({
                 message: 'Not Found',
                 details: error.message,
             })
         }
+
 
         if (error.status === 500) {
             return ctx.response.status(500).send({

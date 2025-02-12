@@ -1,26 +1,36 @@
-import DatabaseException from "#exceptions/database_exception"
+import HandlerException from "#exceptions/handler_exception"
 import Role from "#models/role"
+import { RolesDTO } from "../dtos/role_dto.js"
 
-const getRoles = async () => {
-    const roles = await Role.query().select('roleId', 'roleName').groupBy('roleId', 'roleName')
-
-    return roles
-    // try {
-
-    // } catch (error) {
-    //     throw new DatabaseException(error.status)
-    // }
+const getRoleOptions = async () => {
+    try {
+        const roles = await Role.query().select('roleId', 'roleName').groupBy('roleId', 'roleName')
+        return roles
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
 }
 
-const getRoleById = async (roleId: number) => {
-    const role = await Role.query().where('roleId', roleId).firstOrFail()
-
-    return role
-    // try {
-
-    // } catch (error) {
-    //     throw new DatabaseException(error.status)
-    // }
+const getRolesById = async (roleId: number) => {
+    try {
+        const roles = await Role.query().where('roleId', roleId).preload('activity')
+        const rolesDTO = roles.map((role) => new RolesDTO(role.toJSON()))
+        return rolesDTO
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
 }
 
-export default { getRoles, getRoleById }
+const getRoleByRoleIdAndAbilityId = async (roleId: number, abilityId: number) => {
+    try {
+        const role = await Role.query()
+            .where('roleId', roleId)
+            .where('activityId', abilityId)
+            .firstOrFail()
+        return role
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
+export default { getRoleOptions, getRolesById, getRoleByRoleIdAndAbilityId }

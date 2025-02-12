@@ -1,4 +1,4 @@
-import DatabaseException from "#exceptions/database_exception"
+import HandlerException from "#exceptions/handler_exception"
 import AdsPackage from "#models/ads_package"
 import Media from "#models/media"
 
@@ -15,7 +15,7 @@ const createAdsPackage = async (adsPackages: Array<any>, adsId: number) => {
             })
         }
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 

@@ -4,14 +4,20 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 import { paginationAndSearchValidator } from '#validators/pagination'
 import BadRequestException from '#exceptions/badrequest_exception'
+import ForbiddenException from '#exceptions/forbidden_exception'
+import { isAccess } from '#abilities/main'
+import app from '#config/app'
 
 export default class AdvertisementsController {
-    private defaultPage: number = 1
-    private defaultPerPage: number = 10
+    private defaultActivityId = 1
 
-    async getAds({ request, response }: HttpContext) {
-        const page: number = request.input('page') || this.defaultPage
-        const perPage: number = request.input('perPage') || this.defaultPerPage
+    async getAds({ request, response, bouncer }: HttpContext) {
+        if (await bouncer.denies(isAccess, app.defaultView, this.defaultActivityId)) {
+            throw new ForbiddenException()
+        }
+
+        const page: number = request.input('page') || 1
+        const perPage: number = request.input('perPage') || 10
         const search: string = request.input('search') || ''
 
         const data = {
@@ -21,13 +27,15 @@ export default class AdvertisementsController {
         }
 
         const payload = await paginationAndSearchValidator.validate(data)
-
         const adsList = await advertisement_service.getAdsList(payload.page, payload.perPage, payload.search)
-
         return response.ok(adsList)
     }
 
-    async getAdsDetail({ params, response }: HttpContext) {
+    async getAdsDetail({ params, response, bouncer }: HttpContext) {
+        if (await bouncer.denies(isAccess, app.defaultView, this.defaultActivityId)) {
+            throw new ForbiddenException()
+        }
+
         const adsId: number = params.adsId
 
         const paylaod = await adsIdValidator.validate({
@@ -35,18 +43,18 @@ export default class AdvertisementsController {
         })
 
         const ads = await advertisement_service.getAdsDetail(paylaod.adsId)
-
         return response.ok(ads)
     }
 
-    async storeAds({ request, response }: HttpContext) {
-        const data = request.body()
-        const user = {
-            userId: 'ADMIN_1',
+    async storeAds({ request, response, auth, bouncer }: HttpContext) {
+        if (await bouncer.denies(isAccess, app.defaultCreate, this.defaultActivityId)) {
+            throw new ForbiddenException()
         }
 
-        const payload = await createUpdateAdvertisementValidator.validate(data)
+        const data = request.body()
+        const user = auth.getUserOrFail()
 
+        const payload = await createUpdateAdvertisementValidator.validate(data)
         const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
 
         if (!result.result) {
@@ -54,21 +62,20 @@ export default class AdvertisementsController {
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
-
         await advertisement_service.createAds(adsDTO, user.userId)
-
         return response.status(201).json({ message: 'Created advertisement successfully.' })
     }
 
-    async updateAds({ params, request, response }: HttpContext) {
-        const adsId = params.adsId
-        const data = request.body()
-        const user = {
-            userId: 'ADMIN_1',
+    async updateAds({ params, request, response, auth, bouncer }: HttpContext) {
+        if (await bouncer.denies(isAccess, app.defaultUpdate, this.defaultActivityId)) {
+            throw new ForbiddenException()
         }
 
-        const payload = await createUpdateAdvertisementValidator.validate(data)
+        const adsId = params.adsId
+        const data = request.body()
+        const user = auth.getUserOrFail()
 
+        const payload = await createUpdateAdvertisementValidator.validate(data)
         const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
 
         if (!result.result) {
@@ -76,20 +83,19 @@ export default class AdvertisementsController {
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
-
         await advertisement_service.updateAds(adsId, adsDTO, user.userId)
-
         return response.status(200).json({ message: 'Updated advertisement successfully.' })
     }
 
-    async approveAds({ params, response }: HttpContext) {
-        const adsId = params.adsId
-        const user = {
-            userId: 'ADMIN_1',
+    async approveAds({ params, response, auth, bouncer }: HttpContext) {
+        if (await bouncer.denies(isAccess, app.defaultUpdate, this.defaultActivityId)) {
+            throw new ForbiddenException()
         }
 
-        const approve = await advertisement_service.approveAds(adsId, user.userId)
+        const adsId = params.adsId
+        const user = auth.getUserOrFail()
 
+        const approve = await advertisement_service.approveAds(adsId, user.userId)
         return response.status(200).json({
             message: approve?.isAlreadyApproved ? 'Advertisement is already approved.' : 'Approved advertisement successfully.'
         })

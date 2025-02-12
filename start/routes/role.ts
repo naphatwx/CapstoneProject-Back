@@ -5,4 +5,6 @@ const RolesController = () => import('#controllers/roles_controller')
 
 router.group(() => {
     router.get('', [RolesController, 'index']).as('roles.all')
+
+    router.get('/:roleId', [RolesController, 'getRolesById']).as('roles.byRoleId')
 }).prefix('/api/roles').use(middleware.auth())

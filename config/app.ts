@@ -38,3 +38,20 @@ export const http = defineConfig({
         sameSite: 'lax',
     },
 })
+
+export default {
+    appKey,
+    http,
+
+    tokenExpiration: 8,
+
+    defaultPage: 1,
+    defaultPerPage: 10,
+
+    defaultView: 'viewed',
+    defaultCreate: 'created',
+    defaultUpdate: 'updated',
+    defaultDelete: 'deleted',
+    defaultExport: 'export',
+    defaultApprove: 'approve',
+}

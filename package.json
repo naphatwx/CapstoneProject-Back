@@ -60,6 +60,7 @@
         "@adonisjs/session": "^7.5.0",
         "@maximemrf/adonisjs-jwt": "^0.2.2",
         "@vinejs/vine": "^2.1.0",
+        "axios": "^1.7.9",
         "class-transformer": "^0.5.1",
         "jwt-decode": "^4.0.0",
         "luxon": "^3.5.0",

@@ -4,7 +4,7 @@ import ads_package_service from './ads_package_service.js'
 import log_service from './log_service.js'
 import time_service from './time_service.js'
 import AdsPackage from '#models/ads_package'
-import DatabaseException from '#exceptions/database_exception'
+import HandlerException from '#exceptions/handler_exception'
 import { DateTime } from 'luxon'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
@@ -36,10 +36,9 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
         const adsDTO: Array<AdvertisementListDTO> = adsList.all().map((ads) =>
             new AdvertisementListDTO(ads.toJSON())
         )
-
         return { meta: adsList.getMeta(), data: adsDTO }
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 
@@ -66,15 +65,14 @@ const getAdsDetail = async (adsId: number) => {
             .preload('userUpdate')
             .firstOrFail()
 
-        if (ads?.approveUser) {
+        if (ads.approveUser) {
             await ads.load('userApprove')
         }
 
         const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
-
         return adsDTO
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 
@@ -91,19 +89,16 @@ const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: str
         }
 
         await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
-
         return newAds.adsId
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 
 const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
-
         const newAds = setAdsValue(ads, newAdsData, userId)
-
         await newAds.save()
 
         if (newAdsData.adsPackages) {
@@ -112,30 +107,26 @@ const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementD
         }
 
         await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
-
         return newAds.adsId
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 
 const approveAds = async (adsId: number, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
-
         if (ads.status === 'A') {
             return { isAlreadyApproved: true }
         }
-
         ads.status = 'A'
-        ads.approveDate = time_service.getDateTimeNow()
+        ads.approveDate = time_service.getDateTime()
         ads.approveUser = userId
-
         await ads.save()
 
         await log_service.createLog('Approve advertisement.', userId, ads.adsId)
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 
@@ -143,10 +134,15 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
     const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC')
     const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC')
 
+    const success = {
+        result: true,
+        message: 'Success'
+    }
+
     if (rgsStrDate && rgsExpDate) {
         if (newRgsStrDate > DateTime.now() && newRgsExpDate > DateTime.now()) {
             if (newRgsStrDate < newRgsExpDate) {
-                return { result: true }
+                return success
             } else {
                 return {
                     result: false,
@@ -161,7 +157,7 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
         }
     } else if (rgsStrDate && !rgsExpDate) {
         if (newRgsStrDate > DateTime.now()) {
-            return { result: true }
+            return success
         } else {
             return {
                 result: false,
@@ -170,7 +166,7 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
         }
     } else if (!rgsStrDate && rgsExpDate) {
         if (newRgsExpDate > DateTime.now()) {
-            return { result: true }
+            return success
         } else {
             return {
                 result: false,
@@ -178,7 +174,7 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
             }
         }
     } else {
-        return { result: true }
+        return success
     }
 }
 
@@ -188,7 +184,6 @@ const checkNewAdsStatus = (newStatus: string) => {
     } else {
         return false
     }
-
 }
 
 const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
@@ -202,17 +197,15 @@ const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
 const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     ads.adsName = newAdsData.adsName
     ads.adsCond = newAdsData.adsCond
-
     ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveUser : (checkNewAdsStatus(newAdsData.status) ? userId : null)
-    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveDate : (checkNewAdsStatus(newAdsData.status) ? time_service.getDateTimeNow() : null)
-
+    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveDate : (checkNewAdsStatus(newAdsData.status) ? time_service.getDateTime() : null)
     ads.status = newAdsData.status
     ads.periodId = newAdsData.periodId
     ads.redeemCode = newAdsData.redeemCode
     ads.packageId = newAdsData.packageId
     ads.regisLimit = newAdsData.regisLimit
     ads.updatedUser = userId
-    ads.updatedDate = time_service.getDateTimeNow()
+    ads.updatedDate = time_service.getDateTime()
     ads.imageName = newAdsData.imageName
     ads.refAdsId = newAdsData.refAdsId
     ads.consentDesc = newAdsData.consentDesc

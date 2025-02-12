@@ -1,4 +1,4 @@
-import DatabaseException from "#exceptions/database_exception"
+import HandlerException from "#exceptions/handler_exception"
 import Period from "#models/period"
 
 const getPeriods = async () => {
@@ -6,7 +6,7 @@ const getPeriods = async () => {
         const periods = await Period.query().select('periodId', 'periodDesc', 'period')
         return periods
     } catch (error) {
-        throw new DatabaseException(error.status)
+        throw new HandlerException(error.status, error.message)
     }
 }
 

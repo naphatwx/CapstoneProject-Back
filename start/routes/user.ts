@@ -9,12 +9,14 @@ router.group(() => {
 
         router.get('/:userId', [UsersController, 'getUserById']).as('users.details')
 
+        router.post('', [UsersController, 'createUser']).as('users.create')
+
         router.put('/:userId', [UsersController, 'updateUser']).as('users.update')
+
+        router.patch('/inactivate/:userId', [UsersController, 'inactivateUser']).as('users.inactive')
 
         router.patch('/logout', [UsersController, 'logout']).as('users.logout')
     }).use(middleware.auth())
-
-    router.post('', [UsersController, 'createUser']).as('users.create')
 
     router.post('/login', [UsersController, 'login']).as('users.login')
 }).prefix('/api/users')

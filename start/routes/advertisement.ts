@@ -1,3 +1,4 @@
+import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
 const AdsController = () => import('#controllers/advertisements_controller')
@@ -12,4 +13,4 @@ router.group(() => {
     router.put('/:adsId', [AdsController, 'updateAds']).as('ads.update')
 
     router.patch('/approve/:adsId', [AdsController, 'approveAds']).as('ads.approve')
-}).prefix('/api/ads')
+}).prefix('/api/ads').use(middleware.auth())
