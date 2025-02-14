@@ -1,4 +1,3 @@
-import HandlerException from '#exceptions/handler_exception'
 import ForbiddenException from '#exceptions/forbidden_exception'
 import UnauthorizedException from '#exceptions/unauthorized_exception'
 import user_service from '#services/user_service'
