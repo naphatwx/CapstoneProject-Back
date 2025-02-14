@@ -12,36 +12,41 @@ import app from '#config/app'
 export default class UsersController {
     private defaultActivityId: number = 2
 
-    async login({ auth, request }: HttpContext) {
-        try {
-            const { userId, password } = request.all()
+    async login({ auth, request, session }: HttpContext) {
+        const { userId, password } = request.all()
 
-            const responseAPI = await axios.post('https://lms-centralportalgateway-dev.pt.co.th/management/Account/CMSLogin', {
+        const user = await user_service.getOnlyUserById(userId)
+        let responseAPI
+        try {
+            const loginURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Account/CMSLogin'
+            responseAPI = await axios.post(loginURL, {
                 'user_name': userId,
                 'password': password
+            }, {
+                timeout: 5000, // Limit 5 secs
+                headers: { 'Content-Type': 'application/json' }
             })
-
-            if (responseAPI.status === 200) {
-                const user = await user_service.getOnlyUserById(userId)
-
-                if (user.status) {
-                    await user_service.updateUserLoginTime(userId)
-                    return await auth.use('jwt').generate(user)
-                } else {
-                    throw new ForbiddenException('User is not active.')
-                }
-            } else {
-                throw new UnauthorizedException('Invalid username or password.')
-            }
         } catch (error) {
-            throw new HandlerException(
-                error.status === 404 ? 401 : error.status,
-                error.status === 404 ? 'Invalid username or password.' : error.message
-            )
+            throw new UnauthorizedException('Password is not correct.')
+        }
+
+
+        if (responseAPI.status === 200) {
+            session.put('tokenData', responseAPI.data.data)
+
+            if (user.status) {
+                await user_service.updateUserLoginTime(userId)
+                return await auth.use('jwt').generate(user)
+            } else {
+                throw new ForbiddenException('User is not active.')
+            }
+        } else {
+            throw new UnauthorizedException('Password is not correct.')
         }
     }
 
-    async logout({ auth, response }: HttpContext) {
+    async logout({ auth, response, session }: HttpContext) {
+        console.log(session.get('tokenData'))
         const user = auth.getUserOrFail()
 
         await user_service.updateUserLogoutTime(user.userId)
@@ -73,7 +78,6 @@ export default class UsersController {
         }
 
         const userId = params.userId
-
         const payload = await userIdValidator.validate({
             userId: userId
         })
@@ -89,8 +93,8 @@ export default class UsersController {
 
         const data = request.all()
         const user = auth.getUserOrFail()
-
         const payload = await createUserValidator.validate(data)
+
         await user_service.createUser(payload, user.userId)
         return response.status(201).json({ message: 'User is created.' })
     }

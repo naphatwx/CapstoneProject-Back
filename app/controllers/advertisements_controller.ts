@@ -16,8 +16,8 @@ export default class AdvertisementsController {
             throw new ForbiddenException()
         }
 
-        const page: number = request.input('page') || 1
-        const perPage: number = request.input('perPage') || 10
+        const page: number = request.input('page') || app.defaultPage
+        const perPage: number = request.input('perPage') || app.defaultPerPage
         const search: string = request.input('search') || ''
 
         const data = {

@@ -5,7 +5,6 @@ import { packageIdValidator } from '#validators/package'
 export default class PackagesController {
     async index({ response }: HttpContext) {
         const packages = await package_service.getPackages()
-
         return response.ok(packages)
     }
 
@@ -15,7 +14,6 @@ export default class PackagesController {
             packageId: packageId
         })
         const pk = await package_service.getPackageById(paylaod.packageId)
-
         return response.ok(pk)
     }
 }

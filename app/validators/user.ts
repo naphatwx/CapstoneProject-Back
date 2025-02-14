@@ -25,7 +25,6 @@ export const updateUserValidator = vine.compile(vine.object({
         const oldUserId = parent.oldUserId
 
         if (oldUserId === value) {
-            console.log('not change')
             return true // If not change = pass
         }
 
