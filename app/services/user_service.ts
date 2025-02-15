@@ -1,5 +1,6 @@
 import app from "#config/app"
 import BadRequestException from "#exceptions/badrequest_exception"
+import ForbiddenException from "#exceptions/forbidden_exception"
 import HandlerException from "#exceptions/handler_exception"
 import User from "#models/user"
 import { UserDetailDTO, UserListDTO } from "../dtos/user_dto.js"
@@ -125,8 +126,10 @@ const inactivateUser = async (userId: string) => {
         if (await user_role_service.isLastAdmin()) {
             throw new BadRequestException('Cannot inactivate last admin.')
         } else {
-            await user_role_service.deleteUserRole(userId)
             const user = await User.query().where('userId', userId).firstOrFail()
+            if (user.status === false) {
+                throw new BadRequestException('User is already inactive.')
+            }
             user.status = false
             await user.save()
         }

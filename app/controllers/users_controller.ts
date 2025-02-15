@@ -123,11 +123,13 @@ export default class UsersController {
     }
 
     async inactivateUser({ params, response, bouncer }: HttpContext) {
+        const userId = params.userId
+
+        await bouncer.with('UserPolicy').authorize('inactive' , userId)
+
         if (await bouncer.denies(isAccess, app.defaultDelete, this.defaultActivityId)) {
             throw new ForbiddenException()
         }
-
-        const userId = params.userId
         const payload = await userIdValidator.validate({
             userId: userId
         })
