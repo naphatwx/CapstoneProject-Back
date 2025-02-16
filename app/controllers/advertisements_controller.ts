@@ -36,8 +36,7 @@ export default class AdvertisementsController {
             throw new ForbiddenException()
         }
 
-        const adsId: number = params.adsId
-
+        const adsId = params.adsId
         const paylaod = await adsIdValidator.validate({
             adsId: adsId
         })
@@ -95,9 +94,9 @@ export default class AdvertisementsController {
         const adsId = params.adsId
         const user = auth.getUserOrFail()
 
-        const approve = await advertisement_service.approveAds(adsId, user.userId)
+        await advertisement_service.approveAds(adsId, user.userId)
         return response.status(200).json({
-            message: approve?.isAlreadyApproved ? 'Advertisement is already approved.' : 'Approved advertisement successfully.'
+            message: 'Approved advertisement successfully.'
         })
     }
 }

@@ -8,7 +8,6 @@ export default class UserPolicy extends BasePolicy {
     }
 
     inactive(user: User, userIdToDelete: string): AuthorizerResponse {
-        console.log(user.userRole.roleId)
         return user.userRole.roleId === 1 && user.userId !== userIdToDelete
     }
 }

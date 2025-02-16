@@ -44,8 +44,7 @@ export default class UsersController {
         }
     }
 
-    async logout({ auth, response, session }: HttpContext) {
-        console.log(session.get('tokenData'))
+    async logout({ auth, response }: HttpContext) {
         const user = auth.getUserOrFail()
 
         await user_service.updateUserLogoutTime(user.userId)
@@ -124,15 +123,15 @@ export default class UsersController {
 
     async inactivateUser({ params, response, bouncer }: HttpContext) {
         const userId = params.userId
+        const payload = await userIdValidator.validate({
+            userId: userId
+        })
 
-        await bouncer.with('UserPolicy').authorize('inactive' , userId)
+        await bouncer.with('UserPolicy').authorize('inactive' , payload.userId)
 
         if (await bouncer.denies(isAccess, app.defaultDelete, this.defaultActivityId)) {
             throw new ForbiddenException()
         }
-        const payload = await userIdValidator.validate({
-            userId: userId
-        })
 
         await user_service.inactivateUser(payload.userId)
         return response.status(200).json({ message: 'User has been inactivated.' })

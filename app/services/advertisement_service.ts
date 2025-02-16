@@ -6,6 +6,7 @@ import time_service from './time_service.js'
 import AdsPackage from '#models/ads_package'
 import HandlerException from '#exceptions/handler_exception'
 import { DateTime } from 'luxon'
+import BadRequestException from '#exceptions/badrequest_exception'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
     try {
@@ -116,9 +117,11 @@ const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementD
 const approveAds = async (adsId: number, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
+
         if (ads.status === 'A') {
-            return { isAlreadyApproved: true }
+            throw new BadRequestException('Advertisement is already approved.')
         }
+
         ads.status = 'A'
         ads.approveDate = time_service.getDateTime()
         ads.approveUser = userId

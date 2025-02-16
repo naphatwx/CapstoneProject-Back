@@ -1,4 +1,5 @@
 import HandlerException from "#exceptions/handler_exception"
+import NotFoundException from "#exceptions/notfound_exception"
 import Role from "#models/role"
 import { RolesDTO } from "../dtos/role_dto.js"
 
@@ -16,7 +17,7 @@ const getRolesById = async (roleId: number) => {
         const roles = await Role.query().where('roleId', roleId).preload('activity')
 
         if (roles.length === 0) {
-            throw new HandlerException(404, 'Roles not found.')
+            throw new NotFoundException('Roles not found.')
         }
 
         const rolesDTO = roles.map((role) => new RolesDTO(role.toJSON()))
