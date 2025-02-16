@@ -5,19 +5,19 @@ export default class HandlerException extends Exception {
         if (!message) {
             switch (status) {
                 case 400:
-                    message = 'Bad Request'
+                    message = 'Bad Request.'
                     break
                 case 401:
-                    message = 'Unauthorized'
+                    message = 'Unauthorized.'
                     break
                 case 403:
-                    message = 'Forbidden'
+                    message = 'Access denied.'
                     break
                 case 404:
-                    message = 'Data not found'
+                    message = 'Data not found.'
                     break
                 default:
-                    message = 'Unable to connect to the database'
+                    message = 'Unable to connect to the database.'
                     break;
             }
         }

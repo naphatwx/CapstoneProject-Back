@@ -14,6 +14,11 @@ const getRoleOptions = async () => {
 const getRolesById = async (roleId: number) => {
     try {
         const roles = await Role.query().where('roleId', roleId).preload('activity')
+
+        if (roles.length === 0) {
+            throw new HandlerException(404, 'Roles not found.')
+        }
+
         const rolesDTO = roles.map((role) => new RolesDTO(role.toJSON()))
         return rolesDTO
     } catch (error) {
