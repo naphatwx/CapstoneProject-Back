@@ -1,6 +1,5 @@
 import app from "#config/app"
 import BadRequestException from "#exceptions/badrequest_exception"
-import ForbiddenException from "#exceptions/forbidden_exception"
 import HandlerException from "#exceptions/handler_exception"
 import User from "#models/user"
 import { UserDetailDTO, UserListDTO } from "../dtos/user_dto.js"

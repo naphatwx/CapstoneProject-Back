@@ -21,11 +21,11 @@ const getRolesById = async (roleId: number) => {
     }
 }
 
-const getRoleByRoleIdAndAbilityId = async (roleId: number, abilityId: number) => {
+const getRoleByRoleIdAndActivityId = async (roleId: number, activityId: number) => {
     try {
         const role = await Role.query()
             .where('roleId', roleId)
-            .where('activityId', abilityId)
+            .where('activityId', activityId)
             .firstOrFail()
         return role
     } catch (error) {
@@ -33,4 +33,4 @@ const getRoleByRoleIdAndAbilityId = async (roleId: number, abilityId: number) =>
     }
 }
 
-export default { getRoleOptions, getRolesById, getRoleByRoleIdAndAbilityId }
+export default { getRoleOptions, getRolesById, getRoleByRoleIdAndActivityId }

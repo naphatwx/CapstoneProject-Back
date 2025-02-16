@@ -3,7 +3,7 @@ export class RolesDTO {
     roleName: string | null
     activityId: number | null
     activityName: string | null
-    viewd: boolean
+    viewed: boolean
     created: boolean
     updated: boolean
     deleted: boolean
@@ -15,7 +15,7 @@ export class RolesDTO {
         this.roleName = data.roleName || null
         this.activityId = data.activity.activityId || null
         this.activityName = data.activity.activityName || null
-        this.viewd = data.viewd || false
+        this.viewed = data.viewed || false
         this.created = data.created || false
         this.updated = data.updated || false
         this.deleted = data.deleted || false

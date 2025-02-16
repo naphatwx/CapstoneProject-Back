@@ -22,7 +22,7 @@ export const editUser = Bouncer.ability(() => {
 })
 
 export const isAccess = Bouncer.ability(async (user: User, field: string, abilityId: number) => {
-    const role = await role_service.getRoleByRoleIdAndAbilityId(user.userRole.roleId, abilityId)
+    const role = await role_service.getRoleByRoleIdAndActivityId(user.userRole.roleId, abilityId)
     switch (field) {
         case 'viewed':
             return role.viewed
