@@ -62,6 +62,7 @@ const getOnlyUserById = async (userId: string) => {
 const createUser = async (data: any, updatedUserId: string) => {
     try {
         const newUser = setValue(new User(), data, updatedUserId)
+        newUser.status = true
         await newUser.save()
 
         await user_role_service.createUserRole(newUser.userId, data.roleId)
