@@ -1,6 +1,8 @@
 import User from '#models/user'
 import vine from '@vinejs/vine'
 
+const regexNumberOnly = /^\d+$/
+
 export const userIdValidator = vine.compile(vine.object({
     userId: vine.string().maxLength(12)
 }))
@@ -14,7 +16,7 @@ export const createUserValidator = vine.compile(vine.object({
     firstname: vine.string().trim().maxLength(100),
     lastname: vine.string().trim().maxLength(100),
     email: vine.string().trim().maxLength(100).email().normalizeEmail(),
-    telphone: vine.string().trim().maxLength(100),
+    telphone: vine.string().trim().maxLength(100).regex(regexNumberOnly),
     roleId: vine.number(),
 }))
 
@@ -34,6 +36,6 @@ export const updateUserValidator = vine.compile(vine.object({
     firstname: vine.string().trim().maxLength(100),
     lastname: vine.string().trim().maxLength(100),
     email: vine.string().trim().maxLength(100).email().normalizeEmail(),
-    telphone: vine.string().trim().maxLength(100),
+    telphone: vine.string().trim().maxLength(100).regex(regexNumberOnly),
     roleId: vine.number(),
 }))
