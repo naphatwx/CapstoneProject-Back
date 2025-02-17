@@ -1,5 +1,6 @@
 import app from "#config/app"
 import BadRequestException from "#exceptions/badrequest_exception"
+import ForbiddenException from "#exceptions/forbidden_exception"
 import HandlerException from "#exceptions/handler_exception"
 import User from "#models/user"
 import { UserDetailDTO, UserListDTO } from "../dtos/user_dto.js"
@@ -76,6 +77,11 @@ const createUser = async (data: any, updatedUserId: string) => {
 const updateUser = async (userId: string, data: any, updatedUserId: string) => {
     try {
         const user = await User.query().where('userId', userId).firstOrFail()
+
+        if (user.status === false) {
+            throw new ForbiddenException('This user is inactive and cannot perform this action.')
+        }
+
         const newUser = setValue(user, data, updatedUserId)
         await newUser.save()
 
