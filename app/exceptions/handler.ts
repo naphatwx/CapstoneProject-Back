@@ -15,8 +15,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
      */
     async handle(error: any, ctx: HttpContext) {
         if (error instanceof errors.E_VALIDATION_ERROR) {
-            return ctx.response.status(400).send({
-                message: 'Validate Failure',
+            return ctx.response.status(error.status).send({
+                message: error.message,
                 details: error.messages,
             })
         }
@@ -48,7 +48,6 @@ export default class HttpExceptionHandler extends ExceptionHandler {
                 details: error.message,
             })
         }
-
 
         if (error.status === 500) {
             return ctx.response.status(500).send({

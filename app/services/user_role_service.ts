@@ -23,9 +23,7 @@ const createUserRole = async (userId: string, roleId: number) => {
 
 const updateUserRole = async (userId: string, roleId: number) => {
     try {
-        const userRole = await UserRole.query().where('userId', userId).firstOrFail()
-        userRole.roleId = roleId
-        await userRole.save()
+        await UserRole.query().where('userId', userId).update({ roleId })
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
