@@ -23,7 +23,7 @@ export const createUserValidator = vine.compile(vine.object({
 export const updateUserValidator = vine.compile(vine.object({
     oldUserId: vine.string().trim().maxLength(12),
     comCode: vine.string().trim().maxLength(12),
-    userId: vine.string().trim().maxLength(12).unique(async (db, value, {parent}) => {
+    userId: vine.string().trim().maxLength(12).unique(async (db, value, { parent }) => {
         const oldUserId = parent.oldUserId
 
         if (oldUserId === value) {

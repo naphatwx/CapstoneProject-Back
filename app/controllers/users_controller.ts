@@ -1,20 +1,18 @@
-import ForbiddenException from '#exceptions/forbidden_exception'
 import UnauthorizedException from '#exceptions/unauthorized_exception'
 import user_service from '#services/user_service'
-import { paginationAndSearchValidator } from '#validators/pagination'
+import { pageAndSearchValidator } from '#validators/pagination'
 import { createUserValidator, updateUserValidator, userIdValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import axios from 'axios'
 import { isAccess } from '#abilities/main'
 import app from '#config/app'
+import ForbiddenException from '#exceptions/forbidden_exception'
 
 export default class UsersController {
-    private defaultActivityId: number = 2
+    private userActivityId: number = 2
 
     async login({ auth, request, session }: HttpContext) {
         const { userId, password } = request.all()
-
-        const user = await user_service.getOnlyUserById(userId)
         let responseAPI
         try {
             const loginURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Account/CMSLogin'
@@ -29,38 +27,30 @@ export default class UsersController {
             throw new UnauthorizedException('Password is not correct.')
         }
 
-
-        if (responseAPI.status === 200) {
+        const user = await user_service.getOnlyUserById(userId)
+        if (user.status) {
             session.put('tokenData', responseAPI.data.data)
-
-            if (user.status) {
-                await user_service.updateUserLoginTime(userId)
-                return await auth.use('jwt').generate(user)
-            } else {
-                throw new ForbiddenException('User is not active.')
-            }
+            await user_service.updateUserLoginTime(userId)
+            return await auth.use('jwt').generate(user)
         } else {
-            throw new UnauthorizedException('Password is not correct.')
+            throw new ForbiddenException('User is inactive.')
         }
     }
 
     async logout({ auth, response }: HttpContext) {
         const user = auth.getUserOrFail()
-
         await user_service.updateUserLogoutTime(user.userId)
         return response.status(200).json({ message: 'Logout successfully.' })
     }
 
     async getUsers({ request, response, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultView, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultView, this.userActivityId)
 
         const page: number = request.input('page') || app.defaultPage
         const perPage: number = request.input('perPage') || app.defaultPerPage
         const search: string = request.input('search') || ''
 
-        const payload = await paginationAndSearchValidator.validate({
+        const payload = await pageAndSearchValidator.validate({
             page: page,
             perPage: perPage,
             search: search
@@ -71,9 +61,7 @@ export default class UsersController {
     }
 
     async getUserById({ params, response, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultView, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultView, this.userActivityId)
 
         const userId = params.userId
         const payload = await userIdValidator.validate({
@@ -85,22 +73,18 @@ export default class UsersController {
     }
 
     async createUser({ request, response, auth, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultCreate, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultCreate, this.userActivityId)
 
         const data = request.all()
         const user = auth.getUserOrFail()
         const payload = await createUserValidator.validate(data)
 
         await user_service.createUser(payload, user.userId)
-        return response.status(201).json({ message: 'User is created.' })
+        return response.status(201).json({ message: 'User has been created.' })
     }
 
     async updateUser({ params, request, response, auth, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultUpdate, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultUpdate, this.userActivityId)
 
         const userId = params.userId
         const data = request.all()
@@ -118,20 +102,18 @@ export default class UsersController {
         })
 
         await user_service.updateUser(userId, payload, user.userId)
-        return response.status(200).json({ message: 'User is updated.' })
+        return response.status(200).json({ message: 'User has been updated.' })
     }
 
     async inactivateUser({ params, response, bouncer }: HttpContext) {
+        await bouncer.authorize(isAccess, app.defaultDelete, this.userActivityId)
+
         const userId = params.userId
         const payload = await userIdValidator.validate({
             userId: userId
         })
 
-        await bouncer.with('UserPolicy').authorize('inactive' , payload.userId)
-
-        if (await bouncer.denies(isAccess, app.defaultDelete, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.with('UserPolicy').authorize('inactivate', payload.userId)
 
         await user_service.inactivateUser(payload.userId)
         return response.status(200).json({ message: 'User has been inactivated.' })

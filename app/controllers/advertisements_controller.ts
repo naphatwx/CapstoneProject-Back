@@ -2,19 +2,16 @@ import advertisement_service from '#services/advertisement_service'
 import { adsIdValidator, createUpdateAdvertisementValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
 import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
-import { paginationAndSearchValidator } from '#validators/pagination'
+import { pageAndSearchValidator } from '#validators/pagination'
 import BadRequestException from '#exceptions/badrequest_exception'
-import ForbiddenException from '#exceptions/forbidden_exception'
 import { isAccess } from '#abilities/main'
 import app from '#config/app'
 
 export default class AdvertisementsController {
-    private defaultActivityId = 1
+    private adsActivityId = 1
 
     async getAds({ request, response, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultView, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultView, this.adsActivityId)
 
         const page: number = request.input('page') || app.defaultPage
         const perPage: number = request.input('perPage') || app.defaultPerPage
@@ -26,15 +23,13 @@ export default class AdvertisementsController {
             search: search
         }
 
-        const payload = await paginationAndSearchValidator.validate(data)
+        const payload = await pageAndSearchValidator.validate(data)
         const adsList = await advertisement_service.getAdsList(payload.page, payload.perPage, payload.search)
         return response.ok(adsList)
     }
 
     async getAdsDetail({ params, response, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultView, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultView, this.adsActivityId)
 
         const adsId = params.adsId
         const paylaod = await adsIdValidator.validate({
@@ -46,9 +41,7 @@ export default class AdvertisementsController {
     }
 
     async storeAds({ request, response, auth, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultCreate, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultCreate, this.adsActivityId)
 
         const data = request.body()
         const user = auth.getUserOrFail()
@@ -66,9 +59,7 @@ export default class AdvertisementsController {
     }
 
     async updateAds({ params, request, response, auth, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultUpdate, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultUpdate, this.adsActivityId)
 
         const adsId = params.adsId
         const data = request.body()
@@ -87,16 +78,12 @@ export default class AdvertisementsController {
     }
 
     async approveAds({ params, response, auth, bouncer }: HttpContext) {
-        if (await bouncer.denies(isAccess, app.defaultUpdate, this.defaultActivityId)) {
-            throw new ForbiddenException()
-        }
+        await bouncer.authorize(isAccess, app.defaultUpdate, this.adsActivityId)
 
         const adsId = params.adsId
         const user = auth.getUserOrFail()
 
         await advertisement_service.approveAds(adsId, user.userId)
-        return response.status(200).json({
-            message: 'Approved advertisement successfully.'
-        })
+        return response.status(200).json({ message: 'Approved advertisement successfully.' })
     }
 }

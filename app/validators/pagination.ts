@@ -1,6 +1,6 @@
 import vine from '@vinejs/vine'
 
-export const paginationAndSearchValidator = vine.compile(
+export const pageAndSearchValidator = vine.compile(
     vine.object({
         page: vine.number(),
         perPage: vine.number(),
