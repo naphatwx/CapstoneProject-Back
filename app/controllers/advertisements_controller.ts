@@ -49,13 +49,13 @@ export default class AdvertisementsController {
         const payload = await createUpdateAdvertisementValidator.validate(data)
         const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
 
-        if (!result.result) {
+        if (!result.isSuccess) {
             throw new BadRequestException(result.message)
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
         await advertisement_service.createAds(adsDTO, user.userId)
-        return response.status(201).json({ message: 'Created advertisement successfully.' })
+        return response.status(201).json({ message: 'Advertisement has been created.' })
     }
 
     async updateAds({ params, request, response, auth, bouncer }: HttpContext) {
@@ -68,13 +68,13 @@ export default class AdvertisementsController {
         const payload = await createUpdateAdvertisementValidator.validate(data)
         const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
 
-        if (!result.result) {
+        if (!result.isSuccess) {
             throw new BadRequestException(result.message)
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
         await advertisement_service.updateAds(adsId, adsDTO, user.userId)
-        return response.status(200).json({ message: 'Updated advertisement successfully.' })
+        return response.status(200).json({ message: 'Advertisement has been updated.' })
     }
 
     async approveAds({ params, response, auth, bouncer }: HttpContext) {
@@ -84,6 +84,6 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         await advertisement_service.approveAds(adsId, user.userId)
-        return response.status(200).json({ message: 'Approved advertisement successfully.' })
+        return response.status(200).json({ message: 'Advertisement has been approved.' })
     }
 }

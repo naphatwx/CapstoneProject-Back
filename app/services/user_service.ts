@@ -16,12 +16,8 @@ const getUsers = async (page: number, perPage: number, search: string) => {
             .paginate(page, perPage)
 
         await Promise.all(users.all().map(async (user) => {
-            if (user.comCode) {
-                await user.load('company')
-            }
-            if (user.updatedUser) {
-                await user.load('userUpdate')
-            }
+            if (user.comCode) await user.load('company')
+            if (user.updatedUser) await user.load('userUpdate')
         }))
 
         const usersDTO = users.all().map((user) => new UserListDTO(user.toJSON()))
@@ -37,12 +33,8 @@ const getUserById = async (userId: string) => {
             .where('userId', userId)
             .firstOrFail()
 
-        if (user.comCode) {
-            await user.load('company')
-        }
-        if (user.updatedUser) {
-            await user.load('userUpdate')
-        }
+        if (user.comCode) await user.load('company')
+        if (user.updatedUser) await user.load('userUpdate')
 
         const userDTO = new UserDetailDTO(user)
         return userDTO
@@ -131,14 +123,16 @@ const inactivateUser = async (userId: string) => {
     try {
         if (await user_role_service.isLastAdmin()) {
             throw new BadRequestException('Cannot inactivate last admin.')
-        } else {
-            const user = await User.query().where('userId', userId).firstOrFail()
-            if (user.status === false) {
-                throw new BadRequestException('User is already inactive.')
-            }
-            user.status = false
-            await user.save()
         }
+
+        const user = await User.query().where('userId', userId).firstOrFail()
+
+        if (user.status === false) {
+            throw new BadRequestException('User is already inactive.')
+        }
+
+        user.status = false
+        await user.save()
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
