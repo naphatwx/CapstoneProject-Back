@@ -9,7 +9,7 @@ import app from '#config/app'
 import ForbiddenException from '#exceptions/forbidden_exception'
 
 export default class UsersController {
-    private userActivityId: number = 2
+    private userActivityId = 2
 
     async login({ auth, request, session }: HttpContext) {
         const { userId, password } = request.all()

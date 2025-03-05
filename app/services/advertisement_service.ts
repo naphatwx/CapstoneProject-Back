@@ -34,9 +34,7 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
             .orderBy('adsId', 'desc')
             .paginate(page, perPage)
 
-        const adsDTO: Array<AdvertisementListDTO> = adsList.all().map((ads) =>
-            new AdvertisementListDTO(ads.toJSON())
-        )
+        const adsDTO: Array<AdvertisementListDTO> = adsList.all().map((ads) => new AdvertisementListDTO(ads.toJSON()))
         return { meta: adsList.getMeta(), data: adsDTO }
     } catch (error) {
         throw new HandlerException(error.status, error.message)
@@ -66,9 +64,7 @@ const getAdsDetail = async (adsId: number) => {
             .preload('userUpdate')
             .firstOrFail()
 
-        if (ads.approveUser) {
-            await ads.load('userApprove')
-        }
+        if (ads.approveUser) await ads.load('userApprove')
 
         const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
         return adsDTO
@@ -80,14 +76,10 @@ const getAdsDetail = async (adsId: number) => {
 const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
         const ads = new Advertisement()
-
         const newAds = setAdsValue(ads, newAdsData, userId)
-
         await newAds.save()
 
-        if (newAdsData.adsPackages) {
-            await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
-        }
+        if (newAdsData.adsPackages) await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
 
         await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
         return newAds.adsId
@@ -126,7 +118,6 @@ const approveAds = async (adsId: number, userId: string) => {
         ads.approveDate = time_service.getDateTime()
         ads.approveUser = userId
         await ads.save()
-
         await log_service.createLog('Approve advertisement.', userId, ads.adsId)
     } catch (error) {
         throw new HandlerException(error.status, error.message)
@@ -138,7 +129,7 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
     const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC')
 
     const success = {
-        result: true,
+        isSuccess: true,
         message: 'Success'
     }
 
@@ -148,13 +139,13 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
                 return success
             } else {
                 return {
-                    result: false,
+                    isSuccess: false,
                     message: 'Register start date must be before register expire date.'
                 }
             }
         } else {
             return {
-                result: false,
+                isSuccess: false,
                 message: 'Register start date and register expire date must be after now.'
             }
         }
@@ -163,7 +154,7 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
             return success
         } else {
             return {
-                result: false,
+                isSuccess: false,
                 message: 'Register start date must be after now.'
             }
         }
@@ -172,7 +163,7 @@ const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
             return success
         } else {
             return {
-                result: false,
+                isSuccess: false,
                 message: 'Register expire date must be after now.'
             }
         }
@@ -200,8 +191,12 @@ const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
 const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     ads.adsName = newAdsData.adsName
     ads.adsCond = newAdsData.adsCond
-    ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveUser : (checkNewAdsStatus(newAdsData.status) ? userId : null)
-    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status) ? ads.approveDate : (checkNewAdsStatus(newAdsData.status) ? time_service.getDateTime() : null)
+    ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status)
+        ? ads.approveUser : (checkNewAdsStatus(newAdsData.status)
+            ? userId : null)
+    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status)
+        ? ads.approveDate : (checkNewAdsStatus(newAdsData.status)
+            ? time_service.getDateTime() : null)
     ads.status = newAdsData.status
     ads.periodId = newAdsData.periodId
     ads.redeemCode = newAdsData.redeemCode
