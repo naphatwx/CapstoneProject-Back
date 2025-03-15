@@ -4,7 +4,7 @@ import router from '@adonisjs/core/services/router'
 const RolesController = () => import('#controllers/roles_controller')
 
 router.group(() => {
-    router.get('', [RolesController, 'index']).as('roles.all')
+    router.get('', [RolesController, 'getRoles'])
 
-    router.get('/:roleId', [RolesController, 'getRolesById']).as('roles.byRoleId')
+    router.get('/:roleId', [RolesController, 'getRolesById'])
 }).prefix('/api/roles').use(middleware.auth())

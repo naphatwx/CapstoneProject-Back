@@ -4,19 +4,20 @@ import router from '@adonisjs/core/services/router'
 const UsersController = () => import('#controllers/users_controller')
 
 router.group(() => {
+
+    router.post('/login', [UsersController, 'login'])
+
     router.group(() => {
-        router.get('', [UsersController, 'getUsers']).as('users.all')
+        router.get('', [UsersController, 'getUsers'])
 
-        router.get('/:userId', [UsersController, 'getUserById']).as('users.details')
+        router.get('/:userId', [UsersController, 'getUserById'])
 
-        router.post('', [UsersController, 'createUser']).as('users.create')
+        router.post('', [UsersController, 'createUser'])
 
-        router.put('/:userId', [UsersController, 'updateUser']).as('users.update')
+        router.put('/:userId', [UsersController, 'updateUser'])
 
-        router.patch('/inactivate/:userId', [UsersController, 'inactivateUser']).as('users.inactive')
+        router.patch('/inactivate/:userId', [UsersController, 'inactivateUser'])
 
-        router.patch('/logout', [UsersController, 'logout']).as('users.logout')
+        router.patch('/logout', [UsersController, 'logout'])
     }).use(middleware.auth())
-
-    router.post('/login', [UsersController, 'login']).as('users.login')
 }).prefix('/api/users')
