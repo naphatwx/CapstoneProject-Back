@@ -58,7 +58,7 @@ export class AdvertisementDetailDTO {
     updatedDate: DateTime | string | null
     approveUser: string | null
     approveDate: DateTime | string | null
-    imageName: string | null
+    imageUrl: string | null
     refAdsId: number | null
     consentDesc: string | null
     recInMth: boolean
@@ -102,7 +102,7 @@ export class AdvertisementDetailDTO {
         this.updatedDate = data.updatedDate || null
         this.approveUser = data.approveUser || null
         this.approveDate = data.approveDate || null
-        this.imageName = data.imageName || null
+        this.imageUrl = data.imageName || null
         this.refAdsId = data.refAdsId || null
         this.consentDesc = data.consentDesc || null
         this.recInMth = data.recInMth || false

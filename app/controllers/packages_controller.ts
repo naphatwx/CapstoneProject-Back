@@ -3,7 +3,7 @@ import package_service from '#services/package_service'
 import { packageIdValidator } from '#validators/package'
 
 export default class PackagesController {
-    async index({ response }: HttpContext) {
+    async getPackages({ response }: HttpContext) {
         const packages = await package_service.getPackages()
         return response.ok(packages)
     }

@@ -3,7 +3,7 @@ import { roleIdValidator } from '#validators/role'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class RolesController {
-    async index({ response }: HttpContext) {
+    async getRoles({ response }: HttpContext) {
         const roles = await role_service.getRoleOptions()
         return response.ok(roles)
     }

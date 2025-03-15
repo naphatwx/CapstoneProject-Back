@@ -7,6 +7,7 @@ import AdsPackage from '#models/ads_package'
 import HandlerException from '#exceptions/handler_exception'
 import { DateTime } from 'luxon'
 import BadRequestException from '#exceptions/badrequest_exception'
+import file_service from './file_service.js'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
     try {
@@ -65,6 +66,7 @@ const getAdsDetail = async (adsId: number) => {
             .firstOrFail()
 
         if (ads.approveUser) await ads.load('userApprove')
+        if (ads.imageName) ads.imageName = await file_service.getImagePath(ads.imageName)
 
         const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
         return adsDTO
@@ -101,6 +103,19 @@ const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementD
 
         await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
         return newAds.adsId
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
+const updateAdsImage = async (adsId: number, imageName: string) => {
+    try {
+        const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
+
+        if (ads.imageName) await file_service.deleteImage(ads.imageName)
+
+        ads.imageName = imageName
+        await ads.save()
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
@@ -216,4 +231,4 @@ const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisement
     return ads
 }
 
-export default { getAdsList, getAdsDetail, createAds, updateAds, approveAds, compareDate }
+export default { getAdsList, getAdsDetail, createAds, updateAds, updateAdsImage, approveAds, compareDate }

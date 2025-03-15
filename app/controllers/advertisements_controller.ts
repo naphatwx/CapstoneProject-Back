@@ -6,6 +6,8 @@ import { pageAndSearchValidator } from '#validators/pagination'
 import BadRequestException from '#exceptions/badrequest_exception'
 import { isAccess } from '#abilities/main'
 import app from '#config/app'
+import { imageValidator } from '#validators/file'
+import file_service from '#services/file_service'
 
 export default class AdvertisementsController {
     private adsActivityId = 1
@@ -13,9 +15,9 @@ export default class AdvertisementsController {
     async getAds({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.adsActivityId)
 
-        const page: number = request.input('page') || app.defaultPage
-        const perPage: number = request.input('perPage') || app.defaultPerPage
-        const search: string = request.input('search') || ''
+        const page = request.input('page') || app.defaultPage
+        const perPage = request.input('perPage') || app.defaultPerPage
+        const search = request.input('search') || ''
 
         const data = {
             page: page,
@@ -75,6 +77,27 @@ export default class AdvertisementsController {
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
         await advertisement_service.updateAds(adsId, adsDTO, user.userId)
         return response.status(200).json({ message: 'Advertisement has been updated.' })
+    }
+
+    async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
+        const isUpdate = request.input('isUpdate') || false
+
+        if (isUpdate) await bouncer.authorize(isAccess, app.defaultUpdate, this.adsActivityId)
+        else await bouncer.authorize(isAccess, app.defaultCreate, this.adsActivityId)
+
+        const adsId = params.adsId
+        const image = request.file('image')
+
+        const payload = await imageValidator.validate({
+            image: image
+        })
+
+        if (payload.image) {
+            const imageName = await file_service.saveImage(payload.image)
+            await advertisement_service.updateAdsImage(adsId, imageName!)
+        }
+
+        return response.status(200).json({ message: 'User image is updated.' })
     }
 
     async approveAds({ params, response, auth, bouncer }: HttpContext) {
