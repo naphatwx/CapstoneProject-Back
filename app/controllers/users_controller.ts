@@ -90,16 +90,7 @@ export default class UsersController {
         const data = request.all()
         const user = auth.getUserOrFail()
 
-        const payload = await updateUserValidator.validate({
-            oldUserId: userId,
-            comCode: data.comCode,
-            userId: data.userId,
-            firstname: data.firstname,
-            lastname: data.lastname,
-            email: data.email,
-            telphone: data.telphone,
-            roleId: data.roleId
-        })
+        const payload = await updateUserValidator.validate(data)
 
         await user_service.updateUser(userId, payload, user.userId)
         return response.status(200).json({ message: 'User has been updated.' })

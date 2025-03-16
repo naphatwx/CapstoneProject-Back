@@ -6,11 +6,8 @@ export default class RegistrationsController {
         const adsIds = request.input('adsIds') || ''
         let adsIdsStr
 
-        if (typeof adsIds !== "string") {
-            adsIdsStr = adsIds.join(',')
-        } else {
-            adsIdsStr = adsIds
-        }
+        if (typeof adsIds !== "string")  adsIdsStr = adsIds.join(',')
+        else adsIdsStr = adsIds
 
         const regisCount = await db.rawQuery(`EXEC GetRegCount ?`, [adsIdsStr])
         return response.ok(regisCount)
@@ -20,5 +17,16 @@ export default class RegistrationsController {
         const adsId = params.adsId
         const adsRegisCount = await db.rawQuery('EXEC GetAdsRegisCount ?', [adsId])
         return response.ok(adsRegisCount)
+    }
+
+    async getGetNumberOfRegisAds({ request, response }: HttpContext) {
+        const status = request.input('status') || null
+        const orderField = request.input('orderField') || 'regisStrDate'
+        const isDescending = request.input('isDescending') || false
+        const periodId = request.input('periodId') || null
+        const monthYear = request.input('monthYear') || null
+
+        const data = await db.rawQuery('EXEC GetNumberOfRegisAds ?, ?, ?, ?, ?', [status, orderField, isDescending, periodId, monthYear])
+        return response.ok(data)
     }
 }

@@ -34,7 +34,8 @@ export default defineConfig({
         () => import('@adonisjs/session/session_provider'),
         () => import('@adonisjs/auth/auth_provider'),
         () => import('@adonisjs/bouncer/bouncer_provider'),
-        () => import('#providers/global_parameter_provider')
+        () => import('#providers/global_parameter_provider'),
+        () => import('@adonisjs/static/static_provider')
     ],
 
     /*
@@ -71,4 +72,8 @@ export default defineConfig({
         ],
         forceExit: false,
     },
+    metaFiles: [{
+        pattern: 'public/**',
+        reloadServer: false,
+    }]
 })

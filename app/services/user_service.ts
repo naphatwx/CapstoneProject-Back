@@ -12,7 +12,7 @@ const getUsers = async (page: number, perPage: number, search: string) => {
         const users = await User.query()
             .where('firstname', 'LIKE', `%${search}%`)
             .orWhere('lastname', 'LIKE', `%${search}%`)
-            .orderBy('userId', 'desc')
+            .orderBy('updatedDate', 'desc')
             .paginate(page, perPage)
 
         await Promise.all(users.all().map(async (user) => {
@@ -55,6 +55,7 @@ const getOnlyUserById = async (userId: string) => {
 const createUser = async (data: any, updatedUserId: string) => {
     try {
         const newUser = setValue(new User(), data, updatedUserId)
+        newUser.userId = data.userId
         newUser.status = true
         await newUser.save()
 
@@ -87,7 +88,6 @@ const updateUser = async (userId: string, data: any, updatedUserId: string) => {
 
 const setValue = (user: User, data: any, updatedUserId: string) => {
     user.comCode = data.comCode
-    user.userId = data.userId
     user.firstname = data.firstname
     user.lastname = data.lastname
     user.email = data.email
@@ -121,15 +121,11 @@ const updateUserLogoutTime = async (userId: string) => {
 
 const inactivateUser = async (userId: string) => {
     try {
-        if (await user_role_service.isLastAdmin()) {
-            throw new BadRequestException('Cannot inactivate last admin.')
-        }
+        if (await user_role_service.isLastAdmin()) throw new BadRequestException('Cannot inactivate last admin.')
 
         const user = await User.query().where('userId', userId).firstOrFail()
 
-        if (user.status === false) {
-            throw new BadRequestException('User is already inactive.')
-        }
+        if (user.status === false) throw new BadRequestException('User is already inactive.')
 
         user.status = false
         await user.save()
