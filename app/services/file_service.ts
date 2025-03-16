@@ -4,14 +4,12 @@ import app from "@adonisjs/core/services/app"
 import fs from 'node:fs'
 import HandlerException from "#exceptions/handler_exception"
 
-const getImagePath = async (imageName: string) => {
-    const path = app.makePath('storage/uploads', imageName)
-    console.log(path)
-    return path
+const getImageUrl = async (imageName: string) => {
+    return `${process.env.APP_URL}/uploads/${imageName}`
 }
 
 const saveImage = async (image: MultipartFile) => {
-    await image.move(app.makePath('storage/uploads'), {
+    await image.move(app.makePath('public/uploads'), {
         name: `${cuid()}.${image.extname}`
     })
 
@@ -21,7 +19,7 @@ const saveImage = async (image: MultipartFile) => {
 const deleteImage = async (imageName: string) => {
     try {
         if (imageName) {
-            const absolutePath = app.makePath('storage/uploads', imageName)
+            const absolutePath = app.makePath('public/uploads', imageName)
 
             if (fs.existsSync(absolutePath)) {
                 await fs.promises.unlink(absolutePath);
@@ -32,4 +30,4 @@ const deleteImage = async (imageName: string) => {
     }
 }
 
-export default { getImagePath, saveImage, deleteImage }
+export default { getImageUrl, saveImage, deleteImage }

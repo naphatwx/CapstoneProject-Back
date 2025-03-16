@@ -66,7 +66,7 @@ const getAdsDetail = async (adsId: number) => {
             .firstOrFail()
 
         if (ads.approveUser) await ads.load('userApprove')
-        if (ads.imageName) ads.imageName = await file_service.getImagePath(ads.imageName)
+        if (ads.imageName) ads.imageName = await file_service.getImageUrl(ads.imageName)
 
         const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
         return adsDTO

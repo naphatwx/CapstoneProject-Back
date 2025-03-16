@@ -9,7 +9,7 @@ const regesDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 export const createUpdateAdvertisementValidator = vine.compile(
     vine.object({
         adsName: vine.string().trim().maxLength(500),
-        adsCond: vine.string().trim().maxLength(500),
+        adsCond: vine.string().trim(),
         status: vine.string().trim().maxLength(2),
         periodId: vine.number(),
         redeemCode: vine.string().trim().maxLength(100),
