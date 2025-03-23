@@ -6,6 +6,10 @@ const AdsController = () => import('#controllers/advertisements_controller')
 router.group(() => {
     router.get('', [AdsController, 'getAds'])
 
+    router.get('/oldest', [AdsController, 'getOldestAdsRegisDate'])
+
+    router.get('/export', [AdsController, 'exportAdsExcel'])
+
     router.get('/:adsId', [AdsController, 'getAdsDetail'])
 
     router.post('', [AdsController, 'storeAds'])

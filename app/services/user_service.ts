@@ -92,7 +92,7 @@ const setValue = (user: User, data: any, updatedUserId: string) => {
     user.lastname = data.lastname
     user.email = data.email
     user.telphone = data.telphone
-    user.updatedDate = time_service.getDateTime()
+    user.updatedDate = time_service.getDateTimeNow()
     user.updatedUser = updatedUserId
 
     return user
@@ -101,8 +101,8 @@ const setValue = (user: User, data: any, updatedUserId: string) => {
 const updateUserLoginTime = async (userId: string) => {
     try {
         const user = await User.query().where('userId', userId).firstOrFail()
-        user.loginTime = time_service.getDateTime()
-        user.logoutTime = time_service.getDateTime(app.tokenExpiration)
+        user.loginTime = time_service.getDateTimeNow()
+        user.logoutTime = time_service.getDateTimeNow(app.tokenExpiration)
         await user.save()
     } catch (error) {
         throw new HandlerException(error.status, error.message)
@@ -112,7 +112,7 @@ const updateUserLoginTime = async (userId: string) => {
 const updateUserLogoutTime = async (userId: string) => {
     try {
         const user = await User.query().where('userId', userId).firstOrFail()
-        user.logoutTime = time_service.getDateTime()
+        user.logoutTime = time_service.getDateTimeNow()
         await user.save()
     } catch (error) {
         throw new HandlerException(error.status, error.message)

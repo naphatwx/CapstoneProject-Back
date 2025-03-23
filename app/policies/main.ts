@@ -13,5 +13,6 @@
 */
 
 export const policies = {
+    AdvertisementPolicy: () => import('#policies/advertisement_policy'),
     UserPolicy: () => import('#policies/user_policy')
 }

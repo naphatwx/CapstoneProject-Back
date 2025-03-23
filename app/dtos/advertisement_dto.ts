@@ -173,6 +173,50 @@ export class AdvertisementDetailDTO {
     }
 }
 
+export class AdvertisementExportDTO {
+    adsId: number | null
+    adsName: string | null
+    status: string | null
+    period: string | null
+    redeemCode: string | null
+    package: string | null
+    regisLimit: number | null
+    updatedUser: string | null
+    updatedDate: string | null
+    approveUser: string | null
+    approveDate: string | null
+    consentDesc: string | null
+    refAdsId: number | null
+    rgsStrDate: string | null
+    rgsExpDate: string | null
+    recInMth: boolean
+    recNextMth: boolean
+    nextMth: number | null
+    totalRegis: number | null
+
+    constructor(data: any, totalRegis: number) {
+        this.adsId = data.adsId || null
+        this.adsName = data.adsName || null
+        this.status = data.status || null
+        this.period = data.period?.periodDesc || null
+        this.redeemCode = data.redeemCode || null
+        this.package = data.packageDesc || null
+        this.regisLimit = data.regisLimit || null
+        this.updatedUser = data.userUpdate?.firstname + ' ' + data.userUpdate?.lastname || null
+        this.updatedDate = data.updatedDate || null
+        this.approveUser = data.userApprove ? data.userApprove?.firstname + ' ' + data.userApprove?.lastname : null
+        this.approveDate = data.approveDate || null
+        this.consentDesc = data.consentDesc || null
+        this.refAdsId = data.refAdsId || null
+        this.rgsStrDate = data.rgsStrDate || null
+        this.rgsExpDate = data.rgsExpDate || null
+        this.recInMth = data.recInMth || false
+        this.recNextMth = data.recNextMth || false
+        this.nextMth = data.nextMth || null
+        this.totalRegis = totalRegis || 0
+    }
+}
+
 export class CreateOrUpdateAdvertisementDTO {
     adsName: string
     adsCond: string

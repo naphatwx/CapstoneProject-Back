@@ -5,7 +5,7 @@ import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 import { pageAndSearchValidator } from '#validators/pagination'
 import BadRequestException from '#exceptions/badrequest_exception'
 import { isAccess } from '#abilities/main'
-import app from '#config/app'
+import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
 import file_service from '#services/file_service'
 
@@ -13,10 +13,10 @@ export default class AdvertisementsController {
     private adsActivityId = 1
 
     async getAds({ request, response, bouncer }: HttpContext) {
-        await bouncer.authorize(isAccess, app.defaultView, this.adsActivityId)
+        await bouncer.authorize(isAccess, appConfig.defaultView, this.adsActivityId)
 
-        const page = request.input('page') || app.defaultPage
-        const perPage = request.input('perPage') || app.defaultPerPage
+        const page = request.input('page') || appConfig.defaultPage
+        const perPage = request.input('perPage') || appConfig.defaultPerPage
         const search = request.input('search') || ''
 
         const data = {
@@ -31,7 +31,7 @@ export default class AdvertisementsController {
     }
 
     async getAdsDetail({ params, response, bouncer }: HttpContext) {
-        await bouncer.authorize(isAccess, app.defaultView, this.adsActivityId)
+        await bouncer.authorize(isAccess, appConfig.defaultView, this.adsActivityId)
 
         const adsId = params.adsId
         const paylaod = await adsIdValidator.validate({
@@ -42,8 +42,13 @@ export default class AdvertisementsController {
         return response.ok(ads)
     }
 
+    async getOldestAdsRegisDate({ response }: HttpContext) {
+        const ads = await advertisement_service.getOldestAdsRegisDate()
+        return response.ok(ads)
+    }
+
     async storeAds({ request, response, auth, bouncer }: HttpContext) {
-        await bouncer.authorize(isAccess, app.defaultCreate, this.adsActivityId)
+        await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
 
         const data = request.body()
         const user = auth.getUserOrFail()
@@ -61,17 +66,23 @@ export default class AdvertisementsController {
     }
 
     async updateAds({ params, request, response, auth, bouncer }: HttpContext) {
-        await bouncer.authorize(isAccess, app.defaultUpdate, this.adsActivityId)
+        await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
 
         const adsId = params.adsId
         const data = request.body()
         const user = auth.getUserOrFail()
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
-        const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
 
-        if (!result.isSuccess) {
-            throw new BadRequestException(result.message)
+        const ads = await advertisement_service.getAdsDetail(adsId)
+
+        if (ads.status === 'A') {
+            await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
+            const result = advertisement_service.compareDate(null, payload.rgsExpDate)
+
+            if (!result.isSuccess) {
+                throw new BadRequestException(result.message)
+            }
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
@@ -82,8 +93,8 @@ export default class AdvertisementsController {
     async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
         const isUpdate = request.input('isUpdate') || false
 
-        if (isUpdate) await bouncer.authorize(isAccess, app.defaultUpdate, this.adsActivityId)
-        else await bouncer.authorize(isAccess, app.defaultCreate, this.adsActivityId)
+        if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
+        else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
 
         const adsId = params.adsId
         const image = request.file('image')
@@ -101,12 +112,29 @@ export default class AdvertisementsController {
     }
 
     async approveAds({ params, response, auth, bouncer }: HttpContext) {
-        await bouncer.authorize(isAccess, app.defaultUpdate, this.adsActivityId)
+        await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
 
         const adsId = params.adsId
         const user = auth.getUserOrFail()
 
         await advertisement_service.approveAds(adsId, user.userId)
         return response.status(200).json({ message: 'Advertisement has been approved.' })
+    }
+
+    async exportAdsExcel({ request, response, bouncer }: HttpContext) {
+        await bouncer.authorize(isAccess, appConfig.defaultExport, this.adsActivityId)
+
+        const adsIds: number[] = request.input('adsIds')
+        const sort: string = request.input('sort')
+        const isDescending: boolean = request.input('isDescending')
+
+        const data = await advertisement_service.getAdsExport(adsIds, sort, isDescending)
+        if (data.length === 0) {
+            return response.status(404).json({ message: 'No data to export.' })
+        }
+        const filePath = await file_service.exportExcel(data, 'Advertisements', 'ads')
+
+        // Send file response
+        return response.download(filePath);
     }
 }
