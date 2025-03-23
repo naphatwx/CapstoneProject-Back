@@ -1,5 +1,5 @@
 import Advertisement from '#models/advertisement'
-import { AdvertisementDetailDTO, AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
+import { AdvertisementDetailDTO, AdvertisementExportDTO, AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 import ads_package_service from './ads_package_service.js'
 import log_service from './log_service.js'
 import time_service from './time_service.js'
@@ -35,7 +35,9 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
             .orderBy('adsId', 'desc')
             .paginate(page, perPage)
 
-        const adsDTO: Array<AdvertisementListDTO> = adsList.all().map((ads) => new AdvertisementListDTO(ads.toJSON()))
+        const adsDTO: AdvertisementListDTO[] = adsList.all().map((ads) =>
+            new AdvertisementListDTO(ads.toJSON())
+        )
         return { meta: adsList.getMeta(), data: adsDTO }
     } catch (error) {
         throw new HandlerException(error.status, error.message)
@@ -75,13 +77,81 @@ const getAdsDetail = async (adsId: number) => {
     }
 }
 
+const getOldestAdsRegisDate = async () => {
+    try {
+        const ads = await Advertisement.query()
+            .whereNotNull('rgsStrDate')
+            .where('rgsStrDate', '!=', '')
+            .orderBy('rgsStrDate', 'asc')
+            .first()
+
+        if (ads && ads.rgsStrDate) {
+            const date = time_service.getDateTimeAsObject(ads.rgsStrDate as string)
+            return {
+                adsId: ads.adsId,
+                ...date
+            }
+        }
+        return ads
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
+const getAdsExport = async (adsIds: number[] = [], sort: string = 'adsId', isDescending: boolean = false) => {
+    try {
+        const query = await Advertisement.query()
+            .preload('period', (periodQuery) => {
+                periodQuery.where('status', true)
+            })
+            .preload('packages', (packageQuery) => {
+                packageQuery.where('status', true)
+            })
+            .preload('adsPackages')
+            .preload('userUpdate')
+            .withCount('registrations', (registrationQuery) => {
+                registrationQuery.as('totalRegis')
+            })
+            .orderBy(sort, isDescending ? 'desc' : 'asc')
+
+        let adsList
+        if (adsIds.length > 0) {
+            const numericAdsIds = adsIds.map(Number)
+            adsList = query.filter((ads) => numericAdsIds.includes(ads.adsId))
+        } else {
+            adsList = query
+        }
+
+        const adsDTO = await Promise.all(
+            adsList.map(async (ads) => {
+                if (ads.approveUser) await ads.load('userApprove')
+
+                const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
+                if (ads.updatedDate) ads.updatedDate = time_service.changeDateTimeFormat(ads.updatedDate, dateTimeFormat)
+                if (ads.approveDate) ads.approveDate = time_service.changeDateTimeFormat(ads.approveDate, dateTimeFormat)
+                if (ads.rgsStrDate) ads.rgsStrDate = time_service.changeDateTimeFormat(ads.rgsStrDate, dateTimeFormat)
+                if (ads.rgsExpDate) ads.rgsExpDate = time_service.changeDateTimeFormat(ads.rgsExpDate, dateTimeFormat)
+
+                return new AdvertisementExportDTO(ads.toJSON(), ads.$extras.totalRegis)
+            })
+        )
+
+        return adsDTO
+    }
+    catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
 const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
         const ads = new Advertisement()
         const newAds = setAdsValue(ads, newAdsData, userId)
         await newAds.save()
 
-        if (newAdsData.adsPackages) await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
+        if (newAdsData.adsPackages) {
+            await ads_package_service.createAdsPackage(newAdsData.adsPackages, newAds.adsId)
+        }
 
         await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
         return newAds.adsId
@@ -112,7 +182,9 @@ const updateAdsImage = async (adsId: number, imageName: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
-        if (ads.imageName) await file_service.deleteImage(ads.imageName)
+        if (ads.imageName) {
+            await file_service.deleteImage(ads.imageName)
+        }
 
         ads.imageName = imageName
         await ads.save()
@@ -130,7 +202,7 @@ const approveAds = async (adsId: number, userId: string) => {
         }
 
         ads.status = 'A'
-        ads.approveDate = time_service.getDateTime()
+        ads.approveDate = time_service.getDateTimeNow()
         ads.approveUser = userId
         await ads.save()
         await log_service.createLog('Approve advertisement.', userId, ads.adsId)
@@ -140,8 +212,8 @@ const approveAds = async (adsId: number, userId: string) => {
 }
 
 const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
-    const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC')
-    const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC')
+    const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC') || null
+    const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC') || null
 
     const success = {
         isSuccess: true,
@@ -211,24 +283,34 @@ const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisement
             ? userId : null)
     ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status)
         ? ads.approveDate : (checkNewAdsStatus(newAdsData.status)
-            ? time_service.getDateTime() : null)
+            ? time_service.getDateTimeNow() : null)
     ads.status = newAdsData.status
     ads.periodId = newAdsData.periodId
     ads.redeemCode = newAdsData.redeemCode
     ads.packageId = newAdsData.packageId
     ads.regisLimit = newAdsData.regisLimit
     ads.updatedUser = userId
-    ads.updatedDate = time_service.getDateTime()
+    ads.updatedDate = time_service.getDateTimeNow()
     ads.imageName = newAdsData.imageName
     ads.refAdsId = newAdsData.refAdsId
     ads.consentDesc = newAdsData.consentDesc
     ads.recInMth = newAdsData.recInMth
     ads.recNextMth = newAdsData.recNextMth
     ads.nextMth = newAdsData.nextMth
-    ads.rgsStrDate = newAdsData.rgsStrDate == null ? null : time_service.changeDateTimeFormat(newAdsData.rgsStrDate)
-    ads.rgsExpDate = newAdsData.rgsExpDate == null ? null : time_service.changeDateTimeFormat(newAdsData.rgsExpDate)
+    ads.rgsStrDate = newAdsData.rgsStrDate === null ? null : time_service.changeDateTimeFormat(newAdsData.rgsStrDate)
+    ads.rgsExpDate = newAdsData.rgsExpDate === null ? null : time_service.changeDateTimeFormat(newAdsData.rgsExpDate)
 
     return ads
 }
 
-export default { getAdsList, getAdsDetail, createAds, updateAds, updateAdsImage, approveAds, compareDate }
+export default {
+    getAdsList,
+    getAdsDetail,
+    getOldestAdsRegisDate,
+    getAdsExport,
+    createAds,
+    updateAds,
+    updateAdsImage,
+    approveAds,
+    compareDate
+}

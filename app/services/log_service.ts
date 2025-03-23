@@ -7,7 +7,7 @@ const createLog = async (logHeader: string, userId: string, adsId: number) => {
         const log = await Log.create({
             logHeader: logHeader,
             updatedUser: userId,
-            updatedDate: time_service.getDateTime(),
+            updatedDate: time_service.getDateTimeNow(),
             adsId: adsId
         })
 

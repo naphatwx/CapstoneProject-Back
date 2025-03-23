@@ -7,6 +7,7 @@ import Log from './log.js'
 import User from './user.js'
 import AdsPackage from './ads_package.js'
 import mediaService from '#services/media_service'
+import Registration from './registration.js'
 
 export default class Advertisement extends BaseModel {
     public static table = 'CMS_MASTER_ADS'
@@ -107,18 +108,28 @@ export default class Advertisement extends BaseModel {
     })
     declare logs: HasMany<typeof Log>
 
+    @hasMany(() => Registration, {
+        foreignKey: 'adsId',
+        localKey: 'adsId',
+    })
+    declare registrations: HasMany<typeof Registration>
+
     @computed()
     public get packageDesc() {
-        return `${this.packages[0].packageDesc}`
+        if (this.packages) {
+            return `${this.packages[0].packageDesc}`
+        }
     }
 
     @computed()
     public get medias() {
-        if (!this.packages[0].media) {
-            return
-        }
+        if (this.packages) {
+            if (!this.packages[0].media) {
+                return
+            }
 
-        return mediaService.changeMediaFormat(this.packages)
+            return mediaService.changeMediaFormat(this.packages)
+        }
     }
 
     // Override toJSON to exclude `packages` from serialization
