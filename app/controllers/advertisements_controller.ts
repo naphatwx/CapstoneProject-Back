@@ -113,7 +113,7 @@ export default class AdvertisementsController {
     }
 
     async approveAds({ params, response, auth, bouncer }: HttpContext) {
-        await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
+        await bouncer.authorize(isAccess, appConfig.defaultApprove, this.adsActivityId)
 
         const adsId = params.adsId
         const user = auth.getUserOrFail()
