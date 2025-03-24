@@ -8,6 +8,7 @@ import { isAccess } from '#abilities/main'
 import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
 import file_service from '#services/file_service'
+import my_service from '#services/my_service'
 
 export default class AdvertisementsController {
     private adsActivityId = 1
@@ -124,14 +125,16 @@ export default class AdvertisementsController {
     async exportAdsExcel({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultExport, this.adsActivityId)
 
-        const adsIds: number[] = request.input('adsIds')
-        const sort: string = request.input('sort')
-        const isDescending: boolean = request.input('isDescending')
+        const adsIds: number[] = request.input('adsIds') || []
+        const sort: string = request.input('sort') || 'adsId'
+        const isDescending: boolean = request.input('isDescending') || false
 
-        const data = await advertisement_service.getAdsExport(adsIds, sort, isDescending)
+        const data = await advertisement_service.getAdsExport(my_service.ensureArray(adsIds), sort, isDescending)
+
         if (data.length === 0) {
             return response.status(404).json({ message: 'No data to export.' })
         }
+
         const filePath = await file_service.exportExcel(data, 'Advertisements', 'ads')
 
         // Send file response

@@ -122,6 +122,10 @@ const getAdsExport = async (adsIds: number[] = [], sort: string = 'adsId', isDes
             adsList = query
         }
 
+        if (adsList.length === 0) {
+            return []
+        }
+
         const adsDTO = await Promise.all(
             adsList.map(async (ads) => {
                 if (ads.approveUser) await ads.load('userApprove')
