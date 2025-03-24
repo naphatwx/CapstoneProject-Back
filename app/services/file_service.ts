@@ -41,7 +41,7 @@ const exportExcel = async (data: any[], worksheetName: string, filename: string)
 
     // Define columns
     worksheet.columns = Object.keys(data[0]).map(key => ({
-        header: text_service.pascalToNormal(key),
+        header: text_service.changeTextFormat(key),
         key: key,
         width: minimumWidth
     }))
