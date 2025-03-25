@@ -37,8 +37,9 @@ export default class UsersController {
         }
     }
 
-    async logout({ auth, response }: HttpContext) {
+    async logout({ auth, response, session }: HttpContext) {
         const user = auth.getUserOrFail()
+        session.put('tokenData', '')
         await user_service.updateUserLogoutTime(user.userId)
         return response.status(200).json({ message: 'Logout successfully.' })
     }
