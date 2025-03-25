@@ -9,6 +9,7 @@ import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
 import file_service from '#services/file_service'
 import my_service from '#services/my_service'
+import ForbiddenException from '#exceptions/forbidden_exception'
 
 export default class AdvertisementsController {
     private adsActivityId = 1
@@ -78,9 +79,8 @@ export default class AdvertisementsController {
         const ads = await advertisement_service.getAdsDetail(adsId)
 
         if (ads.status === 'A') {
-            await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
+            (await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!))
             const result = advertisement_service.compareDate(null, payload.rgsExpDate)
-
             if (!result.isSuccess) {
                 throw new BadRequestException(result.message)
             }
