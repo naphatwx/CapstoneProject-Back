@@ -5,7 +5,7 @@ export default class RegistrationsController {
     async getGetNumberOfRegisAds({ request, response }: HttpContext) {
         const status = request.input('status') || null
         const orderField = request.input('orderField') || ''
-        const isDescending = request.input('isDescending') || true
+        const isDescending = Boolean(request.input('isDescending')) || true
         const periodId = request.input('periodId') || null
         const monthYear = request.input('monthYear') || null
 

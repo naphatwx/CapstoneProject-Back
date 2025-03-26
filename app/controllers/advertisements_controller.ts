@@ -126,7 +126,7 @@ export default class AdvertisementsController {
 
         const adsIds: number[] = request.input('adsIds') || []
         const sort: string = request.input('sort') || 'adsId'
-        const isDescending: boolean = request.input('isDescending') || false
+        const isDescending: boolean = Boolean(request.input('isDescending')) || false
 
         const data = await advertisement_service.getAdsExport(my_service.ensureArray(adsIds), sort, isDescending)
 
