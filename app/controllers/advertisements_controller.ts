@@ -91,7 +91,7 @@ export default class AdvertisementsController {
     }
 
     async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
-        const isUpdate = request.input('isUpdate') || false
+        const isUpdate = Boolean(request.input('isUpdate')) || false
 
         if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
         else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
