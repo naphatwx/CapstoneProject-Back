@@ -102,6 +102,7 @@ const getOldestAdsRegisDate = async () => {
 const getAdsExport = async (adsIds: any[] = []) => {
     try {
         const query = await Advertisement.query()
+            .whereIn('adsId', adsIds)
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
             })
@@ -113,21 +114,13 @@ const getAdsExport = async (adsIds: any[] = []) => {
             .withCount('registrations', (registrationQuery) => {
                 registrationQuery.as('totalRegis')
             })
-            // .orderBy('totalRegis', isDescending ? 'desc' : 'asc')
 
-        let adsList
-        const adsIdsNumbers = my_service.convertToNumbers(adsIds)
-        if (adsIdsNumbers.length > 0) {
-            adsList = query.filter((ads) => adsIdsNumbers.includes(ads.adsId))
-        } else {
-            adsList = query
-        }
-
-        if (adsList.length === 0) {
+        if (query.length === 0) {
             return []
         }
 
-        adsList = my_service.sortObjectsByReference(adsList, adsIdsNumbers, 'adsId')
+        const adsIdsNumbers = my_service.convertToNumbers(adsIds)
+        const adsList = my_service.sortObjectsByReference(query, adsIdsNumbers, 'adsId')
 
         const adsDTO = await Promise.all(
             adsList.map(async (ads) => {
