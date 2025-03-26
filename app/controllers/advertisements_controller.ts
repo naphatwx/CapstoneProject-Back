@@ -9,7 +9,6 @@ import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
 import file_service from '#services/file_service'
 import my_service from '#services/my_service'
-import ForbiddenException from '#exceptions/forbidden_exception'
 
 export default class AdvertisementsController {
     private adsActivityId = 1
