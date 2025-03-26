@@ -7,6 +7,18 @@ const ensureArray = <T>(value: T | T[]): T[] => {
     return [value]
 }
 
+const sortObjectsByReference = <T>(arrayToSort: T[], referenceArray: any[], key: keyof T): T[] => {
+    return arrayToSort.sort((a, b) => {
+        return referenceArray.indexOf(a[key]) - referenceArray.indexOf(b[key])
+    })
+}
+
+const convertToNumbers = (array: string[]): number[] => {
+    return array.map(Number);
+}
+
 export default {
-    ensureArray
+    ensureArray,
+    sortObjectsByReference,
+    convertToNumbers
 }

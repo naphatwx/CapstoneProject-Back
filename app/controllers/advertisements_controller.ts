@@ -125,10 +125,8 @@ export default class AdvertisementsController {
         await bouncer.authorize(isAccess, appConfig.defaultExport, this.adsActivityId)
 
         const adsIds: number[] = request.input('adsIds') || []
-        const sort: string = request.input('sort') || 'adsId'
-        const isDescending: boolean = Boolean(request.input('isDescending')) || false
 
-        const data = await advertisement_service.getAdsExport(my_service.ensureArray(adsIds), sort, isDescending)
+        const data = await advertisement_service.getAdsExport(my_service.ensureArray(adsIds))
 
         if (data.length === 0) {
             return response.status(404).json({ message: 'No data to export.' })
