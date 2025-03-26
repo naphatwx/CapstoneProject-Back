@@ -8,6 +8,7 @@ import HandlerException from '#exceptions/handler_exception'
 import { DateTime } from 'luxon'
 import BadRequestException from '#exceptions/badrequest_exception'
 import file_service from './file_service.js'
+import my_service from './my_service.js'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
     try {
@@ -98,7 +99,7 @@ const getOldestAdsRegisDate = async () => {
     }
 }
 
-const getAdsExport = async (adsIds: number[] = [], sort: string = 'adsId', isDescending: boolean = false) => {
+const getAdsExport = async (adsIds: any[] = []) => {
     try {
         const query = await Advertisement.query()
             .preload('period', (periodQuery) => {
@@ -112,12 +113,12 @@ const getAdsExport = async (adsIds: number[] = [], sort: string = 'adsId', isDes
             .withCount('registrations', (registrationQuery) => {
                 registrationQuery.as('totalRegis')
             })
-            .orderBy(sort, isDescending ? 'desc' : 'asc')
+            // .orderBy('totalRegis', isDescending ? 'desc' : 'asc')
 
         let adsList
-        if (adsIds.length > 0) {
-            const numericAdsIds = adsIds.map(Number)
-            adsList = query.filter((ads) => numericAdsIds.includes(ads.adsId))
+        const adsIdsNumbers = my_service.convertToNumbers(adsIds)
+        if (adsIdsNumbers.length > 0) {
+            adsList = query.filter((ads) => adsIdsNumbers.includes(ads.adsId))
         } else {
             adsList = query
         }
@@ -125,6 +126,8 @@ const getAdsExport = async (adsIds: number[] = [], sort: string = 'adsId', isDes
         if (adsList.length === 0) {
             return []
         }
+
+        adsList = my_service.sortObjectsByReference(adsList, adsIdsNumbers, 'adsId')
 
         const adsDTO = await Promise.all(
             adsList.map(async (ads) => {
