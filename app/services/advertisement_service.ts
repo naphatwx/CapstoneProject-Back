@@ -99,7 +99,7 @@ const getOldestAdsRegisDate = async () => {
     }
 }
 
-const getAdsExport = async (adsIds: any[] = []) => {
+const getAdsExport = async (adsIds: number[] = []) => {
     try {
         const query = await Advertisement.query()
             .whereIn('adsId', adsIds)
@@ -119,8 +119,7 @@ const getAdsExport = async (adsIds: any[] = []) => {
             return []
         }
 
-        const adsIdsNumbers = my_service.convertToNumbers(adsIds)
-        const adsList = my_service.sortObjectsByReference(query, adsIdsNumbers, 'adsId')
+        const adsList = my_service.sortObjectsByReference(query, adsIds, 'adsId')
 
         const adsDTO = await Promise.all(
             adsList.map(async (ads) => {
