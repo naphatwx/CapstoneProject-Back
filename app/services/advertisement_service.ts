@@ -102,7 +102,10 @@ const getOldestAdsRegisDate = async () => {
 const getAdsExport = async (adsIds: number[] = []) => {
     try {
         const query = await Advertisement.query()
-            .whereIn('adsId', adsIds)
+            .if(adsIds.length > 0, (query) => {
+                query.whereIn('adsId', adsIds)
+            })
+            // .whereIn('adsId', adsIds)
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
             })

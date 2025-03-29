@@ -14,7 +14,7 @@ const sortObjectsByReference = <T>(arrayToSort: T[], referenceArray: any[], key:
 }
 
 const convertToNumbers = (array: string[]): number[] => {
-    return array.map(Number);
+    return array.map(Number)
 }
 
 export default {
