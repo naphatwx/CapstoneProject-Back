@@ -105,7 +105,6 @@ const getAdsExport = async (adsIds: number[] = []) => {
             .if(adsIds.length > 0, (query) => {
                 query.whereIn('adsId', adsIds)
             })
-            // .whereIn('adsId', adsIds)
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
             })
@@ -122,7 +121,10 @@ const getAdsExport = async (adsIds: number[] = []) => {
             return []
         }
 
-        const adsList = my_service.sortObjectsByReference(query, adsIds, 'adsId')
+        // Only sort if adsIds is not empty
+        const adsList = adsIds.length > 0
+            ? my_service.sortObjectsByReference(query, adsIds, 'adsId')
+            : query
 
         const adsDTO = await Promise.all(
             adsList.map(async (ads) => {
