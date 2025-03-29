@@ -25,8 +25,6 @@ const getRolesById = async (roleId: number) => {
         const result = activityData.map((activity) => {
             const matchingRole = roleData.find((role) => role.activityId === activity.activityId)
             return {
-                roleId: roleData[0].roleId,
-                roleName: roleData[0].roleName,
                 ...activity.toJSON(),
                 viewed: matchingRole?.viewed || false,
                 created: matchingRole?.created || false,
@@ -37,7 +35,11 @@ const getRolesById = async (roleId: number) => {
             }
         })
 
-        return result
+        return {
+            roleId: roleData[0].roleId,
+            roleName: roleData[0].roleName,
+            access: result
+        }
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
