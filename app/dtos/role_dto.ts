@@ -13,8 +13,8 @@ export class RolesDTO {
     constructor(data: any) {
         this.roleId = data.roleId || null
         this.roleName = data.roleName || null
-        this.activityId = data.activity.activityId || null
-        this.activityName = data.activity.activityName || null
+        this.activityId = data.activityId || null
+        this.activityName = data.activityName || null
         this.viewed = data.viewed || false
         this.created = data.created || false
         this.updated = data.updated || false

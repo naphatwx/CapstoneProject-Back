@@ -1,7 +1,7 @@
 import HandlerException from "#exceptions/handler_exception"
 import NotFoundException from "#exceptions/notfound_exception"
+import Activity from "#models/activity"
 import Role from "#models/role"
-import { RolesDTO } from "../dtos/role_dto.js"
 
 const getRoleOptions = async () => {
     try {
@@ -14,14 +14,30 @@ const getRoleOptions = async () => {
 
 const getRolesById = async (roleId: number) => {
     try {
-        const roles = await Role.query().where('roleId', roleId).preload('activity')
+        const roleData = await Role.query().where('roleId', roleId)
 
-        if (roles.length === 0) {
+        if (roleData.length === 0) {
             throw new NotFoundException('Roles not found.')
         }
 
-        const rolesDTO = roles.map((role) => new RolesDTO(role.toJSON()))
-        return rolesDTO
+        const activityData = await Activity.all()
+
+        const result = activityData.map((activity) => {
+            const matchingRole = roleData.find((role) => role.activityId === activity.activityId)
+            return {
+                roleId: roleData[0].roleId,
+                roleName: roleData[0].roleName,
+                ...activity.toJSON(),
+                viewd: matchingRole?.viewed || false,
+                created: matchingRole?.created || false,
+                updated: matchingRole?.updated || false,
+                deleted: matchingRole?.deleted || false,
+                approve: matchingRole?.approve || false,
+                export: matchingRole?.export || false
+            }
+        })
+
+        return result
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
