@@ -28,7 +28,7 @@ const getRolesById = async (roleId: number) => {
                 roleId: roleData[0].roleId,
                 roleName: roleData[0].roleName,
                 ...activity.toJSON(),
-                viewd: matchingRole?.viewed || false,
+                viewed: matchingRole?.viewed || false,
                 created: matchingRole?.created || false,
                 updated: matchingRole?.updated || false,
                 deleted: matchingRole?.deleted || false,
