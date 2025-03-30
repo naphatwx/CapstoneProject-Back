@@ -137,10 +137,12 @@ export default class AdvertisementsController {
     // }
 
     async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
-        const isUpdate = Boolean(request.input('isUpdate')) || false
+        const data = request.only(['isUpdate']) || false
+        const isUpdate = my_service.convertToBoolean(data.isUpdate)
 
         if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
         else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
+
 
         const adsId = params.adsId
         const image = request.file('image')
