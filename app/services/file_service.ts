@@ -106,4 +106,14 @@ const exportExcel = async (data: any[], worksheetName: string, filename: string)
     return filePath
 }
 
-export default { getImageUrl, saveImage, deleteImage, exportExcel }
+async function convertMultipartFileToBlob(multipartFile: MultipartFile): Promise<Blob> {
+    // Read the file as a buffer
+    const buffer = await fs.promises.readFile(multipartFile.tmpPath!)
+
+    // Create a Blob from the buffer
+    const blob = new Blob([buffer], { type: multipartFile.type })
+
+    return blob
+}
+
+export default { getImageUrl, saveImage, deleteImage, exportExcel, convertMultipartFileToBlob }
