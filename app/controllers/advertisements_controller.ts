@@ -9,6 +9,8 @@ import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
 import file_service from '#services/file_service'
 import my_service from '#services/my_service'
+import axios from 'axios'
+import HandlerException from '#exceptions/handler_exception'
 
 export default class AdvertisementsController {
     private adsActivityId = 1
@@ -62,8 +64,8 @@ export default class AdvertisementsController {
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
-        await advertisement_service.createAds(adsDTO, user.userId)
-        return response.status(201).json({ message: 'Advertisement has been created.' })
+        const newAdsId = await advertisement_service.createAds(adsDTO, user.userId)
+        return response.status(201).json({ message: 'Advertisement has been created.', adsId: newAdsId })
     }
 
     async updateAds({ params, request, response, auth, bouncer }: HttpContext) {
@@ -86,9 +88,53 @@ export default class AdvertisementsController {
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
-        await advertisement_service.updateAds(adsId, adsDTO, user.userId)
-        return response.status(200).json({ message: 'Advertisement has been updated.' })
+        const newAdsId = await advertisement_service.updateAds(adsId, adsDTO, user.userId)
+        return response.status(200).json({ message: 'Advertisement has been updated.', adsId: newAdsId })
     }
+
+    // async uploadAdsImage({ params, request, response, bouncer, session }: HttpContext) {
+    //     const isUpdate = Boolean(request.input('isUpdate')) || false
+
+    //     if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
+    //     else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
+
+    //     const adsId = params.adsId
+    //     const image = request.file('image')
+    //     const payload = await imageValidator.validate({
+    //         image: image
+    //     })
+
+    //     try {
+    //         const uploadURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Image/UploadImage'
+    //         const token = session.get('tokenData')
+    //         const formData = new FormData()
+    //         formData.append('ContainerName', 'test')
+    //         formData.append('Directory', 'image.jpg')
+
+    //         if (payload.image) {
+    //             const blob = await file_service.convertMultipartFileToBlob(payload.image)
+    //             formData.append('File', blob, payload.image.clientName)
+    //         }
+
+    //         await axios.post(uploadURL, formData, {
+    //             headers: {
+    //                 'Authorization': `Bearer ${token.authToken}`,
+    //             }
+    //         })
+
+    //         await advertisement_service.updateAdsImage(adsId, payload.image.clientName)
+
+    //     } catch (error) {
+    //         // if (axios.isAxiosError(error)) {
+    //         //     console.log('Error data:', error.response?.data);
+    //         //     console.log('Error status:', error.response?.status);
+    //         //     console.log('Error headers:', error.response?.headers);
+    //         // }
+    //         throw new HandlerException(error.status, error.message)
+    //     }
+
+    //     return response.status(200).json({ message: 'User image is updated.' })
+    // }
 
     async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
         const isUpdate = Boolean(request.input('isUpdate')) || false
