@@ -17,8 +17,13 @@ const convertToNumbers = (array: string[]): number[] => {
     return array.map(Number)
 }
 
+const convertToBoolean = (str: string) => {
+    return str === 'true'
+}
+
 export default {
     ensureArray,
     sortObjectsByReference,
-    convertToNumbers
+    convertToNumbers,
+    convertToBoolean
 }
