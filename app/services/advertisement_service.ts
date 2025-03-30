@@ -81,6 +81,7 @@ const getAdsDetail = async (adsId: number) => {
 const getOldestAdsRegisDate = async () => {
     try {
         const ads = await Advertisement.query()
+            .whereIn('status', ['A', 'N'])
             .whereNotNull('rgsStrDate')
             .where('rgsStrDate', '!=', '')
             .orderBy('rgsStrDate', 'asc')
