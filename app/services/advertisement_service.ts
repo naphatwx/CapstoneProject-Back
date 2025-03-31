@@ -146,6 +146,50 @@ const getOldestAdsRegisDate = async () => {
 //     }
 // }
 
+const getAdsRegistration = async (
+    status: string | null,
+    orderField: string | null,
+    orderType: string | null,
+    periodId: number | null,
+    monthYear: string | null,
+    limitNumber: number | null = null) => {
+    const query = await Advertisement.query()
+        .if(status, (query) => {
+            console.log('There is status: ' + status)
+            query.where('status', status!)
+        })
+        .if(!status, (query) => {
+            console.log('No status: ' + status)
+            query.whereIn('status', ['A', 'N'])
+        })
+        .if(periodId, (query) => {
+            console.log('There is period ID: ' + periodId)
+            query.where('periodId', periodId!)
+        })
+        .if(monthYear, (query) => {
+            console.log('There is monthYear: ' + monthYear)
+            query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') = ?`, [monthYear as string])
+        })
+        .preload('period', (periodQuery) => {
+            periodQuery.where('status', true)
+        })
+        .preload('packages', (packageQuery) => {
+            packageQuery.where('status', true)
+        })
+        .preload('adsPackages')
+        .preload('userUpdate')
+        .withCount('registrations', (registrationQuery) => {
+            registrationQuery.as('totalRegistration')
+        })
+        .if(orderField, (query) => {
+            console.log('OrderField: ' + orderField)
+            query.orderBy(orderField!, orderType! === 'asc' ? 'asc' : 'desc')
+        })
+        .if(limitNumber, (query) => query.limit(limitNumber!))
+
+    return query.length === 0 ? [] : query
+}
+
 const getAdsExport = async (
     status: string | null,
     orderField: string | null,
@@ -153,45 +197,14 @@ const getAdsExport = async (
     periodId: number | null,
     monthYear: string | null) => {
     try {
-        const query = await Advertisement.query()
-            .if(status, (query) => {
-                console.log('There is status: ' + status)
-                query.where('status', status!)
-            })
-            .if(!status, (query) => {
-                console.log('No status: ' + status)
-                query.whereIn('status', ['A', 'N'])
-            })
-            .if(periodId, (query) => {
-                console.log('There is period ID: ' + periodId)
-                query.where('periodId', periodId!)
-            })
-            .if(monthYear, (query) => {
-                console.log('There is monthYear: ' + monthYear)
-                query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') = ?`, [monthYear as string])
-            })
-            .preload('period', (periodQuery) => {
-                periodQuery.where('status', true)
-            })
-            .preload('packages', (packageQuery) => {
-                packageQuery.where('status', true)
-            })
-            .preload('adsPackages')
-            .preload('userUpdate')
-            .withCount('registrations', (registrationQuery) => {
-                registrationQuery.as('totalRegistration')
-            })
-            .if(orderField, (query) => {
-                console.log('OrderField: ' + orderField)
-                query.orderBy(orderField!, orderType! === 'asc' ? 'asc' : 'desc')
-            })
+        const adsRegis = await getAdsRegistration(status, orderField, orderType, periodId, monthYear)
 
-        if (query.length === 0) {
+        if (adsRegis.length === 0) {
             return []
         }
 
         const adsDTO = await Promise.all(
-            query.map(async (ads) => {
+            adsRegis.map(async (ads) => {
                 if (ads.approveUser) await ads.load('userApprove')
 
                 const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
@@ -374,6 +387,7 @@ export default {
     getAdsList,
     getAdsDetail,
     getOldestAdsRegisDate,
+    getAdsRegistration,
     getAdsExport,
     createAds,
     updateAds,
