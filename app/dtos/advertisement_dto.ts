@@ -266,7 +266,7 @@ export class AdsRegisDTO {
     adsName: string | null
     totalRegistration: number | null
     rgsStrDate: string | null
-    adsLimit: number | null
+    regisLimit: number | null
     status: string | null
     periodId: number | null
 
@@ -275,7 +275,7 @@ export class AdsRegisDTO {
         this.adsName = data.adsName
         this.totalRegistration = totalRegistration
         this.rgsStrDate = data.rgsStrDate
-        this.adsLimit = data.adsLimit
+        this.regisLimit = data.regisLimit
         this.status = data.status
         this.periodId = data.periodId
     }
