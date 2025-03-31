@@ -50,7 +50,7 @@ const getRoleByRoleIdAndActivityId = async (roleId: number, activityId: number) 
         const role = await Role.query()
             .where('roleId', roleId)
             .where('activityId', activityId)
-            .firstOrFail()
+            .first()
         return role
     } catch (error) {
         throw new HandlerException(error.status, error.message)
