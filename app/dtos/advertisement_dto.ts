@@ -192,9 +192,9 @@ export class AdvertisementExportDTO {
     recInMth: boolean
     recNextMth: boolean
     nextMth: number | null
-    totalRegis: number | null
+    totalRegistration: number | null
 
-    constructor(data: any, totalRegis: number) {
+    constructor(data: any, totalRegistration: number) {
         this.adsId = data.adsId || null
         this.adsName = data.adsName || null
         this.status = data.status || null
@@ -213,7 +213,7 @@ export class AdvertisementExportDTO {
         this.recInMth = data.recInMth || false
         this.recNextMth = data.recNextMth || false
         this.nextMth = data.nextMth || null
-        this.totalRegis = totalRegis || 0
+        this.totalRegistration = totalRegistration || 0
     }
 }
 
