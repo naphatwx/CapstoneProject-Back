@@ -278,7 +278,7 @@ const approveAds = async (adsId: number, userId: string) => {
     }
 }
 
-const compareDate = (rgsStrDate: any, rgsExpDate: any) => {
+const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
     const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC') || null
     const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC') || null
 
@@ -379,5 +379,5 @@ export default {
     updateAds,
     updateAdsImage,
     approveAds,
-    compareDate
+    validateDate
 }

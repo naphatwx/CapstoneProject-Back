@@ -93,25 +93,3 @@ export class UserDetailDTO {
         }
     }
 }
-
-export class CreateUserDTO {
-    comCode: string
-    firstname: string
-    lastname: string
-    email: string
-    telphone: string
-    password: string
-
-    constructor(data: any) {
-        this.comCode = data.comCode
-        this.firstname = data.firstname
-        this.lastname = data.lastname
-        this.email = data.email
-        this.telphone = data.telphone
-        this.password = data.password
-    }
-
-    static fromVinePayload(payload: object): any {
-        return new CreateUserDTO(payload as CreateUserDTO)
-    }
-}

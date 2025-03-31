@@ -58,7 +58,7 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
-        const result = advertisement_service.compareDate(payload.rgsStrDate, payload.rgsExpDate)
+        const result = advertisement_service.validateDate(payload.rgsStrDate, payload.rgsExpDate)
 
         if (!result.isSuccess) {
             throw new BadRequestException(result.message)
@@ -81,8 +81,9 @@ export default class AdvertisementsController {
         const ads = await advertisement_service.getAdsDetail(adsId)
 
         if (ads.status === 'A') {
-            (await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!))
-            const result = advertisement_service.compareDate(null, payload.rgsExpDate)
+            await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
+            // If it is active ads. It must validate register date
+            const result = advertisement_service.validateDate(null, payload.rgsExpDate)
             if (!result.isSuccess) {
                 throw new BadRequestException(result.message)
             }
