@@ -11,6 +11,7 @@ import file_service from '#services/file_service'
 import my_service from '#services/my_service'
 import axios from 'axios'
 import HandlerException from '#exceptions/handler_exception'
+import { registrationValidator } from '#validators/registration'
 
 export default class AdvertisementsController {
     private adsActivityId = 1
@@ -172,9 +173,22 @@ export default class AdvertisementsController {
     async exportAdsExcel({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultExport, this.adsActivityId)
 
-        const adsIds = request.input('adsIds') || []
+        const status = request.input('status') || null
+        const orderField = request.input('orderField') || null
+        const orderType = request.input('orderType') || null
+        const periodId = request.input('periodId') || null
+        const monthYear = request.input('monthYear') || null // Example 2020-08
 
-        const data = await advertisement_service.getAdsExport(my_service.convertToNumbers(my_service.ensureArray(adsIds)))
+        const payload = await registrationValidator.validate({
+            status,
+            orderField,
+            orderType,
+            periodId,
+            monthYear
+        })
+
+        // const data = await advertisement_service.getAdsExport(my_service.convertToNumbers(my_service.ensureArray(adsIds)))
+        const data = await advertisement_service.getAdsExport(payload.status, payload.orderField, payload.orderType, payload.periodId, payload.monthYear)
 
         if (data.length === 0) {
             return response.status(404).json({ message: 'No data to export.' })

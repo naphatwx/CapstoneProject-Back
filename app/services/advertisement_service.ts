@@ -8,7 +8,6 @@ import HandlerException from '#exceptions/handler_exception'
 import { DateTime } from 'luxon'
 import BadRequestException from '#exceptions/badrequest_exception'
 import file_service from './file_service.js'
-import my_service from './my_service.js'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
     try {
@@ -100,11 +99,76 @@ const getOldestAdsRegisDate = async () => {
     }
 }
 
-const getAdsExport = async (adsIds: number[] = []) => {
+// const getAdsExport = async (adsIds: number[] = []) => {
+//     try {
+//         const query = await Advertisement.query()
+//             .if(adsIds.length > 0, (query) => {
+//                 query.whereIn('adsId', adsIds)
+//             })
+//             .preload('period', (periodQuery) => {
+//                 periodQuery.where('status', true)
+//             })
+//             .preload('packages', (packageQuery) => {
+//                 packageQuery.where('status', true)
+//             })
+//             .preload('adsPackages')
+//             .preload('userUpdate')
+//             .withCount('registrations', (registrationQuery) => {
+//                 registrationQuery.as('totalRegistration')
+//             })
+
+//         if (query.length === 0) {
+//             return []
+//         }
+
+//         // Only sort if adsIds is not empty
+//         const adsList = adsIds.length > 0
+//             ? my_service.sortObjectsByReference(query, adsIds, 'adsId')
+//             : query
+
+//         const adsDTO = await Promise.all(
+//             adsList.map(async (ads) => {
+//                 if (ads.approveUser) await ads.load('userApprove')
+
+//                 const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
+//                 if (ads.updatedDate) ads.updatedDate = time_service.changeDateTimeFormat(ads.updatedDate, dateTimeFormat)
+//                 if (ads.approveDate) ads.approveDate = time_service.changeDateTimeFormat(ads.approveDate, dateTimeFormat)
+//                 if (ads.rgsStrDate) ads.rgsStrDate = time_service.changeDateTimeFormat(ads.rgsStrDate, dateTimeFormat)
+//                 if (ads.rgsExpDate) ads.rgsExpDate = time_service.changeDateTimeFormat(ads.rgsExpDate, dateTimeFormat)
+
+//                 return new AdvertisementExportDTO(ads.toJSON(), ads.$extras.totalRegistration)
+//             })
+//         )
+
+//         return adsDTO
+//     } catch (error) {
+//         throw new HandlerException(error.status, error.message)
+//     }
+// }
+
+const getAdsExport = async (
+    status: string | null,
+    orderField: string | null,
+    orderType: string | null,
+    periodId: number | null,
+    monthYear: string | null) => {
     try {
         const query = await Advertisement.query()
-            .if(adsIds.length > 0, (query) => {
-                query.whereIn('adsId', adsIds)
+            .if(status, (query) => {
+                console.log('There is status: ' + status)
+                query.where('status', status!)
+            })
+            .if(!status, (query) => {
+                console.log('No status: ' + status)
+                query.whereIn('status', ['A', 'N'])
+            })
+            .if(periodId, (query) => {
+                console.log('There is period ID: ' + periodId)
+                query.where('periodId', periodId!)
+            })
+            .if(monthYear, (query) => {
+                console.log('There is monthYear: ' + monthYear)
+                query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') = ?`, [monthYear as string])
             })
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
@@ -115,20 +179,19 @@ const getAdsExport = async (adsIds: number[] = []) => {
             .preload('adsPackages')
             .preload('userUpdate')
             .withCount('registrations', (registrationQuery) => {
-                registrationQuery.as('totalRegis')
+                registrationQuery.as('totalRegistration')
+            })
+            .if(orderField, (query) => {
+                console.log('OrderField: ' + orderField)
+                query.orderBy(orderField!, orderType! === 'asc' ? 'asc' : 'desc')
             })
 
         if (query.length === 0) {
             return []
         }
 
-        // Only sort if adsIds is not empty
-        const adsList = adsIds.length > 0
-            ? my_service.sortObjectsByReference(query, adsIds, 'adsId')
-            : query
-
         const adsDTO = await Promise.all(
-            adsList.map(async (ads) => {
+            query.map(async (ads) => {
                 if (ads.approveUser) await ads.load('userApprove')
 
                 const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
@@ -137,13 +200,12 @@ const getAdsExport = async (adsIds: number[] = []) => {
                 if (ads.rgsStrDate) ads.rgsStrDate = time_service.changeDateTimeFormat(ads.rgsStrDate, dateTimeFormat)
                 if (ads.rgsExpDate) ads.rgsExpDate = time_service.changeDateTimeFormat(ads.rgsExpDate, dateTimeFormat)
 
-                return new AdvertisementExportDTO(ads.toJSON(), ads.$extras.totalRegis)
+                return new AdvertisementExportDTO(ads.toJSON(), ads.$extras.totalRegistration)
             })
         )
 
         return adsDTO
-    }
-    catch (error) {
+    } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
 }
