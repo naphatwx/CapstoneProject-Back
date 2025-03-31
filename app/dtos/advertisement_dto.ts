@@ -260,3 +260,24 @@ export class CreateOrUpdateAdvertisementDTO {
         return new CreateOrUpdateAdvertisementDTO(payload as CreateOrUpdateAdvertisementDTO)
     }
 }
+
+export class AdsRegisDTO {
+    adsId: number | null
+    adsName: string | null
+    totalRegistration: number | null
+    rgsStrDate: string | null
+    adsLimit: number | null
+    status: string | null
+    periodId: number | null
+
+    constructor(data: any, totalRegistration: number) {
+        this.adsId = data.adsId
+        this.adsName = data.adsName
+        this.totalRegistration = totalRegistration
+        this.rgsStrDate = data.rgsStrDate
+        this.adsLimit = data.adsLimit
+        this.status = data.status
+        this.periodId = data.periodId
+    }
+}
+
