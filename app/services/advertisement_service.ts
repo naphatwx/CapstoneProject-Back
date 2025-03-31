@@ -154,37 +154,18 @@ const getAdsRegistration = async (
     monthYear: string | null,
     limitNumber: number | null = null) => {
     const query = await Advertisement.query()
-        .if(status, (query) => {
-            console.log('There is status: ' + status)
-            query.where('status', status!)
-        })
-        .if(!status, (query) => {
-            console.log('No status: ' + status)
-            query.whereIn('status', ['A', 'N'])
-        })
-        .if(periodId, (query) => {
-            console.log('There is period ID: ' + periodId)
-            query.where('periodId', periodId!)
-        })
-        .if(monthYear, (query) => {
-            console.log('There is monthYear: ' + monthYear)
-            query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') = ?`, [monthYear as string])
-        })
-        .preload('period', (periodQuery) => {
-            periodQuery.where('status', true)
-        })
-        .preload('packages', (packageQuery) => {
-            packageQuery.where('status', true)
-        })
+        .if(status, (query) =>  query.where('status', status!))
+        .if(!status, (query) => query.whereIn('status', ['A', 'N']))
+        .if(periodId, (query) => query.where('periodId', periodId!))
+        .if(monthYear, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') = ?`, [monthYear as string]))
+
+        .preload('period', (periodQuery) => periodQuery.where('status', true))
+        .preload('packages', (packageQuery) => packageQuery.where('status', true))
         .preload('adsPackages')
         .preload('userUpdate')
-        .withCount('registrations', (registrationQuery) => {
-            registrationQuery.as('totalRegistration')
-        })
-        .if(orderField, (query) => {
-            console.log('OrderField: ' + orderField)
-            query.orderBy(orderField!, orderType! === 'asc' ? 'asc' : 'desc')
-        })
+        .withCount('registrations', (registrationQuery) => registrationQuery.as('totalRegistration'))
+
+        .if(orderField, (query) => query.orderBy(orderField!, orderType! === 'asc' ? 'asc' : 'desc'))
         .if(limitNumber, (query) => query.limit(limitNumber!))
 
     return query.length === 0 ? [] : query
