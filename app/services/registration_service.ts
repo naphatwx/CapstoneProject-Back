@@ -16,7 +16,7 @@ const getNumberOfRegisAds = async (
         // )
         // return data
 
-        const adsRegis = await advertisement_service.getAdsRegistration(status, orderField, orderType, periodId, monthYear, 15)
+        const adsRegis = await advertisement_service.getAdsRegistration(status, orderField, orderType, periodId, monthYear, 10)
 
         if (adsRegis.length === 0) {
             return []
