@@ -188,7 +188,6 @@ export default class AdvertisementsController {
             monthYear
         })
 
-        // const data = await advertisement_service.getAdsExport(my_service.convertToNumbers(my_service.ensureArray(adsIds)))
         const data = await advertisement_service.getAdsExport(payload.status, payload.orderField, payload.orderType, payload.periodId, payload.monthYear)
 
         if (data.length === 0) {

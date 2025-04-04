@@ -7,6 +7,8 @@ router.group(() => {
 
     router.post('/login', [UsersController, 'login'])
 
+    router.get('/authenticate', [UsersController, 'authenticateToken'])
+
     router.group(() => {
         router.get('', [UsersController, 'getUsers'])
 
