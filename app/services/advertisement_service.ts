@@ -147,14 +147,14 @@ const getOldestAdsRegisDate = async () => {
 // }
 
 const getAdsRegistration = async (
-    status: string | null,
-    orderField: string | null,
-    orderType: string | null,
-    periodId: number | null,
-    monthYear: string | null,
+    status: string | null = null,
+    periodId: number | null = null,
+    monthYear: string | null = null,
+    orderField: string | null = 'adsId',
+    orderType: string | null = 'desc',
     limitNumber: number | null = null) => {
     const query = await Advertisement.query()
-        .if(status, (query) =>  query.where('status', status!))
+        .if(status, (query) => query.where('status', status!))
         .if(!status, (query) => query.whereIn('status', ['A', 'N']))
         .if(periodId, (query) => query.where('periodId', periodId!))
         .if(monthYear, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') = ?`, [monthYear as string]))
@@ -178,7 +178,7 @@ const getAdsExport = async (
     periodId: number | null,
     monthYear: string | null) => {
     try {
-        const adsRegis = await getAdsRegistration(status, orderField, orderType, periodId, monthYear)
+        const adsRegis = await getAdsRegistration(status, periodId, monthYear, orderField, orderType)
 
         if (adsRegis.length === 0) {
             return []

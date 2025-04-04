@@ -71,7 +71,7 @@ const updateUser = async (userId: string, data: any, updatedUserId: string) => {
     try {
         const user = await User.query().where('userId', userId).firstOrFail()
 
-        if (user.status === false) {
+        if (!user.status) {
             throw new ForbiddenException('This user is inactive and cannot perform this action.')
         }
 
@@ -121,11 +121,15 @@ const updateUserLogoutTime = async (userId: string) => {
 
 const inactivateUser = async (userId: string) => {
     try {
-        if (await user_role_service.isLastAdmin()) throw new BadRequestException('Cannot inactivate last admin.')
+        if (await user_role_service.isLastAdmin()) {
+            throw new BadRequestException('Cannot inactivate last admin.')
+        }
 
         const user = await User.query().where('userId', userId).firstOrFail()
 
-        if (user.status === false) throw new BadRequestException('User is already inactive.')
+        if (!user.status) {
+            throw new BadRequestException('User is already inactive.')
+        }
 
         user.status = false
         await user.save()

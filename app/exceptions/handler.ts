@@ -49,6 +49,13 @@ export default class HttpExceptionHandler extends ExceptionHandler {
             })
         }
 
+        if (error.status === 409) {
+            return ctx.response.status(409).send({
+                message: 'Conflict',
+                details: error.message,
+            })
+        }
+
         if (error.status === 500) {
             return ctx.response.status(500).send({
                 message: 'Internal Server Error',

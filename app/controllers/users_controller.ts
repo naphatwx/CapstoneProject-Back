@@ -50,6 +50,13 @@ export default class UsersController {
         return response.status(200).json({ message: 'Logout successfully.' })
     }
 
+    async authenticateToken({ auth, response }: HttpContext) {
+        if (await auth.authenticate()) {
+            console.log('Token has been unacthenticated.')
+            return response.status(200).json({ message: 'Token has been unacthenticated' })
+        }
+    }
+
     async getUsers({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.userActivityId)
 

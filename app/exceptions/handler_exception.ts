@@ -16,6 +16,9 @@ export default class HandlerException extends Exception {
                 case 404:
                     message = 'Data not found.'
                     break
+                case 409:
+                    message = 'Conflict'
+                    break
                 default:
                     message = 'Unable to connect to the database.'
                     break;
