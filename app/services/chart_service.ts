@@ -1,24 +1,9 @@
-import BadRequestException from "#exceptions/badrequest_exception"
 import Advertisement from "#models/advertisement"
 import Plant from "#models/plant"
-import ThaiAmphure from "#models/thai_amphure"
-import ThaiGeography from "#models/thai_geography"
-import ThaiProvince from "#models/thai_province"
-import ThaiTambon from "#models/thai_tambon"
-import { AdsGroupPackage, AdsGroupPeriod, AdsGroupPlant, AdsGrupStatus } from "../dtos/chart_dtos.js"
+import Registration from "#models/registration"
+import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO } from "../dtos/chart_dtos.js"
 import time_service from "./time_service.js"
-
-const getThaiLocation = async () => {
-    const geographies = await ThaiGeography.query().limit(2)
-    const provinces = await ThaiProvince.query().limit(2)
-    const amphures = await ThaiAmphure.query().limit(2)
-    const tambons = await ThaiTambon.query().limit(2)
-
-    console.log('geographies', geographies)
-    console.log('provinces', provinces)
-    console.log('amphures', amphures)
-    console.log('tambons', tambons)
-}
+import db from "@adonisjs/lucid/services/db"
 
 const getAdsGroupStatus = async () => {
     const ads = await Advertisement.query()
@@ -30,9 +15,8 @@ const getAdsGroupStatus = async () => {
         .orderBy('status', 'asc')
 
     const adsDTO = ads.map((ad) => {
-        return new AdsGrupStatus(ad, ad.$extras.count)
+        return new AdsGrupStatusDTO(ad, ad.$extras.count)
     })
-
     return adsDTO
 }
 
@@ -41,14 +25,14 @@ const getAdsGroupPeriod = async () => {
         .select('periodId')
         .whereNotNull('periodId')
         .where('periodId', '!=', 0)
+        .preload('period')
         .count('* as count')
         .groupBy('periodId')
         .orderBy('periodId', 'asc')
 
     const adsDTO = ads.map((ad) => {
-        return new AdsGroupPeriod(ad, ad.$extras.count)
+        return new AdsGroupPeriodDTO(ad, ad.$extras.count)
     })
-
     return adsDTO
 }
 
@@ -57,27 +41,25 @@ const getAdsGroupPackage = async () => {
         .select('packageId')
         .whereNotNull('packageId')
         .where('packageId', '!=', 0)
+        .preload('packages')
         .count('* as count')
         .groupBy('packageId')
         .orderBy('packageId', 'asc')
 
     const adsDTO = ads.map((ad) => {
-        return new AdsGroupPackage(ad, ad.$extras.count)
+        return new AdsGroupPackageDTO(ad, ad.$extras.count)
     })
-
     return adsDTO
 }
 
-const getTopPlant = async (
+const getTopRegisByPlant = async (
     geographyId: number | string | null = null,
     provinceId: number | string | null = null,
     year: number | string | null = null,
     quarter: number | string | null = null,
     limit: number = 10
 ) => {
-    if (!year && quarter) {
-        throw new BadRequestException('Quarter cannot be specified without specifying a year')
-    }
+    time_service.validateYearAndQuarter(year, quarter)
 
     let monthYearStart: string
     let monthYearEnd: string
@@ -151,7 +133,7 @@ const getTopPlant = async (
         .limit(limit)
 
     const plantDTO = plant.map((pla) => {
-        return new AdsGroupPlant(pla,
+        return new TopPlantDTO(pla,
             pla.tambon.amphure.province.geography,
             pla.tambon.amphure.province,
             pla.tambon.amphure,
@@ -160,15 +142,138 @@ const getTopPlant = async (
         )
     })
 
+    plantDTO.forEach((pla) => {
+        pla.regis = groupRegistrationsByAdsId(pla.regis)
+    })
+
     return plantDTO
 }
 
+const getTopRegisByAds = async (
+    periodId: number | string | null = null,
+    packageId: number | string | null = null,
+    status: string | null = null,
+    year: number | string | null = null,
+    quarter: number | string | null = null,
+    limit: number = 10
+) => {
+    time_service.validateYearAndQuarter(year, quarter)
 
+    let monthYearStart: string
+    let monthYearEnd: string
+    if (year && quarter) {
+        monthYearStart = year + '-' + time_service.convertQuarterToMonth(Number(quarter)).start
+        monthYearEnd = year + '-' + time_service.convertQuarterToMonth(Number(quarter)).end
+    }
+
+    const ads = await Advertisement.query()
+        .if(periodId, (query) => query.where('periodId', periodId!))
+        .if(packageId, (query) => query.where('packageId', packageId!))
+        .if(status, (query) => query.where('status', status!))
+        .if(!status, (query) => query.whereIn('status', ['A', 'N']))
+        .if(year && quarter, (query) => {
+            query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
+                .whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') <= ?`, [monthYearEnd as string])
+        })
+        .if(year && !quarter, (query) => {
+            query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!.toString() as string])
+        })
+        .preload('period')
+        .preload('packages')
+        .preload('registrations')
+        .withCount('registrations', (query) => query.as('totalRegistration'))
+        .orderBy('totalRegistration', 'desc')
+        .limit(limit)
+
+    const adsDTO = ads.map((ad) => {
+        return new TopAdsDTO(ad, ad.$extras.totalRegistration)
+    })
+
+    return adsDTO
+}
+
+const getRegisPerMonthByAds = async (adsId: number) => {
+    const ads = await Advertisement.query()
+        .where('adsId', adsId)
+        .preload('period')
+        .preload('packages')
+        .firstOrFail()
+
+    const regisByAds = await Registration.query()
+        .where('adsId', adsId)
+        .select(
+            db.raw("FORMAT(REGIS_DATE, 'yyyy-MM') as regisMonth"),
+            db.raw('COUNT(*) as count')
+        )
+        .groupByRaw("FORMAT(REGIS_DATE, 'yyyy-MM')")
+        .orderBy('regisMonth')
+
+    const result = new RegisPerMonthByAdsDTO(ads, regisByAds.map((reg) => reg.$extras))
+
+    return result
+}
+
+interface OldRegisForm {
+    regisNo: string
+    adsId: number
+    rgsStrDate: string
+}
+
+interface GroupedRegistration {
+    adsId: number
+    rgsStrDate: string
+    numberOfRegis: number
+    regisNo: string[]
+}
+
+const groupRegistrationsByAdsId = (registrations: OldRegisForm[]) => {
+    const result: GroupedRegistration[] = []
+
+    registrations.forEach(item => {
+        const existingGroup = result.find(group => group.adsId === item.adsId) // Find existing group
+
+        if (existingGroup) {
+            existingGroup.regisNo.push(item.regisNo)
+            existingGroup.numberOfRegis = existingGroup.regisNo.length
+        } else {
+            // No existingGroup => create a new group
+            result.push({
+                adsId: item.adsId,
+                rgsStrDate: item.rgsStrDate,
+                numberOfRegis: 1,
+                regisNo: [item.regisNo]
+            })
+        }
+    })
+
+    return result
+
+    // return registrations.reduce((result: GroupedRegistration[], item: OldRegisForm) => {
+    //     const existingEntry = result.find(group => group.adsId === item.adsId)
+    //     console.log(existingEntry)
+
+    //     if (existingEntry) {
+    //         existingEntry.regisNo.push(item.regisNo)
+    //         existingEntry.numberOfRegis = existingEntry.regisNo.length
+    //     } else {
+    //         result.push({
+    //             adsId: item.adsId,
+    //             rgsStrDate: item.rgsStrDate,
+    //             numberOfRegis: 1, // Initial count
+    //             regisNo: [item.regisNo]
+    //         })
+    //     }
+
+    //     return result
+    // }, [])
+}
 
 export default {
-    getThaiLocation,
     getAdsGroupStatus,
     getAdsGroupPeriod,
     getAdsGroupPackage,
-    getTopPlant
+
+    getTopRegisByPlant,
+    getTopRegisByAds,
+    getRegisPerMonthByAds
 }

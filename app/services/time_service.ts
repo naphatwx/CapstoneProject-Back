@@ -1,5 +1,5 @@
+import BadRequestException from "#exceptions/badrequest_exception"
 import { DateTime } from "luxon"
-import { start } from "repl"
 
 const defaultFormat = 'yyyy-MM-dd HH:mm:ss'
 
@@ -29,11 +29,9 @@ const getDateTimeAsObject = (dateTime: any) => {
 const checkDateTimeIsValid = (dateTime: any) => {
     // Ensure dateTime is a valid string before passing it to the function
     if (dateTime instanceof Date) {
-        // If it's a Date object, convert it to ISO string
-        return dateTime = dateTime.toISOString()
+        return dateTime = dateTime.toISOString() // If it's a Date object, convert it to ISO string
     } else if (typeof dateTime !== 'string') {
-        // If it's not a string, convert it to a string
-        return dateTime = String(dateTime)
+        return dateTime = String(dateTime) // If it's not a string, convert it to a string
     }
     return dateTime
 }
@@ -65,4 +63,13 @@ const convertQuarterToMonth = (quarter: number) => {
     }
 }
 
-export default { getDateTimeNow, changeDateTimeFormat, getDateTimeAsObject, convertQuarterToMonth }
+const validateYearAndQuarter = (
+    year: number | string | null = null,
+    quarter: number | string | null = null
+) => {
+    if (!year && quarter) {
+        throw new BadRequestException('Quarter cannot be specified without specifying a year')
+    }
+}
+
+export default { getDateTimeNow, changeDateTimeFormat, getDateTimeAsObject, convertQuarterToMonth, validateYearAndQuarter }
