@@ -23,9 +23,3 @@ yarn-error.log
 
 # Platform specific
 .DS_Store
-
-# Plant
-plant.ts
-plant_dto.ts
-plant_service.ts
-plants_controller.ts

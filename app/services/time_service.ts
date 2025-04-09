@@ -1,4 +1,5 @@
 import { DateTime } from "luxon"
+import { start } from "repl"
 
 const defaultFormat = 'yyyy-MM-dd HH:mm:ss'
 
@@ -37,4 +38,31 @@ const checkDateTimeIsValid = (dateTime: any) => {
     return dateTime
 }
 
-export default { getDateTimeNow, changeDateTimeFormat, getDateTimeAsObject }
+const convertQuarterToMonth = (quarter: number) => {
+    switch (quarter) {
+        case 1:
+            return {
+                start: '01', // January
+                end: '03' // March
+            }
+        case 2:
+            return {
+                start: '04', // April
+                end: '06' // June
+            }
+        case 3:
+            return {
+                start: '07', // July
+                end: '09' // September
+            }
+        case 4:
+            return {
+                start: '10', // October
+                end: '12' // December
+            }
+        default:
+            throw new Error('Invalid quarter value. Must be between 1 and 4.')
+    }
+}
+
+export default { getDateTimeNow, changeDateTimeFormat, getDateTimeAsObject, convertQuarterToMonth }
