@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, hasOne } from '@adonisjs/lucid/orm'
 import Advertisement from './advertisement.js'
 import type { HasOne } from '@adonisjs/lucid/types/relations'
+import Plant from './plant.js'
 
 export default class Registration extends BaseModel {
     public static table = 'CMS_REGISTER_ADS'
@@ -56,4 +57,10 @@ export default class Registration extends BaseModel {
         localKey: 'adsId',
     })
     declare advertisement: HasOne<typeof Advertisement>
+
+    @hasOne(() => Plant, {
+        foreignKey: 'plantCode',
+        localKey: 'plantCode',
+    })
+    declare plant: HasOne<typeof Plant>
 }

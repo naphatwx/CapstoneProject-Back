@@ -145,7 +145,6 @@ export default class AdvertisementsController {
         if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
         else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
 
-
         const adsId = params.adsId
         const image = request.file('image')
 
@@ -195,7 +194,6 @@ export default class AdvertisementsController {
         }
 
         const filePath = await file_service.exportExcel(data, 'Advertisements', 'ads')
-
         // Send file response
         return response.download(filePath);
     }

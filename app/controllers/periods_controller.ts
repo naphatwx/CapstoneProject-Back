@@ -1,13 +1,15 @@
 import { HttpContext } from '@adonisjs/core/http'
 import period_service from '#services/period_service'
-import { createOrUpdatePeriodValidator, periodIdValidator } from '#validators/period'
+import { createOrUpdatePeriodValidator, periodIdValidator, periodValidator } from '#validators/period'
 
 export default class PeriodsController {
-    async getPeriods({ response }: HttpContext) {
-        const periods = await period_service.getPeriods()
-        if (!periods || periods.length === 0) {
-            return response.status(404).json({ message: 'Periods not found.' })
-        }
+    async getPeriods({ request, response }: HttpContext) {
+        const status = request.input('status', null)
+        const orderField = request.input('orderField', 'periodId')
+        const orderType = request.input('orderType', 'asc')
+
+        const payload = await periodValidator.validate({ status: status, orderField: orderField, orderType: orderType })
+        const periods = await period_service.getPeriods(payload.status, payload.orderField!, payload.orderType)
         return response.ok(periods)
     }
 
@@ -33,7 +35,7 @@ export default class PeriodsController {
     async inactivatePeriod({ params, response }: HttpContext) {
         const periodId = params.periodId
         const periodIdValidated = await periodIdValidator.validate({ periodId: periodId })
-        
+
         await period_service.inactivatePeriod(periodIdValidated.periodId)
         return response.status(200).json({ message: 'Period has been inactivated.' })
     }
