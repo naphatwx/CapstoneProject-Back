@@ -1,40 +1,47 @@
+import Advertisement from "#models/advertisement"
+import Plant from "#models/plant"
 import Registration from "#models/registration"
 import ThaiAmphure from "#models/thai_amphure"
 import ThaiGeography from "#models/thai_geography"
 import ThaiProvince from "#models/thai_province"
 import ThaiTambon from "#models/thai_tambon"
+import { AdsShortDTO } from "./advertisement_dto.js"
 
-export class AdsGrupStatus {
+export class AdsGrupStatusDTO {
     status: string | null
     count: number
 
-    constructor(data: any, count: number) {
-        this.status = data.status || null
+    constructor(ads: Advertisement, count: number) {
+        this.status = ads.status || null
         this.count = count || 0
     }
 }
 
-export class AdsGroupPeriod {
+export class AdsGroupPeriodDTO {
     periodId: number
+    periodDesc: string
     count: number
 
-    constructor(data: any, count: number) {
-        this.periodId = data.periodId || 0
+    constructor(ads: Advertisement, count: number) {
+        this.periodId = ads.periodId || 0
+        this.periodDesc = ads.period.periodDesc || ''
         this.count = count || 0
     }
 }
 
-export class AdsGroupPackage {
+export class AdsGroupPackageDTO {
     packageId: number
+    packageDesc: string
     count: number
 
-    constructor(data: any, count: number) {
-        this.packageId = data.packageId || 0
+    constructor(ads: Advertisement, count: number) {
+        this.packageId = ads.packageId || 0
+        this.packageDesc = ads.packageDesc || ''
         this.count = count || 0
     }
 }
 
-export class AdsGroupPlant {
+export class TopPlantDTO {
     comCode: string
     plantCode: string
     totalRegistration: number
@@ -60,15 +67,15 @@ export class AdsGroupPlant {
     }
     regis: any
 
-    constructor(data: any,
+    constructor(plant: Plant,
         geography: ThaiGeography,
         province: ThaiProvince,
         amphure: ThaiAmphure,
         tambon: ThaiTambon,
         totalRegistration: number,
     ) {
-        this.comCode = data.comCode
-        this.plantCode = data.plantCode || ''
+        this.comCode = plant.comCode
+        this.plantCode = plant.plantCode || ''
         this.totalRegistration = totalRegistration || 0
         this.geography = {
             id: geography.id || 0,
@@ -90,13 +97,36 @@ export class AdsGroupPlant {
             nameTh: tambon.nameTh || '',
             zipCode: tambon.zipcode || ''
         }
-        this.regis = data.registration.map((reg: Registration) => {
+        this.regis = plant.registration.map((reg: Registration) => {
             return {
-                regNo: reg.regisNo,
+                regisNo: reg.regisNo,
                 adsId: reg.advertisement.adsId,
-                regStrDate: reg.advertisement.rgsStrDate
+                rgsStrDate: reg.advertisement.rgsStrDate
             }
         })
     }
 }
+
+export class TopAdsDTO extends AdsShortDTO {
+    totalRegistration: number
+    regis: any
+
+    constructor(ads: Advertisement, totalRegistration: number) {
+        super(ads)
+        this.totalRegistration = totalRegistration || 0
+        this.regis = ads.registrations.map((reg: Registration) => {
+            return reg.regisNo
+        })
+    }
+}
+
+export class RegisPerMonthByAdsDTO extends AdsShortDTO {
+    regisPerMonth: any
+
+    constructor(ads: Advertisement, extra: any) {
+        super(ads)
+        this.regisPerMonth = extra
+    }
+}
+
 

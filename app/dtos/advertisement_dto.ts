@@ -281,3 +281,25 @@ export class AdsRegisDTO {
     }
 }
 
+export class AdsShortDTO {
+    adsId: string
+    adsName: string
+    status: string
+    periodId: number
+    periodDesc: string
+    packageId: number
+    packageDesc: string
+    rgsStrDate: string
+
+    constructor(ads: any) {
+        this.adsId = ads.adsId || 0
+        this.adsName = ads.adsName || ''
+        this.status = ads.status || ''
+        this.periodId = ads.periodId || 0
+        this.periodDesc = ads.period.periodDesc || ''
+        this.packageId = ads.packageId || 0
+        this.packageDesc = ads.packageDesc || ''
+        this.rgsStrDate = ads.rgsStrDate || ''
+    }
+}
+
