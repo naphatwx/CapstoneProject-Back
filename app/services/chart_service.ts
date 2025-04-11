@@ -7,7 +7,7 @@ import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, T
 import time_service from "./time_service.js"
 import db from "@adonisjs/lucid/services/db"
 
-const getAdsGroupStatus = async (year: number | null = DateTime.now().year) => {
+const getAdsGroupStatus = async (year: number = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('status')
@@ -28,7 +28,7 @@ const getAdsGroupStatus = async (year: number | null = DateTime.now().year) => {
     }
 }
 
-const getAdsGroupPeriod = async (year: number | null = DateTime.now().year) => {
+const getAdsGroupPeriod = async (year: number = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('periodId')
@@ -49,7 +49,7 @@ const getAdsGroupPeriod = async (year: number | null = DateTime.now().year) => {
     }
 }
 
-const getAdsGroupPackage = async (year: number | null = DateTime.now().year) => {
+const getAdsGroupPackage = async (year: number = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('packageId')
@@ -71,10 +71,10 @@ const getAdsGroupPackage = async (year: number | null = DateTime.now().year) => 
 }
 
 const getTopRegisByPlant = async (
-    geographyId: number | string | null = null,
-    provinceId: number | string | null = null,
-    year: number | string | null = null,
-    quarter: number | string | null = null,
+    geographyId: number | null = null,
+    provinceId: number | null = null,
+    year: number | null = null,
+    quarter: number | null = null,
     limit: number = 10
 ) => {
     try {
@@ -174,11 +174,11 @@ const getTopRegisByPlant = async (
 }
 
 const getTopRegisByAds = async (
-    periodId: number | string | null = null,
-    packageId: number | string | null = null,
+    periodId: number | null = null,
+    packageId: number| null = null,
     status: string | null = null,
-    year: number | string | null = null,
-    quarter: number | string | null = null,
+    year: number | null = null,
+    quarter: number | null = null,
     limit: number = 10
 ) => {
     try {
