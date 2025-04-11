@@ -7,7 +7,7 @@ import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, T
 import time_service from "./time_service.js"
 import db from "@adonisjs/lucid/services/db"
 
-const getAdsGroupStatus = async (year: number | null = null) => {
+const getAdsGroupStatus = async (year: number | null = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('status')
@@ -15,7 +15,6 @@ const getAdsGroupStatus = async (year: number | null = null) => {
             .where('status', '!=', '')
             .where('status', '!=', 'D') // Do not get draft status
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
-            .if(!year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [DateTime.now().year]))
             .count('* as count')
             .groupBy('status')
             .orderBy('status', 'asc')
@@ -29,14 +28,13 @@ const getAdsGroupStatus = async (year: number | null = null) => {
     }
 }
 
-const getAdsGroupPeriod = async (year: number | null = null) => {
+const getAdsGroupPeriod = async (year: number | null = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('periodId')
             .whereNotNull('periodId')
             .where('periodId', '!=', 0)
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
-            .if(!year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [DateTime.now().year]))
             .preload('period')
             .count('* as count')
             .groupBy('periodId')
@@ -51,14 +49,13 @@ const getAdsGroupPeriod = async (year: number | null = null) => {
     }
 }
 
-const getAdsGroupPackage = async (year: number | null = null) => {
+const getAdsGroupPackage = async (year: number | null = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('packageId')
             .whereNotNull('packageId')
             .where('packageId', '!=', 0)
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
-            .if(!year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [DateTime.now().year]))
             .preload('packages')
             .count('* as count')
             .groupBy('packageId')

@@ -16,7 +16,7 @@ router.group(() => {
 
     router.put('/:adsId', [AdsController, 'updateAds'])
 
-    router.patch('/image/:adsId', [AdsController, 'uploadAdsImage'])
+    router.patch('/image/:adsId', [AdsController, 'uploadAdsImageToLMS'])
 
     router.patch('/approve/:adsId', [AdsController, 'approveAds'])
 }).prefix('/api/ads').use(middleware.auth())

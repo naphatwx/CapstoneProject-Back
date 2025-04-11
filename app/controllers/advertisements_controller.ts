@@ -32,15 +32,17 @@ export default class AdvertisementsController {
         return response.ok(adsList)
     }
 
-    async getAdsDetail({ params, response, bouncer }: HttpContext) {
+    async getAdsDetail({ params, response, bouncer, session }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultView, this.adsActivityId)
 
+        const token = session.get('tokenData')
         const adsId = params.adsId
+
         const paylaod = await adsIdValidator.validate({
             adsId: adsId
         })
 
-        const ads = await advertisement_service.getAdsDetail(paylaod.adsId)
+        const ads = await advertisement_service.getAdsDetail(paylaod.adsId, token.authToken)
         return response.ok(ads)
     }
 
@@ -67,16 +69,17 @@ export default class AdvertisementsController {
         return response.status(201).json({ message: 'Advertisement has been created.', adsId: newAdsId })
     }
 
-    async updateAds({ params, request, response, auth, bouncer }: HttpContext) {
+    async updateAds({ params, request, response, auth, bouncer, session }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
 
+        const token = session.get('tokenData')
         const adsId = params.adsId
         const data = request.body()
         const user = auth.getUserOrFail()
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
-        const ads = await advertisement_service.getAdsDetail(adsId)
+        const ads = await advertisement_service.getAdsDetail(adsId, token.authToken)
 
         if (ads.status === 'A') {
             await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
@@ -121,9 +124,9 @@ export default class AdvertisementsController {
         if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
         else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
 
+        const token = session.get('tokenData')
         const adsId = params.adsId
         const image = request.file('image')
-        const token = session.get('tokenData')
 
         const payload = await imageValidator.validate({
             image: image

@@ -6,7 +6,6 @@ import { topRegisByAdsValidator, topRegisByPlantValidator, yearValidator } from 
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class ChartsController {
-
     async getAdsGroupStatus({ request, response }: HttpContext) {
         const year = request.input('year')
         const payload = await yearValidator.validate({year})
