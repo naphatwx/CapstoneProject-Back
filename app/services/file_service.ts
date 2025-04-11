@@ -7,8 +7,44 @@ import text_service from "./text_service.js"
 import ExcelJS from 'exceljs'
 import axios from "axios"
 
-const getImageUrl = async (imageName: string) => {
+const downloadImageUrl = async (imageName: string) => {
     return `${process.env.APP_URL}/uploads/${imageName}`
+}
+
+const downloadImageFromLMS = async (imageName: string, token: string) => {
+    try {
+        // URL
+        const downloadURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Image/DownloadImage'
+
+        // Body
+        const body = {
+            "containerName": "test",
+            "directory": "image.jpg",
+            "fileName": imageName
+        }
+
+        // Header
+        const header = {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        }
+
+        const response = await axios.post(downloadURL, body, header)
+
+        if (response.status === 200) {
+            return response.data.data // return image url
+        }
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            // console.log('Error data:', error.response?.data)
+            // console.log('Error status:', error.response?.status)
+            // console.log('Error headers:', error.response?.headers)
+            throw new HandlerException(error.response?.status, error.response?.data.status.description)
+        } else {
+            throw new HandlerException(error.status, error.message)
+        }
+    }
 }
 
 const uploadImage = async (image: MultipartFile) => {
@@ -21,23 +57,36 @@ const uploadImage = async (image: MultipartFile) => {
 
 const uploadImageToLMS = async (image: MultipartFile, token: string) => {
     try {
+        // URL
         const uploadURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Image/UploadImage'
+
+        // Body
         const formData = new FormData()
         formData.append('ContainerName', 'test')
         formData.append('Directory', 'image.jpg')
+
+        // Header
+        const header = {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        }
 
         if (image) {
             const blob = await convertMultipartFileToBlob(image)
             formData.append('File', blob, image.clientName)
         }
 
-        await axios.post(uploadURL, formData, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            }
-        })
+        await axios.post(uploadURL, formData, header)
     } catch (error) {
-        throw new HandlerException(error.status)
+        if (axios.isAxiosError(error)) {
+            // console.log('Error data:', error.response?.data)
+            // console.log('Error status:', error.response?.status)
+            // console.log('Error headers:', error.response?.headers)
+            throw new HandlerException(error.response?.status, error.response?.data.status.description)
+        } else {
+            throw new HandlerException(error.status, error.message)
+        }
     }
 }
 
@@ -139,4 +188,12 @@ async function convertMultipartFileToBlob(multipartFile: MultipartFile): Promise
     return blob
 }
 
-export default { getImageUrl, uploadImage, uploadImageToLMS, deleteImage, exportExcel, convertMultipartFileToBlob }
+export default {
+    downloadImageUrl,
+    downloadImageFromLMS,
+    uploadImage,
+    uploadImageToLMS,
+    deleteImage,
+    exportExcel,
+    convertMultipartFileToBlob
+}

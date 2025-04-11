@@ -45,7 +45,7 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
     }
 }
 
-const getAdsDetail = async (adsId: number) => {
+const getAdsDetail = async (adsId: number, token: string) => {
     try {
         const ads = await Advertisement.query()
             .where('adsId', adsId)
@@ -69,7 +69,8 @@ const getAdsDetail = async (adsId: number) => {
             .firstOrFail()
 
         if (ads.approveUser) await ads.load('userApprove')
-        if (ads.imageName) ads.imageName = await file_service.getImageUrl(ads.imageName)
+        // if (ads.imageName) ads.imageName = await file_service.getImageUrl(ads.imageName)
+        if (ads.imageName) ads.imageName = await file_service.downloadImageFromLMS(ads.imageName, token)
 
         const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
         return adsDTO
@@ -260,11 +261,6 @@ const updateAdsImageToLMS = async (image: MultipartFile, adsId: number, token: s
         await file_service.uploadImageToLMS(image, token)
         await updateAdsImage(adsId, image.clientName)
     } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //     console.log('Error data:', error.response?.data);
-        //     console.log('Error status:', error.response?.status);
-        //     console.log('Error headers:', error.response?.headers);
-        // }
         throw new HandlerException(error.status, error.message)
     }
 }
