@@ -27,8 +27,8 @@ const sessionConfig = defineConfig({
         httpOnly: true,
         // secure: app.inProduction,
         // sameSite: 'lax',
-        secure: true,
-        sameSite: 'none'
+        secure: true, // จำเป็นสำหรับ sameSite: 'none'
+        sameSite: 'none' // จำเป็นสำหรับการทำงานข้ามโดเมน
     },
 
     /**
@@ -36,14 +36,14 @@ const sessionConfig = defineConfig({
      * variable in order to infer the store name without any
      * errors.
      */
-    store: env.get('SESSION_DRIVER'),
+    store: env.get('SESSION_DRIVER', 'cookie'),
 
     /**
      * List of configured stores. Refer documentation to see
      * list of available stores and their config.
      */
     stores: {
-        cookie: stores.cookie(),// Add Redis store configuration
+        cookie: stores.cookie(),
     }
 })
 

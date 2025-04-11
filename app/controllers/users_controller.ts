@@ -36,9 +36,10 @@ export default class UsersController {
         const user = await user_service.getOnlyUserById(userId)
         if (user.status) {
             session.put('tokenData', responseAPI.data.data)
-            session.commit()
+            await session.commit()
             console.log('respones', responseAPI.data.data)
             console.log('session token', session.get('tokenData'))
+
             await user_service.updateUserLoginTime(userId)
             return await auth.use('jwt').generate(user)
         } else {
@@ -48,7 +49,10 @@ export default class UsersController {
 
     async logout({ auth, response, session }: HttpContext) {
         const user = auth.getUserOrFail()
-        session.put('tokenData', '')
+
+        session.forget('tokenData')
+        await session.commit()
+
         await user_service.updateUserLogoutTime(user.userId)
         return response.status(200).json({ message: 'Logout successfully.' })
     }
