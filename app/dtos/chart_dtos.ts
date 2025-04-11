@@ -44,6 +44,8 @@ export class AdsGroupPackageDTO {
 export class TopPlantDTO {
     comCode: string
     plantCode: string
+    plantNameEn: string
+    plantNameTh: string
     totalRegistration: number
     geography: {
         id: number
@@ -76,6 +78,8 @@ export class TopPlantDTO {
     ) {
         this.comCode = plant.comCode
         this.plantCode = plant.plantCode || ''
+        this.plantNameEn = plant.plantNameEn || ''
+        this.plantNameTh = plant.plantNameTh || ''
         this.totalRegistration = totalRegistration || 0
         this.geography = {
             id: geography.id || 0,
@@ -101,6 +105,7 @@ export class TopPlantDTO {
             return {
                 regisNo: reg.regisNo,
                 adsId: reg.advertisement.adsId,
+                adsName: reg.advertisement.adsName,
                 rgsStrDate: reg.advertisement.rgsStrDate
             }
         })

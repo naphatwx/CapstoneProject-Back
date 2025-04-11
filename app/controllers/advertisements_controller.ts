@@ -9,8 +9,6 @@ import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
 import file_service from '#services/file_service'
 import my_service from '#services/my_service'
-import axios from 'axios'
-import HandlerException from '#exceptions/handler_exception'
 import { registrationValidator } from '#validators/registration'
 
 export default class AdvertisementsController {
@@ -94,50 +92,6 @@ export default class AdvertisementsController {
         return response.status(200).json({ message: 'Advertisement has been updated.', adsId: newAdsId })
     }
 
-    // async uploadAdsImage({ params, request, response, bouncer, session }: HttpContext) {
-    //     const isUpdate = Boolean(request.input('isUpdate')) || false
-
-    //     if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
-    //     else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
-
-    //     const adsId = params.adsId
-    //     const image = request.file('image')
-    //     const payload = await imageValidator.validate({
-    //         image: image
-    //     })
-
-    //     try {
-    //         const uploadURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Image/UploadImage'
-    //         const token = session.get('tokenData')
-    //         const formData = new FormData()
-    //         formData.append('ContainerName', 'test')
-    //         formData.append('Directory', 'image.jpg')
-
-    //         if (payload.image) {
-    //             const blob = await file_service.convertMultipartFileToBlob(payload.image)
-    //             formData.append('File', blob, payload.image.clientName)
-    //         }
-
-    //         await axios.post(uploadURL, formData, {
-    //             headers: {
-    //                 'Authorization': `Bearer ${token.authToken}`,
-    //             }
-    //         })
-
-    //         await advertisement_service.updateAdsImage(adsId, payload.image.clientName)
-
-    //     } catch (error) {
-    //         // if (axios.isAxiosError(error)) {
-    //         //     console.log('Error data:', error.response?.data);
-    //         //     console.log('Error status:', error.response?.status);
-    //         //     console.log('Error headers:', error.response?.headers);
-    //         // }
-    //         throw new HandlerException(error.status, error.message)
-    //     }
-
-    //     return response.status(200).json({ message: 'User image is updated.' })
-    // }
-
     async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
         const data = request.only(['isUpdate']) || false
         const isUpdate = my_service.convertToBoolean(data.isUpdate)
@@ -153,9 +107,29 @@ export default class AdvertisementsController {
         })
 
         if (payload.image) {
-            const imageName = await file_service.saveImage(payload.image)
+            const imageName = await file_service.uploadImage(payload.image)
             await advertisement_service.updateAdsImage(adsId, imageName!)
         }
+
+        return response.status(200).json({ message: 'User image is updated.' })
+    }
+
+    async uploadAdsImageToLMS({ params, request, response, bouncer, session }: HttpContext) {
+        const data = request.only(['isUpdate']) || false
+        const isUpdate = my_service.convertToBoolean(data.isUpdate)
+
+        if (isUpdate) await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
+        else await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
+
+        const adsId = params.adsId
+        const image = request.file('image')
+        const token = session.get('tokenData')
+
+        const payload = await imageValidator.validate({
+            image: image
+        })
+
+        await advertisement_service.updateAdsImageToLMS(payload.image, adsId, token.authToken)
 
         return response.status(200).json({ message: 'User image is updated.' })
     }

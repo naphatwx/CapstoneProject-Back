@@ -4,6 +4,16 @@ import ThaiGeography from "#models/thai_geography"
 import ThaiProvince from "#models/thai_province"
 import ThaiTambon from "#models/thai_tambon"
 
+const getGeographies = async () => {
+    const geographies = await ThaiGeography.query().select('id', 'name')
+    return geographies
+}
+
+const getProvinces = async () => {
+    const provinces = await ThaiProvince.query().select('id', 'nameEn', 'nameTh')
+    return provinces
+}
+
 // Small to big
 const getAmphureByTambonId = async (tambonId: number) => {
     const tambon = await ThaiTambon.query()
@@ -105,6 +115,9 @@ const validateProvinceInGeo = async (
 }
 
 export default {
+    getProvinces,
+    getGeographies,
+
     getAmphureByTambonId,
     getProvinceByAmphureId,
     getGeographyByProvinceId,

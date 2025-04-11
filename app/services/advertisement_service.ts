@@ -8,6 +8,7 @@ import HandlerException from '#exceptions/handler_exception'
 import { DateTime } from 'luxon'
 import BadRequestException from '#exceptions/badrequest_exception'
 import file_service from './file_service.js'
+import { MultipartFile } from '@adonisjs/core/bodyparser'
 
 const getAdsList = async (page: number, perPage: number, search: string) => {
     try {
@@ -254,6 +255,20 @@ const updateAdsImage = async (adsId: number, imageName: string) => {
     }
 }
 
+const updateAdsImageToLMS = async (image: MultipartFile, adsId: number, token: string) => {
+    try {
+        await file_service.uploadImageToLMS(image, token)
+        await updateAdsImage(adsId, image.clientName)
+    } catch (error) {
+        // if (axios.isAxiosError(error)) {
+        //     console.log('Error data:', error.response?.data);
+        //     console.log('Error status:', error.response?.status);
+        //     console.log('Error headers:', error.response?.headers);
+        // }
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
 const approveAds = async (adsId: number, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
@@ -370,9 +385,11 @@ export default {
     getOldestAdsRegisDate,
     getAdsRegistration,
     getAdsExport,
+
     createAds,
     updateAds,
     updateAdsImage,
+    updateAdsImageToLMS,
     approveAds,
     validateDate
 }

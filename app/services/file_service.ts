@@ -5,17 +5,40 @@ import fs from 'node:fs'
 import HandlerException from "#exceptions/handler_exception"
 import text_service from "./text_service.js"
 import ExcelJS from 'exceljs'
+import axios from "axios"
 
 const getImageUrl = async (imageName: string) => {
     return `${process.env.APP_URL}/uploads/${imageName}`
 }
 
-const saveImage = async (image: MultipartFile) => {
+const uploadImage = async (image: MultipartFile) => {
     await image.move(app.makePath('public/uploads'), {
         name: `${cuid()}.${image.extname}`
     })
 
     return image.fileName
+}
+
+const uploadImageToLMS = async (image: MultipartFile, token: string) => {
+    try {
+        const uploadURL = 'https://lms-centralportalgateway-dev.pt.co.th/management/Image/UploadImage'
+        const formData = new FormData()
+        formData.append('ContainerName', 'test')
+        formData.append('Directory', 'image.jpg')
+
+        if (image) {
+            const blob = await convertMultipartFileToBlob(image)
+            formData.append('File', blob, image.clientName)
+        }
+
+        await axios.post(uploadURL, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        })
+    } catch (error) {
+        throw new HandlerException(error.status)
+    }
 }
 
 const deleteImage = async (imageName: string) => {
@@ -116,4 +139,4 @@ async function convertMultipartFileToBlob(multipartFile: MultipartFile): Promise
     return blob
 }
 
-export default { getImageUrl, saveImage, deleteImage, exportExcel, convertMultipartFileToBlob }
+export default { getImageUrl, uploadImage, uploadImageToLMS, deleteImage, exportExcel, convertMultipartFileToBlob }
