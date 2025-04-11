@@ -16,7 +16,7 @@ const sessionConfig = defineConfig({
      * Define how long to keep the session data alive without
      * any activity.
      */
-    age: '10h',
+    age: '24h',
 
     /**
      * Configuration for session cookie and the
@@ -43,7 +43,7 @@ const sessionConfig = defineConfig({
      * list of available stores and their config.
      */
     stores: {
-        cookie: stores.cookie(),
+        cookie: stores.cookie(),// Add Redis store configuration
     }
 })
 
