@@ -2,16 +2,20 @@ import HandlerException from "#exceptions/handler_exception"
 import Advertisement from "#models/advertisement"
 import Plant from "#models/plant"
 import Registration from "#models/registration"
+import { DateTime } from "luxon"
 import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO } from "../dtos/chart_dtos.js"
 import time_service from "./time_service.js"
 import db from "@adonisjs/lucid/services/db"
 
-const getAdsGroupStatus = async () => {
+const getAdsGroupStatus = async (year: number | null = null) => {
     try {
         const ads = await Advertisement.query()
             .select('status')
             .whereNotNull('status')
             .where('status', '!=', '')
+            .where('status', '!=', 'D') // Do not get draft status
+            .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
+            .if(!year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [DateTime.now().year]))
             .count('* as count')
             .groupBy('status')
             .orderBy('status', 'asc')
@@ -25,12 +29,14 @@ const getAdsGroupStatus = async () => {
     }
 }
 
-const getAdsGroupPeriod = async () => {
+const getAdsGroupPeriod = async (year: number | null = null) => {
     try {
         const ads = await Advertisement.query()
             .select('periodId')
             .whereNotNull('periodId')
             .where('periodId', '!=', 0)
+            .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
+            .if(!year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [DateTime.now().year]))
             .preload('period')
             .count('* as count')
             .groupBy('periodId')
@@ -45,12 +51,14 @@ const getAdsGroupPeriod = async () => {
     }
 }
 
-const getAdsGroupPackage = async () => {
+const getAdsGroupPackage = async (year: number | null = null) => {
     try {
         const ads = await Advertisement.query()
             .select('packageId')
             .whereNotNull('packageId')
             .where('packageId', '!=', 0)
+            .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
+            .if(!year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [DateTime.now().year]))
             .preload('packages')
             .count('* as count')
             .groupBy('packageId')
@@ -80,6 +88,8 @@ const getTopRegisByPlant = async (
         if (year && quarter) {
             monthYearStart = year + '-' + time_service.convertQuarterToMonth(Number(quarter)).start
             monthYearEnd = year + '-' + time_service.convertQuarterToMonth(Number(quarter)).end
+        } else if (!year && !quarter) {
+            year = DateTime.now().year
         }
 
         const plant = await Plant.query()
@@ -182,6 +192,8 @@ const getTopRegisByAds = async (
         if (year && quarter) {
             monthYearStart = year + '-' + time_service.convertQuarterToMonth(Number(quarter)).start
             monthYearEnd = year + '-' + time_service.convertQuarterToMonth(Number(quarter)).end
+        } else if (!year && !quarter) {
+            year = DateTime.now().year
         }
 
         const ads = await Advertisement.query()
@@ -241,11 +253,13 @@ const getRegisPerMonthByAds = async (adsId: number) => {
 interface OldRegisForm {
     regisNo: string
     adsId: number
+    adsName: string
     rgsStrDate: string
 }
 
 interface GroupedRegistration {
     adsId: number
+    adsName: string
     rgsStrDate: string
     numberOfRegis: number
     regisNo: string[]
@@ -264,6 +278,7 @@ const groupRegistrationsByAdsId = (registrations: OldRegisForm[]) => {
             // No existingGroup => create a new group
             result.push({
                 adsId: item.adsId,
+                adsName: item.adsName,
                 rgsStrDate: item.rgsStrDate,
                 numberOfRegis: 1,
                 regisNo: [item.regisNo]

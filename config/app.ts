@@ -43,7 +43,7 @@ export default {
     appKey,
     http,
 
-    tokenExpiration: 8,
+    tokenExpiration: 10,
 
     defaultPage: 1,
     defaultPerPage: 10,

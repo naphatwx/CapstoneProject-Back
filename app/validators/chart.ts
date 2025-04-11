@@ -17,5 +17,9 @@ export const topRegisByAdsValidator = vine.compile(vine.object({
     limit: vine.number().optional()
 }))
 
+export const yearValidator = vine.compile(vine.object({
+    year: vine.number().optional()
+}))
+
 
 
