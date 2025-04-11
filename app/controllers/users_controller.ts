@@ -36,7 +36,6 @@ export default class UsersController {
         const user = await user_service.getOnlyUserById(userId)
         if (user.status) {
             session.put('tokenData', responseAPI.data.data)
-            console.log(responseAPI.data.data)
             await user_service.updateUserLoginTime(userId)
             return await auth.use('jwt').generate(user)
         } else {
