@@ -134,7 +134,7 @@ export default class AdvertisementsController {
             image: image
         })
 
-        console.log('token', token)
+        console.log('session token', session.get('tokenData'))
         await advertisement_service.updateAdsImageToLMS(payload.image, adsId, token.authToken)
 
         return response.status(200).json({ message: 'User image is updated.' })
