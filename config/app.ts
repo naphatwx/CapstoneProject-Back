@@ -32,10 +32,12 @@ export const http = defineConfig({
     cookie: {
         domain: '',
         path: '/',
-        maxAge: '2h',
+        maxAge: '24hr',
         httpOnly: true,
-        secure: app.inProduction,
-        sameSite: 'lax',
+        // secure: app.inProduction,
+        // sameSite: 'lax',
+        secure: true, // จำเป็นสำหรับ sameSite: 'none'
+        sameSite: 'none' // จำเป็นสำหรับการทำงานข้ามโดเมน
     },
 })
 
