@@ -16,15 +16,11 @@ export default class RegistrationsController {
         const periodId = request.input('periodId') || null
         const monthYear = request.input('monthYear') || null
 
-        const payload = await registrationValidator.validate({
-            status,
-            orderField,
-            orderType,
-            periodId,
-            monthYear
-        })
+        const payload = await registrationValidator.validate({ status, orderField, orderType, periodId, monthYear })
 
-        const data = await registration_service.getNumberOfRegisAds(payload.status, payload.orderField, payload.orderType, payload.periodId, payload.monthYear)
+        const data = await registration_service.getNumberOfRegisAds(
+            payload.status, payload.orderField, payload.orderType, payload.periodId, payload.monthYear
+        )
         return response.ok(data)
     }
 }

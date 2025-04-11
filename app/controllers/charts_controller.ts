@@ -41,7 +41,7 @@ export default class ChartsController {
         }
 
         const regis = await chart_service.getTopRegisByPlant(
-            payload.geographyId, payload.provinceId, payload.year, payload.quarter, payload.limit
+            payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit
         )
         return response.ok(regis)
     }
@@ -57,7 +57,7 @@ export default class ChartsController {
         const payload = await topRegisByAdsValidator.validate({ periodId, packageId, status, year, quarter, limit })
 
         const regis = await chart_service.getTopRegisByAds(
-            payload.periodId, payload.packageId, payload.status, payload.year, payload.quarter, payload.limit
+            payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit
         )
         return response.ok(regis)
     }

@@ -164,7 +164,9 @@ export default class AdvertisementsController {
             monthYear
         })
 
-        const data = await advertisement_service.getAdsExport(payload.status, payload.orderField, payload.orderType, payload.periodId, payload.monthYear)
+        const data = await advertisement_service.getAdsExport(
+            payload.status, payload.orderField, payload.orderType, payload.periodId, payload.monthYear
+        )
 
         if (data.length === 0) {
             return response.status(404).json({ message: 'No data to export.' })
