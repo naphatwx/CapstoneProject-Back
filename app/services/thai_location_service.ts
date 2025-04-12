@@ -9,8 +9,10 @@ const getGeographies = async () => {
     return geographies
 }
 
-const getProvinces = async () => {
-    const provinces = await ThaiProvince.query().select('id', 'nameEn', 'nameTh')
+const getProvinces = async (geographyId: number | null = null) => {
+    const provinces = await ThaiProvince.query()
+        .select('id', 'nameEn', 'nameTh')
+        .if(geographyId, (query) => query.where('geographyId', geographyId!))
     return provinces
 }
 
