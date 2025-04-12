@@ -30,8 +30,8 @@ RUN npm ci --omit="dev"
 # Expose the port that the API will run on (AdonisJS defaults to port 3333)
 EXPOSE 3333
 
-# Start the application using the compiled server.js from the build directory
-# CMD ["node", "bin/server.js"]
-
 # Use the startup script to run both the scheduler and server
 CMD ["./start.sh"]
+
+# Start the application using the compiled server.js from the build directory
+# CMD ["node", "bin/server.js"]

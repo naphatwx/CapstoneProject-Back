@@ -42,7 +42,6 @@ export default class AdvertisementsController {
             adsId: adsId
         })
 
-        console.log('token', token)
         const ads = await advertisement_service.getAdsDetail(paylaod.adsId, token.authToken)
         return response.ok(ads)
     }
@@ -80,7 +79,6 @@ export default class AdvertisementsController {
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
-        console.log('token', token)
         const ads = await advertisement_service.getAdsDetail(adsId, token.authToken)
 
         if (ads.status === 'A') {
@@ -134,7 +132,6 @@ export default class AdvertisementsController {
             image: image
         })
 
-        console.log('session token', session.get('tokenData'))
         await advertisement_service.updateAdsImageToLMS(payload.image, adsId, token.authToken)
 
         return response.status(200).json({ message: 'User image is updated.' })

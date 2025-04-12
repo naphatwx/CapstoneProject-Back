@@ -10,8 +10,8 @@ import scheduler from 'adonisjs-scheduler/services/main'
 
 scheduler.call(async () => {
     const expiredAds = await advertisement_service.getExpiredAds()
-    console.log('expiredAds', expiredAds)
+
     if (expiredAds.length !== 0) {
         await advertisement_service.inactivateAds(expiredAds.map(ads => ads.adsId))
     }
-}).dailyAt('23:02')
+}).daily()

@@ -25,10 +25,10 @@ const sessionConfig = defineConfig({
     cookie: {
         path: '/',
         httpOnly: true,
+        secure: true, // require for sameSite: 'none'
+        sameSite: 'none' // require for working cross domain
         // secure: app.inProduction,
         // sameSite: 'lax',
-        secure: true, // จำเป็นสำหรับ sameSite: 'none'
-        sameSite: 'none' // จำเป็นสำหรับการทำงานข้ามโดเมน
     },
 
     /**

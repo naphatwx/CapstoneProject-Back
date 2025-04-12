@@ -37,8 +37,6 @@ export default class UsersController {
         if (user.status) {
             session.put('tokenData', responseAPI.data.data)
             await session.commit()
-            console.log('respones', responseAPI.data.data)
-            console.log('session token', session.get('tokenData'))
 
             await user_service.updateUserLoginTime(userId)
             return await auth.use('jwt').generate(user)
