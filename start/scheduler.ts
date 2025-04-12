@@ -14,4 +14,4 @@ scheduler.call(async () => {
     if (expiredAds.length !== 0) {
         await advertisement_service.inactivateAds(expiredAds.map(ads => ads.adsId))
     }
-}).dailyAt('22:45')
+}).dailyAt('23:02')
