@@ -19,9 +19,13 @@ RUN npm run build
 # Ensure the '.env' file is copied into the container
 COPY .env build/
 
+# Copy the startup script to the build directory
+COPY start.sh build/
+RUN chmod +x build/start.sh
+
 WORKDIR /app/build
 
-RUN npm ci --omit="dev" 
+RUN npm ci --omit="dev"
 
 # Expose the port that the API will run on (AdonisJS defaults to port 3333)
 EXPOSE 3333

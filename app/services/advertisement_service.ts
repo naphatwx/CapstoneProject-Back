@@ -283,6 +283,19 @@ const approveAds = async (adsId: number, userId: string) => {
     }
 }
 
+const inactivateAds = async (adsIds: number[]) => {
+    await Advertisement.query().whereIn('adsId', adsIds).update({
+        status: 'D'
+    })
+}
+
+const getExpiredAds = async () => {
+    return await Advertisement.query()
+    .where('status', 'A')
+    .whereNotNull('rgsExpDate')
+    .where('rgsExpDate', '<=', time_service.getDateTimeNow())
+}
+
 const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
     const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC') || null
     const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC') || null
@@ -387,5 +400,9 @@ export default {
     updateAdsImage,
     updateAdsImageToLMS,
     approveAds,
+
+    inactivateAds,
+    getExpiredAds,
+
     validateDate
 }

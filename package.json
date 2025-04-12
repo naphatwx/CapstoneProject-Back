@@ -61,6 +61,7 @@
         "@adonisjs/static": "^1.1.1",
         "@maximemrf/adonisjs-jwt": "^0.2.2",
         "@vinejs/vine": "^2.1.0",
+        "adonisjs-scheduler": "^2.4.0",
         "axios": "^1.7.9",
         "class-transformer": "^0.5.1",
         "exceljs": "^4.4.0",
