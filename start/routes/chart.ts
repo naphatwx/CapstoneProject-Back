@@ -15,4 +15,6 @@ router.group(() => {
     router.get('/top_regis_by_ads', [ChartsController, 'getTopRegisByAds'])
 
     router.get('/regis_per_month/:adsId', [ChartsController, 'getRegisPerMonthByAds'])
+
+    router.get('/ads_list', [ChartsController, 'getAdsList'])
 }).prefix('/api/charts').use(middleware.auth())

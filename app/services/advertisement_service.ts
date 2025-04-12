@@ -1,5 +1,5 @@
 import Advertisement from '#models/advertisement'
-import { AdvertisementDetailDTO, AdvertisementExportDTO, AdvertisementListDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
+import { AdvertisementDetailDTO, AdvertisementExportDTO, AdvertisementListDTO, AdvertisementShortDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
 import ads_package_service from './ads_package_service.js'
 import log_service from './log_service.js'
 import time_service from './time_service.js'
@@ -9,8 +9,9 @@ import { DateTime } from 'luxon'
 import BadRequestException from '#exceptions/badrequest_exception'
 import file_service from './file_service.js'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
+import my_service from './my_service.js'
 
-const getAdsList = async (page: number, perPage: number, search: string) => {
+const getAdsPage = async (page: number, perPage: number, search: string) => {
     try {
         const adsList = await Advertisement.query()
             .where('adsName', 'LIKE', `%${search}%`)
@@ -43,6 +44,27 @@ const getAdsList = async (page: number, perPage: number, search: string) => {
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
+}
+
+const getAdsList = async (search: string = '') => {
+    const adsList = await Advertisement.query()
+        .whereIn('status', ['A', 'N'])
+        .if(search, (query) => {
+            if (my_service.isNumber(search)) {
+                // If ensure search is number => it will error at .where('adsId', search)
+                query.where('adsId', search)
+                    .orWhere('adsName', 'LIKE', `%${search}%`)
+            } else {
+                query.where('adsName', 'LIKE', `%${search}%`)
+            }
+        })
+        .orderBy('adsId', 'desc')
+
+    const adsDTO = adsList.map((ads) => {
+        return new AdvertisementShortDTO(ads)
+    })
+
+    return adsDTO
 }
 
 const getAdsDetail = async (adsId: number, token: string) => {
@@ -291,9 +313,9 @@ const inactivateAds = async (adsIds: number[]) => {
 
 const getExpiredAds = async () => {
     return await Advertisement.query()
-    .where('status', 'A')
-    .whereNotNull('rgsExpDate')
-    .where('rgsExpDate', '<=', time_service.getDateTimeNow())
+        .where('status', 'A')
+        .whereNotNull('rgsExpDate')
+        .where('rgsExpDate', '<=', time_service.getDateTimeNow())
 }
 
 const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
@@ -389,6 +411,7 @@ const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisement
 }
 
 export default {
+    getAdsPage,
     getAdsList,
     getAdsDetail,
     getOldestAdsRegisDate,

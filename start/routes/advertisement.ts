@@ -4,7 +4,7 @@ import router from '@adonisjs/core/services/router'
 const AdsController = () => import('#controllers/advertisements_controller')
 
 router.group(() => {
-    router.get('', [AdsController, 'getAds'])
+    router.get('', [AdsController, 'getAdsPage'])
 
     router.get('/oldest', [AdsController, 'getOldestAdsRegisDate'])
 

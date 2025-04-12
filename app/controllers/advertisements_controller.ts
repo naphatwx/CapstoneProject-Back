@@ -14,22 +14,20 @@ import { registrationValidator } from '#validators/registration'
 export default class AdvertisementsController {
     private adsActivityId = 1
 
-    async getAds({ request, response, bouncer }: HttpContext) {
+    async getAdsPage({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultView, this.adsActivityId)
 
-        const page = request.input('page') || appConfig.defaultPage
-        const perPage = request.input('perPage') || appConfig.defaultPerPage
-        const search = request.input('search') || ''
+        const page = request.input('page', appConfig.defaultPage)
+        const perPage = request.input('perPage', appConfig.defaultPerPage)
+        const search = request.input('search', '')
 
-        const data = {
+        const payload = await pageAndSearchValidator.validate({
             page: page,
             perPage: perPage,
             search: search
-        }
-
-        const payload = await pageAndSearchValidator.validate(data)
-        const adsList = await advertisement_service.getAdsList(payload.page, payload.perPage, payload.search)
-        return response.ok(adsList)
+        })
+        const adsPage = await advertisement_service.getAdsPage(payload.page, payload.perPage, payload.search)
+        return response.ok(adsPage)
     }
 
     async getAdsDetail({ params, response, bouncer, session }: HttpContext) {

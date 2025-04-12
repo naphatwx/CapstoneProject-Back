@@ -21,9 +21,19 @@ const convertToBoolean = (str: string) => {
     return str === 'true'
 }
 
+const isNumber = (value: unknown) => {
+    // Handles both number types and numeric strings
+    // Returns false for NaN, null, undefined, and non-numeric strings
+    return value !== null &&
+           value !== undefined &&
+           !isNaN(Number(value)) &&
+           isFinite(Number(value))
+  }
+
 export default {
     ensureArray,
     sortObjectsByReference,
     convertToNumbers,
-    convertToBoolean
+    convertToBoolean,
+    isNumber
 }

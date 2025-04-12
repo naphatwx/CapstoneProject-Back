@@ -44,6 +44,18 @@ export class AdvertisementListDTO {
     }
 }
 
+export class AdvertisementShortDTO {
+    adsId: number
+    adsName: string | null
+    status: string | null
+
+    constructor(ads: Advertisement) {
+        this.adsId = ads.adsId
+        this.adsName = ads.adsName || null
+        this.status = ads.status || null
+    }
+}
+
 export class AdvertisementDetailDTO {
     adsId: number | null
     adsName: string | null
