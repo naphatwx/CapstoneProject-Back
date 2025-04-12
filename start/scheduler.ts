@@ -4,9 +4,9 @@ import scheduler from 'adonisjs-scheduler/services/main'
 
 // scheduler.command("inspire").everyFiveSeconds()
 
-scheduler.call(() => {
-    console.log("Pruge DB!")
-}).everySecond()
+// scheduler.call(() => {
+//     console.log("Pruge DB!")
+// }).everySecond()
 
 scheduler.call(async () => {
     const expiredAds = await advertisement_service.getExpiredAds()
@@ -14,4 +14,4 @@ scheduler.call(async () => {
     if (expiredAds.length !== 0) {
         await advertisement_service.inactivateAds(expiredAds.map(ads => ads.adsId))
     }
-}).daily()
+}).dailyAt('22:45')
