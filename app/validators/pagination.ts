@@ -7,3 +7,7 @@ export const pageAndSearchValidator = vine.compile(
         search: vine.string().trim()
     })
 )
+
+export const searchValidator = vine.compile(vine.object({
+    search: vine.string().trim()
+}))
