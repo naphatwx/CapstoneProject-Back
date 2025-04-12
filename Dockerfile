@@ -31,4 +31,7 @@ RUN npm ci --omit="dev"
 EXPOSE 3333
 
 # Start the application using the compiled server.js from the build directory
-CMD ["node", "bin/server.js"]
+# CMD ["node", "bin/server.js"]
+
+# Use the startup script to run both the scheduler and server
+CMD ["./start.sh"]
