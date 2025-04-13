@@ -307,7 +307,7 @@ const approveAds = async (adsId: number, userId: string) => {
 
 const inactivateAds = async (adsIds: number[]) => {
     await Advertisement.query().whereIn('adsId', adsIds).update({
-        status: 'D'
+        status: 'N' // Inactive
     })
 }
 
