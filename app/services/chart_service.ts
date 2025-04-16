@@ -63,7 +63,7 @@ const getAdsGroupPackage = async (year: number = DateTime.now().year) => {
             .whereNotNull('status')
             .where('status', '!=', '')
             .whereIn('status', ['A', 'N'])
-            
+
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .preload('packages')
             .count('* as count')

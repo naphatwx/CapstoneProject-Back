@@ -83,9 +83,9 @@ const extractYearMonth = (dateString: any) => {
 }
 
 const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
-    // Create Date objects
-    const startDate = new Date(checkDateTimeIsValid(startDateStr))
-    const endDate = endDateStr ? new Date(checkDateTimeIsValid(endDateStr)) : new Date()
+    // Create DateTime objects with UTC timezone
+    const startDate = DateTime.fromISO(checkDateTimeIsValid(startDateStr), { zone: 'utc' })
+    const endDate = endDateStr ? DateTime.fromISO(checkDateTimeIsValid(endDateStr), { zone: 'utc' }) : DateTime.now().toUTC()
 
     if (startDate > endDate) {
         throw new BadRequestException('Start date should not be more than end date.')
@@ -95,21 +95,19 @@ const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
     const monthsArray = []
 
     // Set a date to the first day of the start month
-    const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
-
-    // Set end date to the first day of the end month to simplify comparison
-    const lastDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1)
+    let currentDate = startDate.startOf('month')
+    const lastDate = endDate.startOf('month')
 
     // Loop through each month until we reach or exceed the end month
     while (currentDate <= lastDate) {
-        const year = currentDate.getFullYear()
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+        const year = currentDate.year
+        const month = currentDate.month.toString().padStart(2, '0') // padStart => If number is single digit (1-9), it will add 0 before (01-09)
 
         // Add the formatted month to the array
         monthsArray.push(`${year}-${month}`)
 
         // Move to the next month
-        currentDate.setMonth(currentDate.getMonth() + 1)
+        currentDate = currentDate.plus({ months: 1 })
     }
 
     return monthsArray
