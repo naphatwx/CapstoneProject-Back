@@ -5,7 +5,6 @@ import Registration from "#models/registration"
 import { DateTime } from "luxon"
 import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO } from "../dtos/chart_dtos.js"
 import time_service from "./time_service.js"
-import db from "@adonisjs/lucid/services/db"
 
 const getAdsGroupStatus = async (year: number = DateTime.now().year) => {
     try {
@@ -90,6 +89,7 @@ const getTopRegisByPlant = async (
         }
 
         const plant = await Plant.query()
+            // Filter plant by location
             .whereHas('tambon', (tambonQuery) => {
                 tambonQuery.whereHas('amphure', (amphureQuery) => {
                     amphureQuery.whereHas('province', (provinceQuery) => {
@@ -100,6 +100,7 @@ const getTopRegisByPlant = async (
                     })
                 })
             })
+            // Preload location
             .preload('tambon', (tambonQuery) => {
                 tambonQuery.preload('amphure', (amphureQuery) => {
                     amphureQuery.preload('province', (provinceQuery) => {
@@ -107,22 +108,22 @@ const getTopRegisByPlant = async (
                     })
                 })
             })
-            // Filter plant
-            .if(year && quarter, (query) => {
-                query.whereHas('registration', (regQuery) => {
-                    regQuery.whereHas('advertisement', (adQuery) => {
-                        adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
-                            .whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') <= ?`, [monthYearEnd as string])
-                    })
-                })
-            })
-            .if(year && !quarter, (query) => {
-                query.whereHas('registration', (regQuery) => {
-                    regQuery.whereHas('advertisement', (adQuery) => {
-                        adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!.toString() as string])
-                    })
-                })
-            })
+            // Filter plant by year and quarter
+            // .if(year && quarter, (query) => {
+            //     query.whereHas('registration', (regQuery) => {
+            //         regQuery.whereHas('advertisement', (adQuery) => {
+            //             adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
+            //                 .whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') <= ?`, [monthYearEnd as string])
+            //         })
+            //     })
+            // })
+            // .if(year && !quarter, (query) => {
+            //     query.whereHas('registration', (regQuery) => {
+            //         regQuery.whereHas('advertisement', (adQuery) => {
+            //             adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!.toString() as string])
+            //         })
+            //     })
+            // })
             // Preload with filter
             .preload('registration', (regQuery) => {
                 regQuery.whereHas('advertisement', (adQuery) => {
@@ -149,7 +150,6 @@ const getTopRegisByPlant = async (
                 })
                 regQuery.as('totalRegistration')
             })
-
             .orderBy('totalRegistration', 'desc')
             .limit(limit)
 
@@ -175,7 +175,7 @@ const getTopRegisByPlant = async (
 
 const getTopRegisByAds = async (
     periodId: number | null = null,
-    packageId: number| null = null,
+    packageId: number | null = null,
     status: string | null = null,
     year: number | null = null,
     quarter: number | null = null,
@@ -226,21 +226,25 @@ const getRegisPerMonthByAds = async (adsId: number) => {
     try {
         const ads = await Advertisement.query()
             .where('adsId', adsId)
+            .preload('registrations')
             .preload('period')
             .preload('packages')
             .firstOrFail()
 
-        const regisByAds = await Registration.query()
-            .where('adsId', adsId)
-            .select(
-                db.raw("FORMAT(REGIS_DATE, 'yyyy-MM') as regisMonth"),
-                db.raw('COUNT(*) as count')
-            )
-            .groupByRaw("FORMAT(REGIS_DATE, 'yyyy-MM')")
-            .orderBy('regisMonth')
+        // const regisByAds = await Registration.query()
+        //     .where('adsId', adsId)
+        //     .select(
+        //         db.raw("FORMAT(REGIS_DATE, 'yyyy-MM') as regisMonth"),
+        //         db.raw('COUNT(*) as count')
+        //     )
+        //     .groupByRaw("FORMAT(REGIS_DATE, 'yyyy-MM')")
+        //     .orderBy('regisMonth')
 
-        const result = new RegisPerMonthByAdsDTO(ads, regisByAds.map((reg) => reg.$extras))
+        const adsMonthToRgs = time_service.getMonthsBetweenDates(ads.rgsStrDate, ads.rgsExpDate)
+        const monthlyCounts = convertToMonthlyCount(ads.registrations)
+        const finalMonthCount = mergeMonthsWithCounts(adsMonthToRgs, monthlyCounts)
 
+        const result = new RegisPerMonthByAdsDTO(ads, finalMonthCount)
         return result
     } catch (error) {
         throw new HandlerException(error.status, error.message)
@@ -284,25 +288,46 @@ const groupRegistrationsByAdsId = (registrations: OldRegisForm[]) => {
     })
 
     return result
+}
 
-    // return registrations.reduce((result: GroupedRegistration[], item: OldRegisForm) => {
-    //     const existingEntry = result.find(group => group.adsId === item.adsId)
-    //     console.log(existingEntry)
+// Convert registration array to [{regisMonth: '2025-01', count: 24}]
+const convertToMonthlyCount = (data: Registration[]) => {
+    const monthCountMap = new Map<string, number>()
 
-    //     if (existingEntry) {
-    //         existingEntry.regisNo.push(item.regisNo)
-    //         existingEntry.numberOfRegis = existingEntry.regisNo.length
-    //     } else {
-    //         result.push({
-    //             adsId: item.adsId,
-    //             rgsStrDate: item.rgsStrDate,
-    //             numberOfRegis: 1, // Initial count
-    //             regisNo: [item.regisNo]
-    //         })
-    //     }
+    // Process each record
+    data.forEach(record => {
+        if (record.regisDate) {
+            const monthKey = time_service.extractYearMonth(record.regisDate)
+            monthCountMap.set(monthKey, (monthCountMap.get(monthKey) || 0) + 1)
+        }
+    })
 
-    //     return result
-    // }, [])
+    const result = Array.from(monthCountMap.entries())
+        .map(([regisMonth, count]) => ({
+            regisMonth,
+            count
+        }))
+        .sort((a, b) => a.regisMonth.localeCompare(b.regisMonth))
+
+    return result
+}
+
+// Merge ['2024-11', '2024-12] and [{regisMonth: '2024-11', count: 10}]
+// to [{regisMonth: '2024-11', count: 10}, {regisMonth: '2024-12', count: 0}]
+const mergeMonthsWithCounts = (months: string[], countData: any[]) => {
+    // Create a map from the count data for easy lookup
+    const countMap = new Map<string, number>()
+
+    // Populate the map with existing count data
+    countData.forEach(item => {
+        countMap.set(item.regisMonth, item.count)
+    })
+
+    // Map each month to an object with regisMonth and count
+    return months.map(month => ({
+        regisMonth: month,
+        count: countMap.get(month) || 0 // Use 0 if no count data exists
+    }))
 }
 
 export default {

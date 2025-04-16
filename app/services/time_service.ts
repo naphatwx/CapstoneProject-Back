@@ -63,13 +63,64 @@ const convertQuarterToMonth = (quarter: number) => {
     }
 }
 
-const validateYearAndQuarter = (
-    year: number | string | null = null,
-    quarter: number | string | null = null
-) => {
+const validateYearAndQuarter = (year: number | string | null = null, quarter: number | string | null = null) => {
     if (!year && quarter) {
         throw new BadRequestException('Quarter cannot be specified without specifying a year')
     }
 }
 
-export default { getDateTimeNow, changeDateTimeFormat, getDateTimeAsObject, convertQuarterToMonth, validateYearAndQuarter }
+const extractYearMonth = (dateString: any) => {
+    // Create a Date object if the input is a string
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
+
+    // Extract the year and month
+    const year = date.getFullYear();
+    // getMonth() returns 0-11, so add 1 and pad with leading zero if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+
+    // Return in YYYY-MM format
+    return `${year}-${month}`;
+}
+
+const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
+    // Create Date objects
+    const startDate = new Date(checkDateTimeIsValid(startDateStr))
+    const endDate = endDateStr ? new Date(checkDateTimeIsValid(endDateStr)) : new Date()
+
+    if (startDate > endDate) {
+        throw new BadRequestException('Start date should not be more than end date.')
+    }
+
+    // Results array
+    const monthsArray = []
+
+    // Set a date to the first day of the start month
+    const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
+
+    // Set end date to the first day of the end month to simplify comparison
+    const lastDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1)
+
+    // Loop through each month until we reach or exceed the end month
+    while (currentDate <= lastDate) {
+        const year = currentDate.getFullYear()
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+
+        // Add the formatted month to the array
+        monthsArray.push(`${year}-${month}`)
+
+        // Move to the next month
+        currentDate.setMonth(currentDate.getMonth() + 1)
+    }
+
+    return monthsArray
+}
+
+export default {
+    getDateTimeNow,
+    changeDateTimeFormat,
+    getDateTimeAsObject,
+    convertQuarterToMonth,
+    validateYearAndQuarter,
+    extractYearMonth,
+    getMonthsBetweenDates
+}
