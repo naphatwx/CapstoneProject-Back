@@ -12,7 +12,7 @@ const getAdsGroupStatus = async (year: number = DateTime.now().year) => {
             .select('status')
             .whereNotNull('status')
             .where('status', '!=', '')
-            .where('status', '!=', 'D') // Do not get draft status
+            .whereIn('status', ['A', 'N'])
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .count('* as count')
             .groupBy('status')
@@ -33,6 +33,11 @@ const getAdsGroupPeriod = async (year: number = DateTime.now().year) => {
             .select('periodId')
             .whereNotNull('periodId')
             .where('periodId', '!=', 0)
+            // Status
+            .whereNotNull('status')
+            .where('status', '!=', '')
+            .whereIn('status', ['A', 'N'])
+
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .preload('period')
             .count('* as count')
@@ -54,6 +59,11 @@ const getAdsGroupPackage = async (year: number = DateTime.now().year) => {
             .select('packageId')
             .whereNotNull('packageId')
             .where('packageId', '!=', 0)
+            // Status
+            .whereNotNull('status')
+            .where('status', '!=', '')
+            .whereIn('status', ['A', 'N'])
+            
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .preload('packages')
             .count('* as count')
