@@ -302,6 +302,7 @@ export class AdsShortDTO {
     packageId: number
     packageDesc: string
     rgsStrDate: string
+    rgsExpDate: string
 
     constructor(ads: any) {
         this.adsId = ads.adsId || 0
@@ -312,6 +313,7 @@ export class AdsShortDTO {
         this.packageId = ads.packageId || 0
         this.packageDesc = ads.packageDesc || ''
         this.rgsStrDate = ads.rgsStrDate || ''
+        this.rgsExpDate = ads.rgsExpDate || ''
     }
 }
 
