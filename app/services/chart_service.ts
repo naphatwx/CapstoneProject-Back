@@ -3,8 +3,11 @@ import Advertisement from "#models/advertisement"
 import Plant from "#models/plant"
 import Registration from "#models/registration"
 import { DateTime } from "luxon"
-import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO } from "../dtos/chart_dtos.js"
+import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO, PlantExport, RegistrationPlantExport, RegistrationAdsExport } from "../dtos/chart_dtos.js"
 import time_service from "./time_service.js"
+import ExcelJS from 'exceljs'
+import file_service from "./file_service.js"
+import { AdvertisementExportDTO } from "../dtos/advertisement_dto.js"
 
 const getAdsGroupStatus = async (year: number = DateTime.now().year) => {
     try {
@@ -98,7 +101,9 @@ const getTopRegisByPlant = async (
             year = DateTime.now().year
         }
 
-        const plant = await Plant.query()
+        const plantList = await Plant.query()
+            // Load company
+            .preload('company')
             // Filter plant by location
             .whereHas('tambon', (tambonQuery) => {
                 tambonQuery.whereHas('amphure', (amphureQuery) => {
@@ -135,7 +140,7 @@ const getTopRegisByPlant = async (
             //     })
             // })
             // Preload with filter
-            .preload('registration', (regQuery) => {
+            .preload('registrations', (regQuery) => {
                 regQuery.whereHas('advertisement', (adQuery) => {
                     if (year && quarter) {
                         adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
@@ -148,7 +153,7 @@ const getTopRegisByPlant = async (
                 regQuery.preload('advertisement')
             })
             // Count with filter
-            .withCount('registration', (regQuery) => {
+            .withCount('registrations', (regQuery) => {
                 regQuery.whereHas('advertisement', (adQuery) => {
                     if (year && quarter) {
                         adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
@@ -163,24 +168,65 @@ const getTopRegisByPlant = async (
             .orderBy('totalRegistration', 'desc')
             .limit(limit)
 
-        const plantDTO = plant.map((pla) => {
-            return new TopPlantDTO(pla,
-                pla.tambon.amphure.province.geography,
-                pla.tambon.amphure.province,
-                pla.tambon.amphure,
-                pla.tambon,
-                pla.$extras.totalRegistration
-            )
-        })
-
-        plantDTO.forEach((pla) => {
-            pla.regis = groupRegistrationsByAdsId(pla.regis)
-        })
-
-        return plantDTO
+        return plantList
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
+}
+
+const mapToTopPlantDTO = async (
+    geographyId: number | null = null,
+    provinceId: number | null = null,
+    year: number | null = null,
+    quarter: number | null = null,
+    limit: number = 10
+) => {
+    const plantList = await getTopRegisByPlant(geographyId, provinceId, year, quarter, limit)
+    const plantDTO = plantList.map((pla) => {
+        return new TopPlantDTO(pla,
+            pla.tambon.amphure.province.geography,
+            pla.tambon.amphure.province,
+            pla.tambon.amphure,
+            pla.tambon,
+            pla.$extras.totalRegistration
+        )
+    })
+
+    plantDTO.forEach((pla) => {
+        pla.regis = groupRegistrationsByAdsId(pla.regis)
+    })
+
+    return plantDTO
+}
+
+const exportTopRegisByPlant = async (
+    geographyId: number | null = null,
+    provinceId: number | null = null,
+    year: number | null = null,
+    quarter: number | null = null,
+    limit: number = 10
+) => {
+    const plantList = await getTopRegisByPlant(geographyId, provinceId, year, quarter, limit)
+    const plantDTO = plantList.map((pla) => {
+        return new PlantExport(pla, pla.$extras.totalRegistration)
+    })
+
+    const workbook = new ExcelJS.Workbook()
+    let filePath = await file_service.exportExcel(plantDTO, 'Plant list', 'Plant data', workbook)
+
+    for (let i = 0; i < plantList.length; i++) {
+        const plant = plantList[i]
+        if (plant.$extras.totalRegistration > 0) {
+            const regisDTO = plant.registrations.map((regis) => {
+                return new RegistrationPlantExport(regis)
+            })
+            filePath = await file_service.exportExcel(
+                regisDTO, `${plant.company.comCode}_${plant.plantCode} ${plant.plantNameTh}`, 'Plant data', workbook
+            )
+        }
+    }
+
+    return filePath
 }
 
 const getTopRegisByAds = async (
@@ -203,7 +249,7 @@ const getTopRegisByAds = async (
             year = DateTime.now().year
         }
 
-        const ads = await Advertisement.query()
+        const adsList = await Advertisement.query()
             .if(periodId, (query) => query.where('periodId', periodId!))
             .if(packageId, (query) => query.where('packageId', packageId!))
             .if(status, (query) => query.where('status', status!))
@@ -222,14 +268,69 @@ const getTopRegisByAds = async (
             .orderBy('totalRegistration', 'desc')
             .limit(limit)
 
-        const adsDTO = ads.map((ad) => {
-            return new TopAdsDTO(ad, ad.$extras.totalRegistration)
-        })
-
-        return adsDTO
+        return adsList
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
+}
+
+const mapToTopAdsDTO = async (
+    periodId: number | null = null,
+    packageId: number | null = null,
+    status: string | null = null,
+    year: number | null = null,
+    quarter: number | null = null,
+    limit: number = 10
+) => {
+    const adsList = await getTopRegisByAds(periodId, packageId, status, year, quarter, limit)
+    const adsDTO = adsList.map((ad) => {
+        return new TopAdsDTO(ad, ad.$extras.totalRegistration)
+    })
+
+    return adsDTO
+}
+
+const exportTopRegisByAds = async (
+    periodId: number | null = null,
+    packageId: number | null = null,
+    status: string | null = null,
+    year: number | null = null,
+    quarter: number | null = null,
+    limit: number = 10
+) => {
+    const adsList = await getTopRegisByAds(periodId, packageId, status, year, quarter, limit)
+    const adsDTO = await Promise.all(
+        adsList.map(async (ads) => {
+            if (ads.updatedUser) await ads.load('userUpdate')
+            if (ads.approveUser) await ads.load('userApprove')
+
+            return new AdvertisementExportDTO(ads, ads.$extras.totalRegistration)
+        }))
+
+    const workbook = new ExcelJS.Workbook()
+    let filePath = await file_service.exportExcel(adsDTO, 'Advertisement list', 'Advertisement data', workbook)
+
+    for (let i = 0; i < adsList.length; i++) {
+        const ads = adsList[i]
+        if (ads.$extras.totalRegistration > 0) {
+            const regisDTO = await Promise.all(
+                ads.registrations.map(async (regis) => {
+                    await regis.load('plant', (plantQuery) => {
+                        plantQuery.preload('company')
+                    })
+
+                    console.log(regis)
+                    return new RegistrationAdsExport(regis)
+                }))
+
+
+            filePath = await file_service.exportExcel(
+                regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement data', workbook
+            )
+        }
+    }
+
+    return filePath
 }
 
 const getRegisPerMonthByAds = async (adsId: number) => {
@@ -240,25 +341,21 @@ const getRegisPerMonthByAds = async (adsId: number) => {
             .preload('period')
             .preload('packages')
             .firstOrFail()
-
-        // const regisByAds = await Registration.query()
-        //     .where('adsId', adsId)
-        //     .select(
-        //         db.raw("FORMAT(REGIS_DATE, 'yyyy-MM') as regisMonth"),
-        //         db.raw('COUNT(*) as count')
-        //     )
-        //     .groupByRaw("FORMAT(REGIS_DATE, 'yyyy-MM')")
-        //     .orderBy('regisMonth')
-
-        const adsMonthToRgs = time_service.getMonthsBetweenDates(ads.rgsStrDate, ads.rgsExpDate)
-        const monthlyCounts = convertToMonthlyCount(ads.registrations)
-        const finalMonthCount = mergeMonthsWithCounts(adsMonthToRgs, monthlyCounts)
-
-        const result = new RegisPerMonthByAdsDTO(ads, finalMonthCount)
-        return result
+        return ads
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
+}
+
+const mapToRegisPerMonthByAdsDTO = async (adsId: number) => {
+    const ads = await getRegisPerMonthByAds(adsId)
+
+    const adsMonthToRgs = time_service.getMonthsBetweenDates(ads.rgsStrDate, ads.rgsExpDate)
+    const monthlyCounts = convertToMonthlyCount(ads.registrations)
+    const finalMonthCount = mergeMonthsWithCounts(adsMonthToRgs, monthlyCounts)
+
+    const result = new RegisPerMonthByAdsDTO(ads, finalMonthCount)
+    return result
 }
 
 interface OldRegisForm {
@@ -346,6 +443,13 @@ export default {
     getAdsGroupPackage,
 
     getTopRegisByPlant,
+    mapToTopPlantDTO,
+    exportTopRegisByPlant,
+
     getTopRegisByAds,
-    getRegisPerMonthByAds
+    mapToTopAdsDTO,
+    exportTopRegisByAds,
+
+    getRegisPerMonthByAds,
+    mapToRegisPerMonthByAdsDTO
 }

@@ -211,13 +211,6 @@ const getAdsExport = async (
         const adsDTO = await Promise.all(
             adsRegis.map(async (ads) => {
                 if (ads.approveUser) await ads.load('userApprove')
-
-                const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
-                if (ads.updatedDate) ads.updatedDate = time_service.changeDateTimeFormat(ads.updatedDate, dateTimeFormat)
-                if (ads.approveDate) ads.approveDate = time_service.changeDateTimeFormat(ads.approveDate, dateTimeFormat)
-                if (ads.rgsStrDate) ads.rgsStrDate = time_service.changeDateTimeFormat(ads.rgsStrDate, dateTimeFormat)
-                if (ads.rgsExpDate) ads.rgsExpDate = time_service.changeDateTimeFormat(ads.rgsExpDate, dateTimeFormat)
-
                 return new AdvertisementExportDTO(ads.toJSON(), ads.$extras.totalRegistration)
             })
         )

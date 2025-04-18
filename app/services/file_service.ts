@@ -104,11 +104,16 @@ const deleteImage = async (imageName: string) => {
     }
 }
 
-const exportExcel = async (data: any[], worksheetName: string, filename: string) => {
+const exportExcel = async (
+    data: any[],
+    worksheetName: string,
+    filename: string,
+    oldWorkbook: ExcelJS.Workbook | null = null
+) => {
     const minimumWidth = 25
 
     // Create a new workbook and worksheet
-    const workbook = new ExcelJS.Workbook()
+    const workbook = oldWorkbook ? oldWorkbook : new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet(worksheetName)
 
     // Define columns

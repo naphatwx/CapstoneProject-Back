@@ -55,5 +55,5 @@ export default class Plant extends BaseModel {
         foreignKey: 'plantCode',
         localKey: 'plantCode'
     })
-    declare registration: HasMany<typeof Registration>
+    declare registrations: HasMany<typeof Registration>
 }

@@ -17,8 +17,8 @@ const convertToNumbers = (array: string[]): number[] => {
     return array.map(Number)
 }
 
-const convertToBoolean = (str: string) => {
-    return str === 'true'
+const convertToBoolean = (str: any) => {
+    return str === 'true' || str === true
 }
 
 const isNumber = (value: unknown) => {

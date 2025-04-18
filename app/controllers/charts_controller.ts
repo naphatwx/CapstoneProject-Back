@@ -3,6 +3,7 @@ import app from '#config/app'
 import BadRequestException from '#exceptions/badrequest_exception'
 import advertisement_service from '#services/advertisement_service'
 import chart_service from '#services/chart_service'
+import my_service from '#services/my_service'
 import thai_location_service from '#services/thai_location_service'
 import { adsIdValidator } from '#validators/advertisement'
 import { topRegisByAdsValidator, topRegisByPlantValidator, yearValidator } from '#validators/chart'
@@ -38,6 +39,7 @@ export default class ChartsController {
         const ads = await chart_service.getAdsGroupPackage(payload.year)
         return response.ok(ads)
     }
+
     async getTopRegisByPlant({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
 
@@ -46,6 +48,7 @@ export default class ChartsController {
         const year = request.input('year')
         const quarter = request.input('quarter')
         const limit = request.input('limit', 10)
+        const isExport = request.input('isExport', false)
 
         const payload = await topRegisByPlantValidator.validate({ geographyId, provinceId, year, quarter, limit })
 
@@ -54,10 +57,17 @@ export default class ChartsController {
             throw new BadRequestException('Province is not in this geography.')
         }
 
-        const regis = await chart_service.getTopRegisByPlant(
-            payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit
-        )
-        return response.ok(regis)
+        if (my_service.convertToBoolean(isExport)) {
+            const filePath = await chart_service.exportTopRegisByPlant(
+                payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit
+            )
+            return response.download(filePath)
+        } else {
+            const regis = await chart_service.mapToTopPlantDTO(
+                payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit
+            )
+            return response.ok(regis)
+        }
     }
 
     async getTopRegisByAds({ request, response, bouncer }: HttpContext) {
@@ -69,13 +79,21 @@ export default class ChartsController {
         const year = request.input('year')
         const quarter = request.input('quarter')
         const limit = request.input('limit', 10)
+        const isExport = request.input('isExport', false)
 
         const payload = await topRegisByAdsValidator.validate({ periodId, packageId, status, year, quarter, limit })
 
-        const regis = await chart_service.getTopRegisByAds(
-            payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit
-        )
-        return response.ok(regis)
+        if (my_service.convertToBoolean(isExport)) {
+            const filePath = await chart_service.exportTopRegisByAds(
+                payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit
+            )
+            return response.download(filePath)
+        } else {
+            const regis = await chart_service.mapToTopAdsDTO(
+                payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit
+            )
+            return response.ok(regis)
+        }
     }
 
     async getRegisPerMonthByAds({ params, response, bouncer }: HttpContext) {
@@ -83,7 +101,7 @@ export default class ChartsController {
 
         const adsId = params.adsId
         const payload = await adsIdValidator.validate({ adsId })
-        const regis = await chart_service.getRegisPerMonthByAds(payload.adsId)
+        const regis = await chart_service.mapToRegisPerMonthByAdsDTO(payload.adsId)
         return response.ok(regis)
     }
 
