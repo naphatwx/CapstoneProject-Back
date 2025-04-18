@@ -2,6 +2,7 @@ import Advertisement from "#models/advertisement"
 import { DateTime } from "luxon"
 import { UserShortDTO } from "./user_dto.js"
 import User from "#models/user"
+import time_service from "#services/time_service"
 
 export class AdvertisementListDTO {
     adsId: number | null
@@ -186,45 +187,47 @@ export class AdvertisementDetailDTO {
 }
 
 export class AdvertisementExportDTO {
-    adsId: number | null
-    adsName: string | null
-    status: string | null
-    period: string | null
-    redeemCode: string | null
-    package: string | null
-    regisLimit: number | null
-    updatedUser: string | null
-    updatedDate: string | null
-    approveUser: string | null
-    approveDate: string | null
-    consentDesc: string | null
-    refAdsId: number | null
-    rgsStrDate: string | null
-    rgsExpDate: string | null
+    adsId: number
+    adsName: string
+    status: string
+    period: string
+    redeemCode: string
+    package: string
+    regisLimit: number
+    updatedUser: string
+    updatedDate: string
+    approveUser: string
+    approveDate: string
+    consentDesc: string
+    refAdsId: number
+    rgsStrDate: string
+    rgsExpDate: string
     recInMth: boolean
     recNextMth: boolean
-    nextMth: number | null
-    totalRegistration: number | null
+    nextMth: number
+    totalRegistration: number
 
-    constructor(data: any, totalRegistration: number) {
-        this.adsId = data.adsId || null
-        this.adsName = data.adsName || null
-        this.status = data.status || null
-        this.period = data.period?.periodDesc || null
-        this.redeemCode = data.redeemCode || null
-        this.package = data.packageDesc || null
-        this.regisLimit = data.regisLimit || null
-        this.updatedUser = data.userUpdate?.firstname + ' ' + data.userUpdate?.lastname || null
-        this.updatedDate = data.updatedDate || null
-        this.approveUser = data.userApprove ? data.userApprove?.firstname + ' ' + data.userApprove?.lastname : null
-        this.approveDate = data.approveDate || null
-        this.consentDesc = data.consentDesc || null
-        this.refAdsId = data.refAdsId || null
-        this.rgsStrDate = data.rgsStrDate || null
-        this.rgsExpDate = data.rgsExpDate || null
+    constructor(data: Partial<Advertisement>, totalRegistration: number) {
+        const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
+
+        this.adsId = data.adsId || 0
+        this.adsName = data.adsName || ''
+        this.status = data.status || ''
+        this.period = data.period?.periodDesc || ''
+        this.redeemCode = data.redeemCode || ''
+        this.package = data.packageDesc || ''
+        this.regisLimit = data.regisLimit || 0
+        this.updatedUser = (data.userUpdate?.firstname + ' ' + data.userUpdate?.lastname || null) || ''
+        this.updatedDate = time_service.changeDateTimeFormat(data.updatedDate, dateTimeFormat)
+        this.approveUser = (data.userApprove ? data.userApprove?.firstname + ' ' + data.userApprove?.lastname : null) || ''
+        this.approveDate = time_service.changeDateTimeFormat(data.approveDate, dateTimeFormat)
+        this.consentDesc = data.consentDesc || ''
+        this.refAdsId = data.refAdsId || 0
+        this.rgsStrDate = time_service.changeDateTimeFormat(data.rgsStrDate, dateTimeFormat)
+        this.rgsExpDate = time_service.changeDateTimeFormat(data.rgsExpDate, dateTimeFormat)
         this.recInMth = data.recInMth || false
         this.recNextMth = data.recNextMth || false
-        this.nextMth = data.nextMth || null
+        this.nextMth = data.nextMth || 0
         this.totalRegistration = totalRegistration || 0
     }
 }

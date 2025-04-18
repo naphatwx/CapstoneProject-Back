@@ -5,6 +5,7 @@ import ThaiAmphure from "#models/thai_amphure"
 import ThaiGeography from "#models/thai_geography"
 import ThaiProvince from "#models/thai_province"
 import ThaiTambon from "#models/thai_tambon"
+import time_service from "#services/time_service"
 import { AdsShortDTO } from "./advertisement_dto.js"
 
 export class AdsGrupStatusDTO {
@@ -101,7 +102,7 @@ export class TopPlantDTO {
             nameTh: tambon.nameTh || '',
             zipCode: tambon.zipcode || ''
         }
-        this.regis = plant.registration.map((reg: Registration) => {
+        this.regis = plant.registrations.map((reg: Registration) => {
             return {
                 regisNo: reg.regisNo,
                 adsId: reg.advertisement.adsId,
@@ -131,6 +132,90 @@ export class RegisPerMonthByAdsDTO extends AdsShortDTO {
     constructor(ads: Advertisement, extra: any) {
         super(ads)
         this.regisPerMonth = extra
+    }
+}
+
+export class RegistrationExport {
+    regisNo: string
+    citizenId: string
+    maxCard: string
+    regisDate: string
+    adsStartDate: string
+    adsExpireDate: string
+    driveLicense: string
+    driveLicenseExp: string
+    carLicense: string
+    consentCf: boolean
+
+    constructor(regis: Partial<Registration>) {
+        const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
+
+        this.regisNo = regis.regisNo || ''
+        this.citizenId = regis.citizenId || ''
+        this.maxCard = regis.maxCard || ''
+        this.regisDate = time_service.changeDateTimeFormat(regis.regisDate, dateTimeFormat)
+        this.adsStartDate = time_service.changeDateTimeFormat(regis.adsStartDate, dateTimeFormat)
+        this.adsExpireDate = time_service.changeDateTimeFormat(regis.adsExpireDate, dateTimeFormat)
+        this.driveLicense = regis.driveLicense || ''
+        this.driveLicenseExp = time_service.changeDateTimeFormat(regis.driveLicenseExp, dateTimeFormat)
+        this.carLicense = regis.carLicense || ''
+        this.consentCf = regis.consentCf || false
+    }
+}
+
+export class RegistrationPlantExport extends RegistrationExport {
+    adsId: number
+    adsName: string
+
+    constructor(regis: Partial<Registration>) {
+        super(regis)
+        this.adsId = regis.advertisement?.adsId || 0
+        this.adsName = regis.advertisement?.adsName || ''
+    }
+}
+
+export class RegistrationAdsExport extends RegistrationExport {
+    comCode: string
+    comName: string
+    plantCode: string
+    plantNameEn: string
+    plantNameTh: string
+
+    constructor(regis: Partial<Registration>) {
+        super(regis)
+        this.comCode = regis.plant?.company.comCode || ''
+        this.comName = regis.plant?.company.comName || ''
+        this.plantCode = regis.plant?.plantCode || ''
+        this.plantNameEn = regis.plant?.plantNameEn || ''
+        this.plantNameTh = regis.plant?.plantNameTh || ''
+    }
+}
+
+export class PlantExport {
+    comCode: string
+    comName: string
+    plantCode: string
+    plantNameEn: string
+    plantNameTh: string
+    geography: string
+    province: string
+    amphur: string
+    tambon: string
+    zipCode: string
+    numberOfRegistration: number
+
+    constructor(plant: Partial<Plant>, numberOfRegistration: number) {
+        this.comCode = plant.company?.comCode || ''
+        this.comName = plant.company?.comName || ''
+        this.plantCode = plant.plantCode || ''
+        this.plantNameEn = plant.plantNameEn || ''
+        this.plantNameTh = plant.plantNameTh || ''
+        this.geography = plant.tambon?.amphure.province.geography.name || ''
+        this.province = plant.tambon?.amphure.province.nameTh || ''
+        this.amphur = plant.tambon?.amphure.nameTh || ''
+        this.tambon = plant.tambon?.nameTh || ''
+        this.zipCode = plant.tambon?.zipcode || ''
+        this.numberOfRegistration = numberOfRegistration || 0
     }
 }
 

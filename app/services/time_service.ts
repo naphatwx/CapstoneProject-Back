@@ -8,12 +8,16 @@ const getDateTimeNow = (hoursToAdd: number = 0, formatDateTime: string = default
 }
 
 const changeDateTimeFormat = (dateTime: any, formatDateTime: string = defaultFormat) => {
-    dateTime = checkDateTimeIsValid(dateTime)
+    dateTime = convertDateTimeToString(dateTime)
+
+    if (!dateTime) {
+        return dateTime
+    }
     return DateTime.fromISO(dateTime).setZone('UTC').toFormat(formatDateTime)
 }
 
 const getDateTimeAsObject = (dateTime: any) => {
-    dateTime = checkDateTimeIsValid(dateTime)
+    dateTime = convertDateTimeToString(dateTime)
     const date = new Date(dateTime)
 
     return {
@@ -26,7 +30,11 @@ const getDateTimeAsObject = (dateTime: any) => {
     }
 }
 
-const checkDateTimeIsValid = (dateTime: any) => {
+const convertDateTimeToString = (dateTime: any) => {
+    if (!dateTime) {
+        return ''
+    }
+
     // Ensure dateTime is a valid string before passing it to the function
     if (dateTime instanceof Date) {
         return dateTime = dateTime.toISOString() // If it's a Date object, convert it to ISO string
@@ -84,8 +92,8 @@ const extractYearMonth = (dateString: any) => {
 
 const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
     // Create DateTime objects with UTC timezone
-    const startDate = DateTime.fromISO(checkDateTimeIsValid(startDateStr), { zone: 'utc' })
-    const endDate = endDateStr ? DateTime.fromISO(checkDateTimeIsValid(endDateStr), { zone: 'utc' }) : DateTime.now().toUTC()
+    const startDate = DateTime.fromISO(convertDateTimeToString(startDateStr), { zone: 'utc' })
+    const endDate = endDateStr ? DateTime.fromISO(convertDateTimeToString(endDateStr), { zone: 'utc' }) : DateTime.now().toUTC()
 
     if (startDate > endDate) {
         throw new BadRequestException('Start date should not be more than end date.')
@@ -120,5 +128,6 @@ export default {
     convertQuarterToMonth,
     validateYearAndQuarter,
     extractYearMonth,
-    getMonthsBetweenDates
+    getMonthsBetweenDates,
+    convertDateTimeToString
 }
