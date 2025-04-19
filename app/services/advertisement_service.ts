@@ -345,18 +345,24 @@ const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
                 message: 'Register start date must be after now.'
             }
         }
-    } else if (!rgsStrDate && rgsExpDate) {
-        if (newRgsExpDate > DateTime.now()) {
-            return success
-        } else {
-            return {
-                isSuccess: false,
-                message: 'Register expire date must be after now.'
-            }
-        }
     } else {
-        return success
+        return {
+            isSuccess: false,
+            message: 'Register start date must be defined.'
+        }
     }
+    // else if (!rgsStrDate && rgsExpDate) {
+    //     if (newRgsExpDate > DateTime.now()) {
+    //         return success
+    //     } else {
+    //         return {
+    //             isSuccess: false,
+    //             message: 'Register expire date must be after now.'
+    //         }
+    //     }
+    // } else {
+    //     return success
+    // }
 }
 
 const checkNewAdsStatus = (newStatus: string) => {

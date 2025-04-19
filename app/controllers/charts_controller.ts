@@ -96,13 +96,21 @@ export default class ChartsController {
         }
     }
 
-    async getRegisPerMonthByAds({ params, response, bouncer }: HttpContext) {
+    async getRegisPerMonthByAds({ params, request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
 
         const adsId = params.adsId
+        const isExport = request.input('isExport', false)
+
         const payload = await adsIdValidator.validate({ adsId })
-        const regis = await chart_service.mapToRegisPerMonthByAdsDTO(payload.adsId)
-        return response.ok(regis)
+
+        if (my_service.convertToBoolean(isExport)) {
+            const filePath = await chart_service.exportRegisPerMonthByAds(adsId)
+            return response.download(filePath)
+        } else {
+            const regis = await chart_service.mapToRegisPerMonthByAdsDTO(payload.adsId)
+            return response.ok(regis)
+        }
     }
 
     async getAdsList({ request, response, bouncer }: HttpContext) {
