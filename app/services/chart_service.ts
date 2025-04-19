@@ -141,7 +141,8 @@ const getTopRegisByPlant = async (
             // })
             // Preload with filter
             .preload('registrations', (regQuery) => {
-                regQuery.whereHas('advertisement', (adQuery) => {
+                regQuery
+                .whereHas('advertisement', (adQuery) => {
                     if (year && quarter) {
                         adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
                             .whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') <= ?`, [monthYearEnd as string])
@@ -150,7 +151,8 @@ const getTopRegisByPlant = async (
                         adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year.toString() as string])
                     }
                 })
-                regQuery.preload('advertisement')
+                .orderBy('regisDate', 'asc')
+                .preload('advertisement')
             })
             // Count with filter
             .withCount('registrations', (regQuery) => {
@@ -212,7 +214,7 @@ const exportTopRegisByPlant = async (
     })
 
     const workbook = new ExcelJS.Workbook()
-    let filePath = await file_service.exportExcel(plantDTO, 'Plant list', 'Plant data', workbook)
+    let filePath = await file_service.exportExcel(plantDTO, 'Plant List', 'Plant data', workbook)
 
     for (let i = 0; i < plantList.length; i++) {
         const plant = plantList[i]
@@ -221,7 +223,7 @@ const exportTopRegisByPlant = async (
                 return new RegistrationPlantExport(regis)
             })
             filePath = await file_service.exportExcel(
-                regisDTO, `${plant.company.comCode}_${plant.plantCode} ${plant.plantNameTh}`, 'Plant data', workbook
+                regisDTO, `${plant.company.comCode}_${plant.plantCode} ${plant.plantNameTh}`, 'Plant Data', workbook
             )
         }
     }
@@ -263,7 +265,7 @@ const getTopRegisByAds = async (
             })
             .preload('period')
             .preload('packages')
-            .preload('registrations')
+            .preload('registrations', (query) => query.orderBy('regisDate', 'asc'))
             .withCount('registrations', (query) => query.as('totalRegistration'))
             .orderBy('totalRegistration', 'desc')
             .limit(limit)
@@ -308,7 +310,7 @@ const exportTopRegisByAds = async (
         }))
 
     const workbook = new ExcelJS.Workbook()
-    let filePath = await file_service.exportExcel(adsDTO, 'Advertisement list', 'Advertisement data', workbook)
+    let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
 
     for (let i = 0; i < adsList.length; i++) {
         const ads = adsList[i]
@@ -318,14 +320,11 @@ const exportTopRegisByAds = async (
                     await regis.load('plant', (plantQuery) => {
                         plantQuery.preload('company')
                     })
-
-                    console.log(regis)
                     return new RegistrationAdsExport(regis)
                 }))
 
-
             filePath = await file_service.exportExcel(
-                regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement data', workbook
+                regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
             )
         }
     }
@@ -337,9 +336,10 @@ const getRegisPerMonthByAds = async (adsId: number) => {
     try {
         const ads = await Advertisement.query()
             .where('adsId', adsId)
-            .preload('registrations')
             .preload('period')
             .preload('packages')
+            .preload('registrations', (query) => query.orderBy('regisDate', 'asc'))
+            .withCount('registrations', (query) => query.as('totalRegistration'))
             .firstOrFail()
         return ads
     } catch (error) {
@@ -356,6 +356,27 @@ const mapToRegisPerMonthByAdsDTO = async (adsId: number) => {
 
     const result = new RegisPerMonthByAdsDTO(ads, finalMonthCount)
     return result
+}
+
+const exportRegisPerMonthByAds = async (adsId: number) => {
+    const ads = await getRegisPerMonthByAds(adsId)
+    const adsDTO = new AdvertisementExportDTO(ads, ads.$extras.totalRegistration)
+
+    const regisDTO = await Promise.all(
+        ads.registrations.map(async (regis) => {
+            await regis.load('plant', (plantQuery) => {
+                plantQuery.preload('company')
+            })
+            return new RegistrationAdsExport(regis)
+        }))
+
+    const adsArray = [adsDTO]
+    const workbook = new ExcelJS.Workbook()
+    workbook.addWorksheet('Advertisement Details')
+    await file_service.createTableInWorksheet(workbook.worksheets[0], adsArray)
+    await file_service.createTableInWorksheet(workbook.worksheets[0], regisDTO)
+    const filePath = await file_service.generateFileBuffer('Advertisement Data', workbook)
+    return filePath
 }
 
 interface OldRegisForm {
@@ -451,5 +472,6 @@ export default {
     exportTopRegisByAds,
 
     getRegisPerMonthByAds,
-    mapToRegisPerMonthByAdsDTO
+    mapToRegisPerMonthByAdsDTO,
+    exportRegisPerMonthByAds
 }

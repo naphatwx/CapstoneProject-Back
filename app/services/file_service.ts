@@ -110,47 +110,66 @@ const exportExcel = async (
     filename: string,
     oldWorkbook: ExcelJS.Workbook | null = null
 ) => {
-    const minimumWidth = 25
-
     // Create a new workbook and worksheet
     const workbook = oldWorkbook ? oldWorkbook : new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet(worksheetName)
 
-    // Define columns
-    worksheet.columns = Object.keys(data[0]).map(key => ({
-        header: text_service.changeTextFormat(key),
-        key: key,
-        width: minimumWidth
-    }))
+    await createTableInWorksheet(worksheet, data)
+    const filePath = await generateFileBuffer(filename, workbook)
+    return filePath
+}
 
-    // Style for headers
-    const headerRow = worksheet.getRow(1)
-    headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }
-    headerRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: '4472C4' }
+const createTableInWorksheet = async (worksheet: ExcelJS.Worksheet, data: any[]) => {
+    const minWidth = 25
+    const maxWidth = 50
+
+    // Add a blank row if this is not the first table
+    if (worksheet.rowCount > 0) {
+        worksheet.addRow([])
     }
-    headerRow.alignment = { vertical: 'middle', horizontal: 'center' }
 
-    // Add rows
-    data.forEach((row, index) => {
-        const excelRow = worksheet.addRow(row)
+    // Get the last row number
+    const lastRowNumber = worksheet.rowCount
 
-        // Alternate row colors
-        if (index % 2 === 0) {
-            excelRow.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'F2F2F2' }
-            }
+    // Define columns
+    const columns = Object.keys(data[0]).map(key => ({
+        key: key
+    }))
+    worksheet.columns = columns
+
+    // Define new header
+    const headerRow = worksheet.getRow(lastRowNumber + 1)
+    const headers = Object.keys(data[0]).map(key => text_service.changeTextFormat(key))
+    headerRow.values = headers
+
+    // Style for headers using worksheet columns
+    worksheet.columns.forEach((column, index) => {
+        const cell = headerRow.getCell(index + 1)
+        cell.font = { bold: true, color: { argb: 'FFFFFF' } }
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '4472C4' }
         }
-
-        // Center align all cells in the row
-        excelRow.alignment = { vertical: 'middle', horizontal: 'center' }
     })
 
-    // Add borders to all cells
+    // Add rows (map data by column's key)
+    data.forEach((row, index) => {
+        const excelRow = worksheet.addRow(row)
+        // Alternate row colors
+        if (index % 2 === 0) {
+            worksheet.columns.forEach((column, index) => {
+                const cell = excelRow.getCell(index + 1)
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'F2F2F2' }
+                }
+            })
+        }
+    })
+
+    // Add borders and alignment to all cells
     worksheet.eachRow((row, rowNumber) => {
         row.eachCell({ includeEmpty: true }, (cell) => {
             cell.border = {
@@ -159,17 +178,24 @@ const exportExcel = async (
                 bottom: { style: 'thin' },
                 right: { style: 'thin' }
             }
+            cell.alignment = { vertical: 'middle', horizontal: 'center' }
         })
     })
 
-    // Auto-fit columns
-    worksheet.columns.forEach(column => {
-        column.width = Math.max(
-            column.width || 10,
-            minimumWidth // minimum width
-        )
-    })
+    // Auto-fit columns based on column count (using column count because want most column number to auto-fit column)
+    const columnCount = worksheet.columnCount
+    for (let i = 1; i <= columnCount; i++) {
+        const column = worksheet.getColumn(i)
+        // Get the current width or default to minWidth
+        const currentWidth = column.width || minWidth
+        // Set width between minWidth and maxWidth
+        column.width = Math.min(Math.max(currentWidth, minWidth), maxWidth)
+    }
 
+    return worksheet
+}
+
+const generateFileBuffer = async (filename: string, workbook: ExcelJS.Workbook) => {
     // Ensure the tmp directory exists
     const tmpDir = app.tmpPath()
     if (!fs.existsSync(tmpDir)) {
@@ -183,7 +209,7 @@ const exportExcel = async (
     return filePath
 }
 
-async function convertMultipartFileToBlob(multipartFile: MultipartFile): Promise<Blob> {
+const convertMultipartFileToBlob = async (multipartFile: MultipartFile): Promise<Blob> => {
     // Read the file as a buffer
     const buffer = await fs.promises.readFile(multipartFile.tmpPath!)
 
@@ -199,6 +225,9 @@ export default {
     uploadImage,
     uploadImageToLMS,
     deleteImage,
+
     exportExcel,
+    createTableInWorksheet,
+    generateFileBuffer,
     convertMultipartFileToBlob
 }

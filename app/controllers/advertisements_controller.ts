@@ -56,10 +56,14 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
-        const result = advertisement_service.validateDate(payload.rgsStrDate, payload.rgsExpDate)
 
-        if (!result.isSuccess) {
-            throw new BadRequestException(result.message)
+        // If ads have wait approve status. Must be validate rgsStrDate and rgsExpDate.
+        if (payload.status === 'W') {
+            const result = advertisement_service.validateDate(payload.rgsStrDate, payload.rgsExpDate)
+
+            if (!result.isSuccess) {
+                throw new BadRequestException(result.message)
+            }
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
@@ -76,16 +80,19 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
-
         const ads = await advertisement_service.getAdsDetail(adsId, token.authToken)
 
-        if (ads.status === 'A') {
-            await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
-            // If it is active ads. It must validate register date
-            const result = advertisement_service.validateDate(null, payload.rgsExpDate)
+        if (ads.status === 'W' || ads.status === 'A') {
+            if (ads.status === 'A') {
+                await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
+            }
+            // Validate rgsStrDate and rgsExpDate
+            const result = advertisement_service.validateDate(payload.rgsStrDate, payload.rgsExpDate)
             if (!result.isSuccess) {
                 throw new BadRequestException(result.message)
             }
+        } else if (ads.status === 'N') {
+            throw new BadRequestException('Cannot update inactive advertisement.')
         }
 
         const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
