@@ -9,11 +9,11 @@ import time_service from "#services/time_service"
 import { AdsShortDTO } from "./advertisement_dto.js"
 
 export class AdsGrupStatusDTO {
-    status: string | null
+    status: string
     count: number
 
-    constructor(ads: Advertisement, count: number) {
-        this.status = ads.status || null
+    constructor(ads: Partial<Advertisement>, count: number) {
+        this.status = ads.status || ''
         this.count = count || 0
     }
 }
@@ -23,9 +23,9 @@ export class AdsGroupPeriodDTO {
     periodDesc: string
     count: number
 
-    constructor(ads: Advertisement, count: number) {
+    constructor(ads: Partial<Advertisement>, count: number) {
         this.periodId = ads.periodId || 0
-        this.periodDesc = ads.period.periodDesc || ''
+        this.periodDesc = ads.period?.periodDesc || ''
         this.count = count || 0
     }
 }
@@ -35,7 +35,7 @@ export class AdsGroupPackageDTO {
     packageDesc: string
     count: number
 
-    constructor(ads: Advertisement, count: number) {
+    constructor(ads: Partial<Advertisement>, count: number) {
         this.packageId = ads.packageId || 0
         this.packageDesc = ads.packageDesc || ''
         this.count = count || 0
@@ -70,14 +70,14 @@ export class TopPlantDTO {
     }
     regis: any
 
-    constructor(plant: Plant,
-        geography: ThaiGeography,
-        province: ThaiProvince,
-        amphure: ThaiAmphure,
-        tambon: ThaiTambon,
+    constructor(plant: Partial<Plant>,
+        geography: Partial<ThaiGeography>,
+        province: Partial<ThaiProvince>,
+        amphure: Partial<ThaiAmphure>,
+        tambon: Partial<ThaiTambon>,
         totalRegistration: number,
     ) {
-        this.comCode = plant.comCode
+        this.comCode = plant.comCode || ''
         this.plantCode = plant.plantCode || ''
         this.plantNameEn = plant.plantNameEn || ''
         this.plantNameTh = plant.plantNameTh || ''
@@ -102,7 +102,7 @@ export class TopPlantDTO {
             nameTh: tambon.nameTh || '',
             zipCode: tambon.zipcode || ''
         }
-        this.regis = plant.registrations.map((reg: Registration) => {
+        this.regis = plant.registrations?.map((reg: Registration) => {
             return {
                 regisNo: reg.regisNo,
                 adsId: reg.advertisement.adsId,
@@ -117,10 +117,10 @@ export class TopAdsDTO extends AdsShortDTO {
     totalRegistration: number
     regis: any
 
-    constructor(ads: Advertisement, totalRegistration: number) {
+    constructor(ads: Partial<Advertisement>, totalRegistration: number) {
         super(ads)
         this.totalRegistration = totalRegistration || 0
-        this.regis = ads.registrations.map((reg: Registration) => {
+        this.regis = ads.registrations?.map((reg: Registration) => {
             return reg.regisNo
         })
     }
@@ -129,7 +129,7 @@ export class TopAdsDTO extends AdsShortDTO {
 export class RegisPerMonthByAdsDTO extends AdsShortDTO {
     regisPerMonth: any
 
-    constructor(ads: Advertisement, extra: any) {
+    constructor(ads: Partial<Advertisement>, extra: any) {
         super(ads)
         this.regisPerMonth = extra
     }

@@ -14,10 +14,10 @@ export default class UsersController {
     async login({ auth, request, session }: HttpContext) {
         const { userId, password } = request.all()
 
-        if (userId === '22222' || userId === '33333' || userId === '44444') {
-            const user = await user_service.getOnlyUserById(userId)
-            return await auth.use('jwt').generate(user)
-        }
+        // if (userId === '22222' || userId === '33333' || userId === '44444') {
+        //     const user = await user_service.getOnlyUserById(userId)
+        //     return await auth.use('jwt').generate(user)
+        // }
 
         let responseAPI
         try {
@@ -47,10 +47,8 @@ export default class UsersController {
 
     async logout({ auth, response, session }: HttpContext) {
         const user = auth.getUserOrFail()
-
         session.forget('tokenData')
         await session.commit()
-
         await user_service.updateUserLogoutTime(user.userId)
         return response.status(200).json({ message: 'Logout successfully.' })
     }
@@ -64,10 +62,9 @@ export default class UsersController {
 
     async getUsers({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.userActivityId)
-
-        const page: number = request.input('page') || app.defaultPage
-        const perPage: number = request.input('perPage') || app.defaultPerPage
-        const search: string = request.input('search') || ''
+        const page: number = request.input('page', app.defaultPage)
+        const perPage: number = request.input('perPage', app.defaultPerPage)
+        const search: string = request.input('search', '')
 
         const payload = await pageAndSearchValidator.validate({
             page: page,
@@ -81,8 +78,8 @@ export default class UsersController {
 
     async getUserById({ params, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.userActivityId)
-
         const userId = params.userId
+
         const payload = await userIdValidator.validate({
             userId: userId
         })
@@ -93,9 +90,9 @@ export default class UsersController {
 
     async createUser({ request, response, auth, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultCreate, this.userActivityId)
-
         const data = request.all()
         const user = auth.getUserOrFail()
+
         const payload = await createUserValidator.validate(data)
 
         await user_service.createUser(payload, user.userId)
@@ -104,7 +101,6 @@ export default class UsersController {
 
     async updateUser({ params, request, response, auth, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultUpdate, this.userActivityId)
-
         const userId = params.userId
         const data = request.all()
         const user = auth.getUserOrFail()
@@ -117,8 +113,8 @@ export default class UsersController {
 
     async inactivateUser({ params, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultDelete, this.userActivityId)
-
         const userId = params.userId
+
         const payload = await userIdValidator.validate({
             userId: userId
         })
