@@ -37,10 +37,10 @@ export class AdvertisementListDTO {
             period: data.period?.period || null
         }
         this.userUpdate = {
-            comCode: data.userUpdate?.comCode || null,
-            userId: data.userUpdate?.userId || null,
-            firstname: data.userUpdate?.firstname || null,
-            lastname: data.userUpdate?.lastname || null
+            comCode: data.userUpdate?.comCode || '',
+            userId: data.userUpdate?.userId || '',
+            firstname: data.userUpdate?.firstname || '',
+            lastname: data.userUpdate?.lastname || ''
         }
     }
 }
@@ -177,10 +177,10 @@ export class AdvertisementDetailDTO {
             updatedUser: log.updatedUser,
             updatedDate: log.updatedDate,
             user: {
-                comCode: log.user.comCode,
-                userId: log.user.userId,
-                firstname: log.user.firstname,
-                lastname: log.user.lastname
+                comCode: log.user.comCode || '',
+                userId: log.user.userId || '',
+                firstname: log.user.firstname || '',
+                lastname: log.user.lastname || ''
             }
         })) || []
     }

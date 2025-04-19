@@ -15,7 +15,6 @@ export default class ChartsController {
 
     async getAdsGroupStatus({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const year = request.input('year')
         const payload = await yearValidator.validate({ year })
         const ads = await chart_service.getAdsGroupStatus(payload.year)
@@ -24,7 +23,6 @@ export default class ChartsController {
 
     async getAdsGroupPeriod({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const year = request.input('year')
         const payload = await yearValidator.validate({ year })
         const ads = await chart_service.getAdsGroupPeriod(payload.year)
@@ -33,7 +31,6 @@ export default class ChartsController {
 
     async getAdsGroupPackage({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const year = request.input('year')
         const payload = await yearValidator.validate({ year })
         const ads = await chart_service.getAdsGroupPackage(payload.year)
@@ -42,7 +39,6 @@ export default class ChartsController {
 
     async getTopRegisByPlant({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const geographyId = request.input('geographyId')
         const provinceId = request.input('provinceId')
         const year = request.input('year')
@@ -72,7 +68,6 @@ export default class ChartsController {
 
     async getTopRegisByAds({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const periodId = request.input('periodId')
         const packageId = request.input('packageId')
         const status = request.input('status')
@@ -98,7 +93,6 @@ export default class ChartsController {
 
     async getRegisPerMonthByAds({ params, request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const adsId = params.adsId
         const isExport = request.input('isExport', false)
 
@@ -115,7 +109,6 @@ export default class ChartsController {
 
     async getAdsList({ request, response, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, app.defaultView, this.dashbordActivityId)
-
         const search = request.input('search', '')
 
         const payload = await searchValidator.validate({ search })

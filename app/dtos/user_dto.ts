@@ -1,21 +1,24 @@
-export class UserShortDTO {
-    comCode: string | null
-    userId: string | null
-    firstname: string | null
-    lastname: string | null
+import User from "#models/user"
+import time_service from "#services/time_service"
 
-    constructor(data: any) {
-        this.comCode = data.comCode || null
-        this.userId = data.userId || null
-        this.firstname = data.firstname || null
-        this.lastname = data.lastname || null
+export class UserShortDTO {
+    comCode: string
+    userId: string
+    firstname: string
+    lastname: string
+
+    constructor(user: Partial<User>) {
+        this.comCode = user.comCode || ''
+        this.userId = user.userId || ''
+        this.firstname = user.firstname || ''
+        this.lastname = user.lastname || ''
     }
 }
 
 export class UserListDTO {
     userId: string
-    firstname: string | null
-    lastname: string | null
+    firstname: string
+    lastname: string
     status: boolean
     updatedUser: string
     updatedDate: string
@@ -23,27 +26,27 @@ export class UserListDTO {
     company: any
     role: any
 
-    constructor(data: any) {
-        this.userId = data.userId
-        this.firstname = data.firstname || null
-        this.lastname = data.lastname || null
-        this.status = data.status || false
-        this.updatedUser = data.updatedUser
-        this.updatedDate = data.updatedDate
-        if (data.userUpdate) {
+    constructor(user: Partial<User>) {
+        this.userId = user.userId || ''
+        this.firstname = user.firstname || ''
+        this.lastname = user.lastname || ''
+        this.status = user.status || false
+        this.updatedUser = user.updatedUser || ''
+        this.updatedDate = time_service.convertDateTimeToString(user.updatedDate) || ''
+        if (user.userUpdate) {
             this.userUpdate = {
-                comCode: data.userUpdate?.comCode || null,
-                userId: data.userUpdate?.userId || null,
-                firstname: data.userUpdate?.firstname || null,
-                lastname: data.userUpdate?.lastname || null
+                comCode: user.userUpdate?.comCode || '',
+                userId: user.userUpdate?.userId || '',
+                firstname: user.userUpdate?.firstname || '',
+                lastname: user.userUpdate?.lastname || ''
             }
         } else {
             this.userUpdate = null
         }
-        this.company = data.company || null
+        this.company = user.company || null
         this.role = {
-            roleId: data.userRoleId,
-            roleName: data.userRoleName
+            roleId: user.userRoleId,
+            roleName: user.userRoleName
         }
     }
 }
@@ -51,45 +54,45 @@ export class UserListDTO {
 export class UserDetailDTO {
     comCode: string
     userId: string
-    firstname: string | null
-    lastname: string | null
+    firstname: string
+    lastname: string
     email: string
-    telphone: string | null
+    telphone: string
     status: boolean
-    loginTime: string | null
-    logoutTime: string | null
+    loginTime: string
+    logoutTime: string
     updatedUser: string
     updatedDate: string
     userUpdate: UserShortDTO | null
     company: any
     role: any
 
-    constructor(data: any) {
-        this.comCode = data.comCode
-        this.userId = data.userId
-        this.firstname = data.firstname || null
-        this.lastname = data.lastname || null
-        this.email = data.email
-        this.telphone = data.telphone || null
-        this.status = data.status || false
-        this.loginTime = data.loginTime || null
-        this.logoutTime = data.logoutTime || null
-        this.updatedUser = data.updatedUser
-        this.updatedDate = data.updatedDate
-        if (data.userUpdate) {
+    constructor(user: Partial<User>) {
+        this.comCode = user.comCode || ''
+        this.userId = user.userId || ''
+        this.firstname = user.firstname || ''
+        this.lastname = user.lastname || ''
+        this.email = user.email || ''
+        this.telphone = user.telphone || ''
+        this.status = user.status || false
+        this.loginTime = time_service.convertDateTimeToString(user.loginTime) || ''
+        this.logoutTime = time_service.convertDateTimeToString(user.logoutTime) || ''
+        this.updatedUser = user.updatedUser || ''
+        this.updatedDate = time_service.convertDateTimeToString(user.updatedDate) || ''
+        if (user.userUpdate) {
             this.userUpdate = {
-                comCode: data.userUpdate?.comCode || null,
-                userId: data.userUpdate?.userId || null,
-                firstname: data.userUpdate?.firstname || null,
-                lastname: data.userUpdate?.lastname || null
+                comCode: user.userUpdate?.comCode || '',
+                userId: user.userUpdate?.userId || '',
+                firstname: user.userUpdate?.firstname || '',
+                lastname: user.userUpdate?.lastname || ''
             }
         } else {
             this.userUpdate = null
         }
-        this.company = data.company || null
+        this.company = user.company || null
         this.role = {
-            roleId: data.userRoleId,
-            roleName: data.userRoleName
+            roleId: user.userRoleId,
+            roleName: user.userRoleName
         }
     }
 }

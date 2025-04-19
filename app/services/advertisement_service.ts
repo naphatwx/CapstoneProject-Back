@@ -10,6 +10,8 @@ import BadRequestException from '#exceptions/badrequest_exception'
 import file_service from './file_service.js'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
 import my_service from './my_service.js'
+import ExcelJS from 'exceljs'
+import { RegistrationAdsExport } from '../dtos/chart_dtos.js'
 
 const getAdsPage = async (page: number, perPage: number, search: string) => {
     try {
@@ -187,6 +189,7 @@ const getAdsRegistration = async (
         .preload('packages', (packageQuery) => packageQuery.where('status', true))
         .preload('adsPackages')
         .preload('userUpdate')
+        .preload('registrations', (query) => query.orderBy('regisDate', 'asc'))
         .withCount('registrations', (registrationQuery) => registrationQuery.as('totalRegistration'))
 
         .if(orderField, (query) => query.orderBy(orderField!, orderType! === 'asc' ? 'asc' : 'desc'))
@@ -202,24 +205,40 @@ const getAdsExport = async (
     periodId: number | null,
     monthYear: string | null) => {
     try {
-        const adsRegis = await getAdsRegistration(status, periodId, monthYear, orderField, orderType)
-
-        if (adsRegis.length === 0) {
-            return []
-        }
-
+        const adsList = await getAdsRegistration(status, periodId, monthYear, orderField, orderType)
         const adsDTO = await Promise.all(
-            adsRegis.map(async (ads) => {
+            adsList.map(async (ads) => {
                 if (ads.approveUser) await ads.load('userApprove')
                 return new AdvertisementExportDTO(ads.toJSON(), ads.$extras.totalRegistration)
             })
         )
 
-        return adsDTO
+        const workbook = new ExcelJS.Workbook()
+        let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
+
+        for (let i = 0; i < adsList.length; i++) {
+            const ads = adsList[i]
+            if (ads.$extras.totalRegistration > 0) {
+                const regisDTO = await Promise.all(
+                    ads.registrations.map(async (regis) => {
+                        await regis.load('plant', (plantQuery) => {
+                            plantQuery.preload('company')
+                        })
+                        return new RegistrationAdsExport(regis)
+                    }))
+
+                filePath = await file_service.exportExcel(
+                    regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
+                )
+            }
+        }
+
+        return filePath
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
 }
+
 
 const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
     try {
