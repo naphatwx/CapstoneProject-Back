@@ -43,7 +43,7 @@ export default class ChartsController {
         const provinceId = request.input('provinceId')
         const year = request.input('year')
         const quarter = request.input('quarter')
-        const limit = request.input('limit', 10)
+        const limit = request.input('limit')
         const isExport = request.input('isExport', false)
 
         const payload = await topRegisByPlantValidator.validate({ geographyId, provinceId, year, quarter, limit })
@@ -55,12 +55,12 @@ export default class ChartsController {
 
         if (my_service.convertToBoolean(isExport)) {
             const filePath = await chart_service.exportTopRegisByPlant(
-                payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit
+                payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter)
             )
             return response.download(filePath)
         } else {
             const regis = await chart_service.mapToTopPlantDTO(
-                payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit
+                payload.geographyId, payload.provinceId, payload.year, Number(payload.quarter), payload.limit ? payload.limit : 10
             )
             return response.ok(regis)
         }
@@ -73,19 +73,19 @@ export default class ChartsController {
         const status = request.input('status')
         const year = request.input('year')
         const quarter = request.input('quarter')
-        const limit = request.input('limit', 10)
+        const limit = request.input('limit')
         const isExport = request.input('isExport', false)
 
         const payload = await topRegisByAdsValidator.validate({ periodId, packageId, status, year, quarter, limit })
 
         if (my_service.convertToBoolean(isExport)) {
             const filePath = await chart_service.exportTopRegisByAds(
-                payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit
+                payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter)
             )
             return response.download(filePath)
         } else {
             const regis = await chart_service.mapToTopAdsDTO(
-                payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit
+                payload.periodId, payload.packageId, payload.status, payload.year, Number(payload.quarter), payload.limit ? payload.limit : 10
             )
             return response.ok(regis)
         }

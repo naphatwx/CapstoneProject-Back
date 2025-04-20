@@ -87,7 +87,7 @@ const getTopRegisByPlant = async (
     provinceId: number | null = null,
     year: number | null = null,
     quarter: number | null = null,
-    limit: number = 10
+    limit: number | null = null
 ) => {
     try {
         time_service.validateYearAndQuarter(year, quarter)
@@ -168,7 +168,7 @@ const getTopRegisByPlant = async (
                 regQuery.as('totalRegistration')
             })
             .orderBy('totalRegistration', 'desc')
-            .limit(limit)
+            .if(limit, (query) => query.limit(limit!))
 
         return plantList
     } catch (error) {
@@ -181,7 +181,7 @@ const mapToTopPlantDTO = async (
     provinceId: number | null = null,
     year: number | null = null,
     quarter: number | null = null,
-    limit: number = 10
+    limit: number | null = null
 ) => {
     const plantList = await getTopRegisByPlant(geographyId, provinceId, year, quarter, limit)
     const plantDTO = plantList.map((pla) => {
@@ -206,7 +206,7 @@ const exportTopRegisByPlant = async (
     provinceId: number | null = null,
     year: number | null = null,
     quarter: number | null = null,
-    limit: number = 10
+    limit: number | null = null
 ) => {
     const plantList = await getTopRegisByPlant(geographyId, provinceId, year, quarter, limit)
     const plantDTO = plantList.map((pla) => {
@@ -237,7 +237,7 @@ const getTopRegisByAds = async (
     status: string | null = null,
     year: number | null = null,
     quarter: number | null = null,
-    limit: number = 10
+    limit: number | null = null
 ) => {
     try {
         time_service.validateYearAndQuarter(year, quarter)
@@ -268,7 +268,7 @@ const getTopRegisByAds = async (
             .preload('registrations', (query) => query.orderBy('regisDate', 'asc'))
             .withCount('registrations', (query) => query.as('totalRegistration'))
             .orderBy('totalRegistration', 'desc')
-            .limit(limit)
+            .if(limit, (query) => query.limit(limit!))
 
         return adsList
     } catch (error) {
@@ -282,7 +282,7 @@ const mapToTopAdsDTO = async (
     status: string | null = null,
     year: number | null = null,
     quarter: number | null = null,
-    limit: number = 10
+    limit: number | null = null
 ) => {
     const adsList = await getTopRegisByAds(periodId, packageId, status, year, quarter, limit)
     const adsDTO = adsList.map((ad) => {
@@ -298,7 +298,7 @@ const exportTopRegisByAds = async (
     status: string | null = null,
     year: number | null = null,
     quarter: number | null = null,
-    limit: number = 10
+    limit: number | null = null
 ) => {
     const adsList = await getTopRegisByAds(periodId, packageId, status, year, quarter, limit)
     const adsDTO = await Promise.all(
