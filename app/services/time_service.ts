@@ -8,16 +8,17 @@ const getDateTimeNow = (hoursToAdd: number = 0, formatDateTime: string = default
 }
 
 const changeDateTimeFormat = (dateTime: any, formatDateTime: string = defaultFormat) => {
-    dateTime = convertDateTimeToString(dateTime)
+    dateTime = ensureDateTimeToString(dateTime)
 
     if (!dateTime) {
         return dateTime
     }
+
     return DateTime.fromISO(dateTime).setZone('UTC').toFormat(formatDateTime)
 }
 
 const getDateTimeAsObject = (dateTime: any) => {
-    dateTime = convertDateTimeToString(dateTime)
+    dateTime = ensureDateTimeToString(dateTime)
     const date = new Date(dateTime)
 
     return {
@@ -30,7 +31,7 @@ const getDateTimeAsObject = (dateTime: any) => {
     }
 }
 
-const convertDateTimeToString = (dateTime: any) => {
+const ensureDateTimeToString = (dateTime: any) => {
     if (!dateTime) {
         return ''
     }
@@ -92,8 +93,8 @@ const extractYearMonth = (dateString: any) => {
 
 const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
     // Create DateTime objects with UTC timezone
-    const startDate = DateTime.fromISO(convertDateTimeToString(startDateStr), { zone: 'utc' })
-    const endDate = endDateStr ? DateTime.fromISO(convertDateTimeToString(endDateStr), { zone: 'utc' }) : DateTime.now().toUTC()
+    const startDate = DateTime.fromISO(ensureDateTimeToString(startDateStr), { zone: 'utc' })
+    const endDate = endDateStr ? DateTime.fromISO(ensureDateTimeToString(endDateStr), { zone: 'utc' }) : DateTime.now().toUTC()
 
     if (startDate > endDate) {
         throw new BadRequestException('Start date should not be more than end date.')
@@ -121,6 +122,36 @@ const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
     return monthsArray
 }
 
+const setTimeToStartOfDay = (dateTime: string) => {
+    dateTime = ensureDateTimeToString(dateTime)
+    if (!dateTime) {
+        return dateTime
+    }
+    // Parse the input date string
+    const date: Date = new Date(dateTime)
+
+    // Set hours, minutes, seconds and milliseconds to 0
+    date.setUTCHours(0, 0, 0, 0)
+
+    // Return the new ISO string
+    return date.toISOString()
+}
+
+const setTimeToEndOfDay = (dateTime: string) => {
+    dateTime = ensureDateTimeToString(dateTime)
+    if (!dateTime) {
+        return dateTime
+    }
+    // Parse the input date string
+    const date: Date = new Date(dateTime)
+
+    // Set hours, minutes, seconds and milliseconds to 0
+    date.setUTCHours(23, 59, 59, 0)
+
+    // Return the new ISO string
+    return date.toISOString()
+}
+
 export default {
     getDateTimeNow,
     changeDateTimeFormat,
@@ -129,5 +160,7 @@ export default {
     validateYearAndQuarter,
     extractYearMonth,
     getMonthsBetweenDates,
-    convertDateTimeToString
+    ensureDateTimeToString,
+    setTimeToStartOfDay,
+    setTimeToEndOfDay
 }
