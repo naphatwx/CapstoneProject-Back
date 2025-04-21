@@ -3,7 +3,7 @@ import Advertisement from "#models/advertisement"
 import Plant from "#models/plant"
 import Registration from "#models/registration"
 import { DateTime } from "luxon"
-import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO, PlantExport, RegistrationPlantExport, RegistrationAdsExport } from "../dtos/chart_dtos.js"
+import { AdsGroupPackageDTO, AdsGroupPeriodDTO, TopPlantDTO, AdsGrupStatusDTO, TopAdsDTO, RegisPerMonthByAdsDTO, PlantExportDTO, RegistrationPlantExportDTO, RegistrationAdsExportDTO } from "../dtos/chart_dtos.js"
 import time_service from "./time_service.js"
 import ExcelJS from 'exceljs'
 import file_service from "./file_service.js"
@@ -142,17 +142,17 @@ const getTopRegisByPlant = async (
             // Preload with filter
             .preload('registrations', (regQuery) => {
                 regQuery
-                .whereHas('advertisement', (adQuery) => {
-                    if (year && quarter) {
-                        adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
-                            .whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') <= ?`, [monthYearEnd as string])
-                    }
-                    if (year && !quarter) {
-                        adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year.toString() as string])
-                    }
-                })
-                .orderBy('regisDate', 'asc')
-                .preload('advertisement')
+                    .whereHas('advertisement', (adQuery) => {
+                        if (year && quarter) {
+                            adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') >= ?`, [monthYearStart as string])
+                                .whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy-MM') <= ?`, [monthYearEnd as string])
+                        }
+                        if (year && !quarter) {
+                            adQuery.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year.toString() as string])
+                        }
+                    })
+                    .orderBy('regisDate', 'asc')
+                    .preload('advertisement')
             })
             // Count with filter
             .withCount('registrations', (regQuery) => {
@@ -210,25 +210,41 @@ const exportTopRegisByPlant = async (
 ) => {
     const plantList = await getTopRegisByPlant(geographyId, provinceId, year, quarter, limit)
     const plantDTO = plantList.map((pla) => {
-        return new PlantExport(pla, pla.$extras.totalRegistration)
+        return new PlantExportDTO(pla, pla.$extras.totalRegistration)
     })
 
     const workbook = new ExcelJS.Workbook()
-    let filePath = await file_service.exportExcel(plantDTO, 'Plant List', 'Plant data', workbook)
+    const plantListWorksheet = workbook.addWorksheet('Plant List')
+    await file_service.createTableInWorksheet(plantListWorksheet, plantDTO)
+    const plantRegisWorksheet = workbook.addWorksheet("Plant's Registrations")
 
+    let registrationList: any[] = []
     for (let i = 0; i < plantList.length; i++) {
         const plant = plantList[i]
         if (plant.$extras.totalRegistration > 0) {
-            const regisDTO = plant.registrations.map((regis) => {
-                return new RegistrationPlantExport(regis)
+            plant.registrations.forEach(regis => {
+                const regisDTO = new RegistrationPlantExportDTO(plant, regis)
+                const regisOrder = regisDTO.toOrderData()
+                registrationList.push(regisOrder)
             })
-            filePath = await file_service.exportExcel(
-                regisDTO, `${plant.company.comCode}_${plant.plantCode} ${plant.plantNameTh}`, 'Plant Data', workbook
-            )
         }
     }
+    await file_service.createTableInWorksheet(plantRegisWorksheet, registrationList)
+    const filePath = await file_service.generateFileBuffer('Plant data', workbook)
 
     return filePath
+    
+    // for (let i = 0; i < plantList.length; i++) {
+    //     const plant = plantList[i]
+    //     if (plant.$extras.totalRegistration > 0) {
+    //         const regisDTO = plant.registrations.map((regis) => {
+    //             return new RegistrationPlantExport(regis)
+    //         })
+    //         filePath = await file_service.exportExcel(
+    //             regisDTO, `${plant.company.comCode}_${plant.plantCode} ${plant.plantNameTh}`, 'Plant Data', workbook
+    //         )
+    //     }
+    // }
 }
 
 const getTopRegisByAds = async (
@@ -310,26 +326,49 @@ const exportTopRegisByAds = async (
         }))
 
     const workbook = new ExcelJS.Workbook()
-    let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
+    const adsListWorksheet = workbook.addWorksheet('Advertisement List')
+    await file_service.createTableInWorksheet(adsListWorksheet, adsDTO)
+    const adsRegisWorksheet = workbook.addWorksheet("Advertisement's Registrations")
 
+    let registrationList: any[] = []
     for (let i = 0; i < adsList.length; i++) {
         const ads = adsList[i]
         if (ads.$extras.totalRegistration > 0) {
-            const regisDTO = await Promise.all(
-                ads.registrations.map(async (regis) => {
-                    await regis.load('plant', (plantQuery) => {
-                        plantQuery.preload('company')
-                    })
-                    return new RegistrationAdsExport(regis)
-                }))
+            const regisPromises = ads.registrations.map(async (regis) => {
+                await regis.load('plant', (plantQuery) => {
+                    plantQuery.preload('company')
+                })
+                const regisDTO = new RegistrationAdsExportDTO(ads, regis)
+                return regisDTO.toOrderData()
+            })
 
-            filePath = await file_service.exportExcel(
-                regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
-            )
+            const regisResults = await Promise.all(regisPromises)
+            registrationList = [...registrationList, ...regisResults] // Add regisResults to registrationList
         }
     }
 
+    await file_service.createTableInWorksheet(adsRegisWorksheet, registrationList)
+    const filePath = await file_service.generateFileBuffer('Advertisement Data', workbook)
+
     return filePath
+
+    // let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
+    // for (let i = 0; i < adsList.length; i++) {
+    //     const ads = adsList[i]
+    //     if (ads.$extras.totalRegistration > 0) {
+    //         const regisDTO = await Promise.all(
+    //             ads.registrations.map(async (regis) => {
+    //                 await regis.load('plant', (plantQuery) => {
+    //                     plantQuery.preload('company')
+    //                 })
+    //                 return new RegistrationAdsExport(regis)
+    //             }))
+
+    //         filePath = await file_service.exportExcel(
+    //             regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
+    //         )
+    //     }
+    // }
 }
 
 const getRegisPerMonthByAds = async (adsId: number) => {
@@ -367,14 +406,15 @@ const exportRegisPerMonthByAds = async (adsId: number) => {
             await regis.load('plant', (plantQuery) => {
                 plantQuery.preload('company')
             })
-            return new RegistrationAdsExport(regis)
+            const regisDTO = new RegistrationAdsExportDTO(ads, regis)
+            return regisDTO.getRegisOnly()
         }))
 
     const adsArray = [adsDTO]
     const workbook = new ExcelJS.Workbook()
-    workbook.addWorksheet('Advertisement Details')
-    await file_service.createTableInWorksheet(workbook.worksheets[0], adsArray)
-    await file_service.createTableInWorksheet(workbook.worksheets[0], regisDTO)
+    const adsDetailWorksheet = workbook.addWorksheet('Advertisement Details')
+    await file_service.createTableInWorksheet(adsDetailWorksheet, adsArray)
+    await file_service.createTableInWorksheet(adsDetailWorksheet, regisDTO)
     const filePath = await file_service.generateFileBuffer('Advertisement Data', workbook)
     return filePath
 }
