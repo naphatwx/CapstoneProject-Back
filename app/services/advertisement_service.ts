@@ -11,7 +11,7 @@ import file_service from './file_service.js'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
 import my_service from './my_service.js'
 import ExcelJS from 'exceljs'
-import { RegistrationAdsExport } from '../dtos/chart_dtos.js'
+import { RegistrationAdsExportDTO } from '../dtos/chart_dtos.js'
 
 const getAdsPage = async (
     page: number = 1,
@@ -227,26 +227,48 @@ const getAdsExport = async (
         )
 
         const workbook = new ExcelJS.Workbook()
-        let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
+        const adsListWorksheet = workbook.addWorksheet('Advertisement List')
+        await file_service.createTableInWorksheet(adsListWorksheet, adsDTO)
+        const adsRegisWorksheet = workbook.addWorksheet("Advertisement's Registrations")
 
+        let registrationList: any[] = []
         for (let i = 0; i < adsList.length; i++) {
             const ads = adsList[i]
             if (ads.$extras.totalRegistration > 0) {
-                const regisDTO = await Promise.all(
-                    ads.registrations.map(async (regis) => {
-                        await regis.load('plant', (plantQuery) => {
-                            plantQuery.preload('company')
-                        })
-                        return new RegistrationAdsExport(regis)
-                    }))
+                const regisPromises = ads.registrations.map(async (regis) => {
+                    await regis.load('plant', (plantQuery) => {
+                        plantQuery.preload('company')
+                    })
+                    const regisDTO = new RegistrationAdsExportDTO(ads, regis)
+                    return regisDTO.toOrderData()
+                })
 
-                filePath = await file_service.exportExcel(
-                    regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
-                )
+                const regisResults = await Promise.all(regisPromises)
+                registrationList = [...registrationList, ...regisResults]
             }
         }
 
+        await file_service.createTableInWorksheet(adsRegisWorksheet, registrationList)
+        const filePath = await file_service.generateFileBuffer('Advertisement Data', workbook)
         return filePath
+
+        // let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
+        // for (let i = 0; i < adsList.length; i++) {
+        //     const ads = adsList[i]
+        //     if (ads.$extras.totalRegistration > 0) {
+        //         const regisDTO = await Promise.all(
+        //             ads.registrations.map(async (regis) => {
+        //                 await regis.load('plant', (plantQuery) => {
+        //                     plantQuery.preload('company')
+        //                 })
+        //                 return new RegistrationAdsExportDTO(regis)
+        //             }))
+
+        //         filePath = await file_service.exportExcel(
+        //             regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
+        //         )
+        //     }
+        // }
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
