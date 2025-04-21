@@ -8,6 +8,7 @@ const regesDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
 export const createUpdateAdvertisementValidator = vine.compile(
     vine.object({
+        // Required
         adsName: vine.string().trim().maxLength(500),
         adsCond: vine.string().trim(),
         status: vine.string().trim().maxLength(2),
@@ -15,7 +16,9 @@ export const createUpdateAdvertisementValidator = vine.compile(
         redeemCode: vine.string().trim().maxLength(100),
         packageId: vine.number(),
         regisLimit: vine.number().nullable(),
-        imageName: vine.string().trim().maxLength(500).nullable(),
+        logHeader: vine.string().trim().maxLength(250),
+
+        // Not required
         refAdsId: vine.number().nullable(),
         consentDesc: vine.string().trim().nullable(),
         recInMth: vine.boolean().nullable(),
@@ -23,8 +26,15 @@ export const createUpdateAdvertisementValidator = vine.compile(
         nextMth: vine.number().nullable(),
         rgsStrDate: vine.string().trim().regex(regesDateTime).nullable(),
         rgsExpDate: vine.string().trim().regex(regesDateTime).nullable(),
-        logHeader: vine.string().trim().maxLength(250),
         adsPackages: vine.array(vine.number()).nullable()
+    })
+)
+
+export const updateActiveAdsValidator = vine.compile(
+    vine.object({
+        regisLimit: vine.number().nullable(),
+        rgsStrDate: vine.string().trim().regex(regesDateTime),
+        rgsExpDate: vine.string().trim().regex(regesDateTime).nullable(),
     })
 )
 

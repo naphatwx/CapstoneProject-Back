@@ -7,7 +7,8 @@ export default class AdvertisementPolicy extends BasePolicy {
     updateActiveAds(user: User, approveUserId: string): AuthorizerResponse {
         if (user.userId === approveUserId) {
             return true
+        } else {
+            throw new ForbiddenException('You cannot update active advertisement. Only approver can update active advertisement.')
         }
-        throw new ForbiddenException('You cannot update active advertisement. Only approver can update.')
     }
 }

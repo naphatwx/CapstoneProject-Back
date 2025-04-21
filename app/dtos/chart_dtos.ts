@@ -9,64 +9,64 @@ import time_service from "#services/time_service"
 import { AdsShortDTO } from "./advertisement_dto.js"
 
 export class AdsGrupStatusDTO {
-    status: string
-    count: number
+    status: string | null
+    count: number | null
 
     constructor(ads: Partial<Advertisement>, count: number) {
-        this.status = ads.status || ''
-        this.count = count || 0
+        this.status = ads.status || null
+        this.count = count || null
     }
 }
 
 export class AdsGroupPeriodDTO {
-    periodId: number
-    periodDesc: string
-    count: number
+    periodId: number | null
+    periodDesc: string | null
+    count: number | null
 
     constructor(ads: Partial<Advertisement>, count: number) {
-        this.periodId = ads.periodId || 0
-        this.periodDesc = ads.period?.periodDesc || ''
-        this.count = count || 0
+        this.periodId = ads.periodId || null
+        this.periodDesc = ads.period?.periodDesc || null
+        this.count = count || null
     }
 }
 
 export class AdsGroupPackageDTO {
-    packageId: number
-    packageDesc: string
-    count: number
+    packageId: number | null
+    packageDesc: string | null
+    count: number | null
 
     constructor(ads: Partial<Advertisement>, count: number) {
-        this.packageId = ads.packageId || 0
-        this.packageDesc = ads.packageDesc || ''
-        this.count = count || 0
+        this.packageId = ads.packageId || null
+        this.packageDesc = ads.packageDesc || null
+        this.count = count || null
     }
 }
 
 export class TopPlantDTO {
-    comCode: string
-    plantCode: string
-    plantNameEn: string
-    plantNameTh: string
-    totalRegistration: number
+    comCode: string | null
+    plantCode: string | null
+    plantNameEn: string | null
+    plantNameTh: string | null
+    totalRegistration: number | null
     geography: {
-        id: number
-        name: string
+        id: number | null
+        name: string | null
     }
     province: {
-        id: number
-        nameEn: string
-        nameTh: string
+        id: number | null
+        nameEn: string | null
+        nameTh: string | null
     }
     amphure: {
-        id: number
-        nameEn: string
-        nameTh: string
+        id: number | null
+        nameEn: string | null
+        nameTh: string | null
     }
     tambon: {
-        id: number
-        nameEn: string
-        nameTh: string
-        zipCode: string
+        id: number | null
+        nameEn: string | null
+        nameTh: string | null
+        zipCode: string | null
     }
     regis: any
 
@@ -77,145 +77,145 @@ export class TopPlantDTO {
         tambon: Partial<ThaiTambon>,
         totalRegistration: number,
     ) {
-        this.comCode = plant.comCode || ''
-        this.plantCode = plant.plantCode || ''
-        this.plantNameEn = plant.plantNameEn || ''
-        this.plantNameTh = plant.plantNameTh || ''
-        this.totalRegistration = totalRegistration || 0
+        this.comCode = plant.comCode || null
+        this.plantCode = plant.plantCode || null
+        this.plantNameEn = plant.plantNameEn || null
+        this.plantNameTh = plant.plantNameTh || null
+        this.totalRegistration = totalRegistration || null
         this.geography = {
-            id: geography.id || 0,
-            name: geography.name || ''
+            id: geography.id || null,
+            name: geography.name || null
         }
         this.province = {
-            id: province.id || 0,
-            nameEn: province.nameEn || '',
-            nameTh: province.nameTh || ''
+            id: province.id || null,
+            nameEn: province.nameEn || null,
+            nameTh: province.nameTh || null
         }
         this.amphure = {
-            id: amphure.id || 0,
-            nameEn: amphure.nameEn || '',
-            nameTh: amphure.nameTh || ''
+            id: amphure.id || null,
+            nameEn: amphure.nameEn || null,
+            nameTh: amphure.nameTh || null
         }
         this.tambon = {
-            id: tambon.id || 0,
-            nameEn: tambon.nameEn || '',
-            nameTh: tambon.nameTh || '',
-            zipCode: tambon.zipcode || ''
+            id: tambon.id || null,
+            nameEn: tambon.nameEn || null,
+            nameTh: tambon.nameTh || null,
+            zipCode: tambon.zipcode || null
         }
         this.regis = plant.registrations?.map((reg: Registration) => {
             return {
-                regisNo: reg.regisNo,
-                adsId: reg.advertisement.adsId,
-                adsName: reg.advertisement.adsName,
-                rgsStrDate: reg.advertisement.rgsStrDate
+                regisNo: reg.regisNo || null,
+                adsId: reg.advertisement.adsId || null,
+                adsName: reg.advertisement.adsName || null,
+                rgsStrDate: reg.advertisement.rgsStrDate || null
             }
         })
     }
 }
 
 export class TopAdsDTO extends AdsShortDTO {
-    totalRegistration: number
-    regis: any
+    totalRegistration: number | null
+    regis: any | null
 
     constructor(ads: Partial<Advertisement>, totalRegistration: number) {
         super(ads)
-        this.totalRegistration = totalRegistration || 0
+        this.totalRegistration = totalRegistration || null
         this.regis = ads.registrations?.map((reg: Registration) => {
-            return reg.regisNo
+            return reg.regisNo || null
         })
     }
 }
 
 export class RegisPerMonthByAdsDTO extends AdsShortDTO {
-    regisPerMonth: any
+    regisPerMonth: any | null
 
     constructor(ads: Partial<Advertisement>, extra: any) {
         super(ads)
-        this.regisPerMonth = extra
+        this.regisPerMonth = extra || null
     }
 }
 
 export class RegistrationExport {
-    regisNo: string
-    citizenId: string
-    maxCard: string
-    regisDate: string
-    adsStartDate: string
-    adsExpireDate: string
-    driveLicense: string
-    driveLicenseExp: string
-    carLicense: string
-    consentCf: boolean
+    regisNo: string | null
+    citizenId: string | null
+    maxCard: string | null
+    regisDate: string | null
+    adsStartDate: string | null
+    adsExpireDate: string | null
+    driveLicense: string | null
+    driveLicenseExp: string | null
+    carLicense: string | null
+    consentCf: boolean | null
 
     constructor(regis: Partial<Registration>) {
         const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
 
-        this.regisNo = regis.regisNo || ''
-        this.citizenId = regis.citizenId || ''
-        this.maxCard = regis.maxCard || ''
-        this.regisDate = time_service.changeDateTimeFormat(regis.regisDate, dateTimeFormat)
-        this.adsStartDate = time_service.changeDateTimeFormat(regis.adsStartDate, dateTimeFormat)
-        this.adsExpireDate = time_service.changeDateTimeFormat(regis.adsExpireDate, dateTimeFormat)
-        this.driveLicense = regis.driveLicense || ''
-        this.driveLicenseExp = time_service.changeDateTimeFormat(regis.driveLicenseExp, dateTimeFormat)
-        this.carLicense = regis.carLicense || ''
-        this.consentCf = regis.consentCf || false
+        this.regisNo = regis.regisNo || null
+        this.citizenId = regis.citizenId || null
+        this.maxCard = regis.maxCard || null
+        this.regisDate = time_service.changeDateTimeFormat(regis.regisDate, dateTimeFormat) || null
+        this.adsStartDate = time_service.changeDateTimeFormat(regis.adsStartDate, dateTimeFormat) || null
+        this.adsExpireDate = time_service.changeDateTimeFormat(regis.adsExpireDate, dateTimeFormat) || null
+        this.driveLicense = regis.driveLicense || null
+        this.driveLicenseExp = time_service.changeDateTimeFormat(regis.driveLicenseExp, dateTimeFormat) || null
+        this.carLicense = regis.carLicense || null
+        this.consentCf = regis.consentCf || null
     }
 }
 
 export class RegistrationPlantExport extends RegistrationExport {
-    adsId: number
-    adsName: string
+    adsId: number | null
+    adsName: string | null
 
     constructor(regis: Partial<Registration>) {
         super(regis)
-        this.adsId = regis.advertisement?.adsId || 0
-        this.adsName = regis.advertisement?.adsName || ''
+        this.adsId = regis.advertisement?.adsId || null
+        this.adsName = regis.advertisement?.adsName || null
     }
 }
 
 export class RegistrationAdsExport extends RegistrationExport {
-    comCode: string
-    comName: string
-    plantCode: string
-    plantNameEn: string
-    plantNameTh: string
+    comCode: string | null
+    comName: string | null
+    plantCode: string | null
+    plantNameEn: string | null
+    plantNameTh: string | null
 
     constructor(regis: Partial<Registration>) {
         super(regis)
-        this.comCode = regis.plant?.company.comCode || ''
-        this.comName = regis.plant?.company.comName || ''
-        this.plantCode = regis.plant?.plantCode || ''
-        this.plantNameEn = regis.plant?.plantNameEn || ''
-        this.plantNameTh = regis.plant?.plantNameTh || ''
+        this.comCode = regis.plant?.company.comCode || null
+        this.comName = regis.plant?.company.comName || null
+        this.plantCode = regis.plant?.plantCode || null
+        this.plantNameEn = regis.plant?.plantNameEn || null
+        this.plantNameTh = regis.plant?.plantNameTh || null
     }
 }
 
 export class PlantExport {
-    comCode: string
-    comName: string
-    plantCode: string
-    plantNameEn: string
-    plantNameTh: string
-    geography: string
-    province: string
-    amphur: string
-    tambon: string
-    zipCode: string
-    numberOfRegistration: number
+    comCode: string | null
+    comName: string | null
+    plantCode: string | null
+    plantNameEn: string | null
+    plantNameTh: string | null
+    geography: string | null
+    province: string | null
+    amphur: string | null
+    tambon: string | null
+    zipCode: string | null
+    numberOfRegistration: number | null
 
     constructor(plant: Partial<Plant>, numberOfRegistration: number) {
-        this.comCode = plant.company?.comCode || ''
-        this.comName = plant.company?.comName || ''
-        this.plantCode = plant.plantCode || ''
-        this.plantNameEn = plant.plantNameEn || ''
-        this.plantNameTh = plant.plantNameTh || ''
-        this.geography = plant.tambon?.amphure.province.geography.name || ''
-        this.province = plant.tambon?.amphure.province.nameTh || ''
-        this.amphur = plant.tambon?.amphure.nameTh || ''
-        this.tambon = plant.tambon?.nameTh || ''
-        this.zipCode = plant.tambon?.zipcode || ''
-        this.numberOfRegistration = numberOfRegistration || 0
+        this.comCode = plant.company?.comCode || null
+        this.comName = plant.company?.comName || null
+        this.plantCode = plant.plantCode || null
+        this.plantNameEn = plant.plantNameEn || null
+        this.plantNameTh = plant.plantNameTh || null
+        this.geography = plant.tambon?.amphure.province.geography.name || null
+        this.province = plant.tambon?.amphure.province.nameTh || null
+        this.amphur = plant.tambon?.amphure.nameTh || null
+        this.tambon = plant.tambon?.nameTh || null
+        this.zipCode = plant.tambon?.zipcode || null
+        this.numberOfRegistration = numberOfRegistration || null
     }
 }
 

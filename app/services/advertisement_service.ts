@@ -1,5 +1,5 @@
 import Advertisement from '#models/advertisement'
-import { AdvertisementDetailDTO, AdvertisementExportDTO, AdvertisementListDTO, AdvertisementShortDTO, CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
+import { AdvertisementDetailDTO, AdvertisementExportDTO, AdvertisementListDTO, AdvertisementShortDTO } from '../dtos/advertisement_dto.js'
 import ads_package_service from './ads_package_service.js'
 import log_service from './log_service.js'
 import time_service from './time_service.js'
@@ -13,30 +13,52 @@ import my_service from './my_service.js'
 import ExcelJS from 'exceljs'
 import { RegistrationAdsExport } from '../dtos/chart_dtos.js'
 
-const getAdsPage = async (page: number, perPage: number, search: string) => {
+const getAdsPage = async (
+    page: number = 1,
+    perPage: number = 10,
+    search: string | null = null,
+    periodId: number | null = null,
+    packageId: number | null = null,
+    status: string | null = null,
+    orderField: string = 'adsId',
+    orderType: string = 'desc'
+) => {
     try {
         const adsList = await Advertisement.query()
-            .where('adsName', 'LIKE', `%${search}%`)
-            .orWhere('redeemCode', search)
+            .if(search, (query) =>
+                query.where('adsName', 'LIKE', `%${search}%`)
+                    .orWhere('redeemCode', 'LIKE', `%${search}%`))
+            .if(periodId, (query) => {
+                console.log('period id', periodId)
+                query.where('periodId', periodId!)
+            })
+            .if(packageId, (query) => {
+                console.log('packageId', packageId)
+                query.where('packageId', packageId!)
+            })
+            .if(status, (query) => {
+                console.log('status', status)
+                query.where('status', status!)
+            })
 
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
             })
-            .orWhereHas('period', (periodQuery) => {
-                periodQuery.where('periodDesc', 'LIKE', `%${search}%`)
-            })
+            // .orWhereHas('period', (periodQuery) => {
+            //     periodQuery.where('periodDesc', 'LIKE', `%${search}%`)
+            // })
             .preload('packages', (packageQuery) => {
                 packageQuery.where('status', true)
             })
-            .orWhereHas('packages', (packageQuery) => {
-                packageQuery.where('packageDesc', 'LIKE', `%${search}%`)
-            })
+            // .orWhereHas('packages', (packageQuery) => {
+            //     packageQuery.where('packageDesc', 'LIKE', `%${search}%`)
+            // })
             .preload('userUpdate')
-            .orWhereHas('userUpdate', (userQuery) => {
-                userQuery.whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", [`%${search}%`])
-            })
+            // .orWhereHas('userUpdate', (userQuery) => {
+            //     userQuery.whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", [`%${search}%`])
+            // })
 
-            .orderBy('adsId', 'desc')
+            .orderBy(orderField, orderType === 'asc' ? 'asc' : 'desc')
             .paginate(page, perPage)
 
         const adsDTO: AdvertisementListDTO[] = adsList.all().map((ads) =>
@@ -53,7 +75,7 @@ const getAdsList = async (search: string = '') => {
         .whereIn('status', ['A', 'N'])
         .if(search, (query) => {
             if (my_service.isNumber(search)) {
-                // If ensure search is number => it will error at .where('adsId', search)
+                // Ensure search is number => it will error at .where('adsId', search)
                 query.where('adsId', search)
                     .orWhere('adsName', 'LIKE', `%${search}%`)
             } else {
@@ -240,8 +262,13 @@ const getAdsExport = async (
 }
 
 
-const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+const createAds = async (newAdsData: any, userId: string) => {
     try {
+        // If create and send it to approve.
+        if (newAdsData.status === 'W') {
+            validateDate(newAdsData.rgsStrDate, newAdsData.rgsExpDate)
+        }
+
         const ads = new Advertisement()
         const newAds = setAdsValue(ads, newAdsData, userId)
         await newAds.save()
@@ -257,9 +284,21 @@ const createAds = async (newAdsData: CreateOrUpdateAdvertisementDTO, userId: str
     }
 }
 
-const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+const updateDraftAds = async (adsId: number, newAdsData: any, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
+
+        if (ads.status !== 'D') {
+            throw new BadRequestException('Cannot update advertisement that not in draft status.')
+        }
+
+        // Update data and send it to approve. Must validate register date
+        if (newAdsData.status === 'W') {
+            console.log('validate date')
+            console.log('')
+            validateDate(newAdsData.rgsStrDate, newAdsData.rgsExpDate)
+        }
+
         const newAds = setAdsValue(ads, newAdsData, userId)
         await newAds.save()
 
@@ -270,6 +309,24 @@ const updateAds = async (adsId: number, newAdsData: CreateOrUpdateAdvertisementD
 
         await log_service.createLog(newAdsData.logHeader, userId, newAds.adsId)
         return newAds.adsId
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
+const updateActiveAds = async (adsId: number, data: any, userId: string) => {
+    try {
+        const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
+        validateDateActiveAds(data.rgsStrDate, data.rgsExpDate)
+
+        // Can update only regisLimit, rgsExpDate
+        ads.regisLimit = data.regisLimit
+        ads.rgsExpDate = data.rgsExpDate
+        ads.updatedUser = userId
+        ads.updatedDate = time_service.getDateTimeNow()
+
+        await ads.save()
+        return ads.adsId
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
@@ -303,8 +360,15 @@ const approveAds = async (adsId: number, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
-        if (ads.status === 'A') {
-            throw new BadRequestException('Advertisement is already approved.')
+        switch (ads.status) {
+            case 'D':
+                throw new BadRequestException('Cannot approve draft advertisement.')
+            case 'A':
+                throw new BadRequestException('Advertisement is already approved.')
+            case 'N':
+                throw new BadRequestException('Advertisement is already inactivated.')
+            default:
+                break
         }
 
         ads.status = 'A'
@@ -312,6 +376,23 @@ const approveAds = async (adsId: number, userId: string) => {
         ads.approveUser = userId
         await ads.save()
         await log_service.createLog('Approve advertisement.', userId, ads.adsId)
+        return ads.adsId
+    } catch (error) {
+        throw new HandlerException(error.status, error.message)
+    }
+}
+
+const rejectWaitAprroveAds = async (adsId: number) => {
+    try {
+        const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
+
+        if (ads.status !== 'W') {
+            throw new BadRequestException('Cannot reject advertisement that not in waiting approve status')
+        }
+
+        ads.status = 'D'
+        await ads.save()
+        return ads.adsId
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
@@ -339,49 +420,47 @@ const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
         message: 'Success'
     }
 
+    // Must have rgsStrDate
     if (rgsStrDate && rgsExpDate) {
         if (newRgsStrDate > DateTime.now() && newRgsExpDate > DateTime.now()) {
             if (newRgsStrDate < newRgsExpDate) {
                 return success
             } else {
-                return {
-                    isSuccess: false,
-                    message: 'Register start date must be before register expire date.'
-                }
+                throw new BadRequestException('Register start date must be before register expire date.')
             }
         } else {
-            return {
-                isSuccess: false,
-                message: 'Register start date and register expire date must be after now.'
-            }
+            throw new BadRequestException('Register start date and register expire date must be after now.')
         }
     } else if (rgsStrDate && !rgsExpDate) {
         if (newRgsStrDate > DateTime.now()) {
             return success
         } else {
-            return {
-                isSuccess: false,
-                message: 'Register start date must be after now.'
-            }
+            throw new BadRequestException('Register start date must be after now.')
         }
     } else {
-        return {
-            isSuccess: false,
-            message: 'Register start date must be defined.'
-        }
+        throw new BadRequestException('Register start date must be defined.')
     }
-    // else if (!rgsStrDate && rgsExpDate) {
-    //     if (newRgsExpDate > DateTime.now()) {
-    //         return success
-    //     } else {
-    //         return {
-    //             isSuccess: false,
-    //             message: 'Register expire date must be after now.'
-    //         }
-    //     }
-    // } else {
-    //     return success
-    // }
+}
+
+const validateDateActiveAds = (rgsStrDate: any, rgsExpDate: any) => {
+    const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC') || null
+    const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC') || null
+
+    const success = {
+        isSuccess: true,
+        message: 'Success'
+    }
+
+    // rgsStrDate always have value. If ads is active.
+    if (rgsExpDate) {
+        if (newRgsStrDate < newRgsExpDate && newRgsExpDate > DateTime.now()) {
+            return success
+        } else {
+            throw new BadRequestException('Register expired date must be after now and must be after register start date.')
+        }
+    } else {
+        return success
+    }
 }
 
 const checkNewAdsStatus = (newStatus: string) => {
@@ -400,30 +479,32 @@ const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
     }
 }
 
-const setAdsValue = (ads: Advertisement, newAdsData: CreateOrUpdateAdvertisementDTO, userId: string) => {
+const setAdsValue = (ads: Advertisement, newAdsData: any, userId: string) => {
+    // Required
     ads.adsName = newAdsData.adsName
     ads.adsCond = newAdsData.adsCond
-    ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status)
-        ? ads.approveUser : (checkNewAdsStatus(newAdsData.status)
-            ? userId : null)
-    ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status)
-        ? ads.approveDate : (checkNewAdsStatus(newAdsData.status)
-            ? time_service.getDateTimeNow() : null)
+    // ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status)
+    //     ? ads.approveUser : (checkNewAdsStatus(newAdsData.status)
+    //         ? userId : null)
+    // ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status)
+    //     ? ads.approveDate : (checkNewAdsStatus(newAdsData.status)
+    //         ? time_service.getDateTimeNow() : null)
     ads.status = newAdsData.status
     ads.periodId = newAdsData.periodId
     ads.redeemCode = newAdsData.redeemCode
     ads.packageId = newAdsData.packageId
+
+    // Not required
     ads.regisLimit = newAdsData.regisLimit
     ads.updatedUser = userId
     ads.updatedDate = time_service.getDateTimeNow()
-    ads.imageName = newAdsData.imageName
     ads.refAdsId = newAdsData.refAdsId
     ads.consentDesc = newAdsData.consentDesc
     ads.recInMth = newAdsData.recInMth
     ads.recNextMth = newAdsData.recNextMth
     ads.nextMth = newAdsData.nextMth
-    ads.rgsStrDate = newAdsData.rgsStrDate === null ? null : time_service.changeDateTimeFormat(newAdsData.rgsStrDate)
-    ads.rgsExpDate = newAdsData.rgsExpDate === null ? null : time_service.changeDateTimeFormat(newAdsData.rgsExpDate)
+    ads.rgsStrDate = newAdsData.rgsStrDate ? time_service.changeDateTimeFormat(time_service.setTimeToStartOfDay(newAdsData.rgsStrDate)) : null
+    ads.rgsExpDate = newAdsData.rgsExpDate ? time_service.changeDateTimeFormat(time_service.setTimeToEndOfDay(newAdsData.rgsExpDate)) : null
 
     return ads
 }
@@ -437,10 +518,13 @@ export default {
     getAdsExport,
 
     createAds,
-    updateAds,
+    updateDraftAds,
+    updateActiveAds,
     updateAdsImage,
     updateAdsImageToLMS,
+
     approveAds,
+    rejectWaitAprroveAds,
 
     inactivateAds,
     getExpiredAds,

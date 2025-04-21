@@ -1,23 +1,23 @@
 import { UserShortDTO } from "./user_dto.js"
 
 export class PlantListDTO {
-    comCode: string
-    comName: string
-    plantCode: string
-    plantNameTh: string
-    plantNameEn: string
-    status: boolean
+    comCode: string | null
+    comName: string | null
+    plantCode: string | null
+    plantNameTh: string | null
+    plantNameEn: string | null
+    status: boolean | null
     updatedUser: string | null
     updatedDate: string | null
     userUpdate: UserShortDTO | null
 
     constructor(data: any) {
-        this.comCode = data.comCode
-        this.comName = data.company?.comName
-        this.plantCode = data.plantCode
-        this.plantNameTh = data.plantNameTh
-        this.plantNameEn = data.plantNameEn
-        this.status = data.status || false
+        this.comCode = data.comCode || null
+        this.comName = data.company?.comName || null
+        this.plantCode = data.plantCode || null
+        this.plantNameTh = data.plantNameTh || null
+        this.plantNameEn = data.plantNameEn || null
+        this.status = data.status || null
         this.updatedUser = data.updatedUser || null
         this.updatedDate = data.updatedDate || null
         if (data.userUpdate) {

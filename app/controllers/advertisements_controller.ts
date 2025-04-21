@@ -1,9 +1,7 @@
 import advertisement_service from '#services/advertisement_service'
-import { adsIdValidator, createUpdateAdvertisementValidator } from '#validators/advertisement'
+import { adsIdValidator, createUpdateAdvertisementValidator, updateActiveAdsValidator } from '#validators/advertisement'
 import type { HttpContext } from '@adonisjs/core/http'
-import { CreateOrUpdateAdvertisementDTO } from '../dtos/advertisement_dto.js'
-import { pageAndSearchValidator } from '#validators/pagination'
-import BadRequestException from '#exceptions/badrequest_exception'
+import { paramsAdsPageValidator } from '#validators/pagination'
 import { isAccess } from '#abilities/main'
 import appConfig from '#config/app'
 import { imageValidator } from '#validators/file'
@@ -19,13 +17,19 @@ export default class AdvertisementsController {
         const page = request.input('page', appConfig.defaultPage)
         const perPage = request.input('perPage', appConfig.defaultPerPage)
         const search = request.input('search', '')
+        const periodId = request.input('periodId')
+        const packageId = request.input('packageId')
+        const status = request.input('status')
+        const orderField = request.input('orderField')
+        const orderType = request.input('orderType')
 
-        const payload = await pageAndSearchValidator.validate({
-            page: page,
-            perPage: perPage,
-            search: search
+        const payload = await paramsAdsPageValidator.validate({
+            page, perPage, search, periodId, packageId, status, orderField, orderType
         })
-        const adsPage = await advertisement_service.getAdsPage(payload.page, payload.perPage, payload.search)
+
+        const adsPage = await advertisement_service.getAdsPage(
+            payload.page, payload.perPage, payload.search, payload.periodId, payload.packageId, payload.status, payload.orderField, payload.orderType
+        )
         return response.ok(adsPage)
     }
 
@@ -34,9 +38,7 @@ export default class AdvertisementsController {
         const token = session.get('tokenData')
         const adsId = params.adsId
 
-        const paylaod = await adsIdValidator.validate({
-            adsId: adsId
-        })
+        const paylaod = await adsIdValidator.validate({ adsId: adsId })
 
         const ads = await advertisement_service.getAdsDetail(paylaod.adsId, token.authToken)
         return response.ok(ads)
@@ -47,52 +49,44 @@ export default class AdvertisementsController {
         return response.ok(ads)
     }
 
-    async storeAds({ request, response, auth, bouncer }: HttpContext) {
+    async createAds({ request, response, auth, bouncer }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultCreate, this.adsActivityId)
         const data = request.body()
         const user = auth.getUserOrFail()
 
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
-        // If ads have wait approve status. Must be validate rgsStrDate and rgsExpDate.
-        if (payload.status === 'W') {
-            const result = advertisement_service.validateDate(payload.rgsStrDate, payload.rgsExpDate)
-
-            if (!result.isSuccess) {
-                throw new BadRequestException(result.message)
-            }
-        }
-
-        const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
-        const newAdsId = await advertisement_service.createAds(adsDTO, user.userId)
+        const newAdsId = await advertisement_service.createAds(payload, user.userId)
         return response.status(201).json({ message: 'Advertisement has been created.', adsId: newAdsId })
     }
 
-    async updateAds({ params, request, response, auth, bouncer, session }: HttpContext) {
+    async updateDraftDate({ params, request, response, auth, bouncer }: HttpContext) {
+        await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
+        const adsId = params.adsId
+        const data = request.body()
+        const user = auth.getUserOrFail()
+
+        const payload = await createUpdateAdvertisementValidator.validate(data)
+
+        const newAdsId = await advertisement_service.updateDraftAds(adsId, payload, user.userId)
+        return response.status(200).json({ message: 'Advertisement has been updated.', adsId: newAdsId })
+    }
+
+    async updateActiveAds({ params, request, response, auth, bouncer, session }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultUpdate, this.adsActivityId)
         const token = session.get('tokenData')
         const adsId = params.adsId
         const data = request.body()
         const user = auth.getUserOrFail()
 
-        const payload = await createUpdateAdvertisementValidator.validate(data)
+        const payload = await updateActiveAdsValidator.validate(data)
         const ads = await advertisement_service.getAdsDetail(adsId, token.authToken)
 
-        if (ads.status === 'W' || ads.status === 'A') {
-            if (ads.status === 'A') {
-                await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
-            }
-            // Validate rgsStrDate and rgsExpDate
-            const result = advertisement_service.validateDate(payload.rgsStrDate, payload.rgsExpDate)
-            if (!result.isSuccess) {
-                throw new BadRequestException(result.message)
-            }
-        } else if (ads.status === 'N') {
-            throw new BadRequestException('Cannot update inactive advertisement.')
+        if (ads.status === 'A') {
+            await bouncer.with('AdvertisementPolicy').authorize('updateActiveAds', ads.approveUser!)
         }
 
-        const adsDTO = CreateOrUpdateAdvertisementDTO.fromVinePayload(payload)
-        const newAdsId = await advertisement_service.updateAds(adsId, adsDTO, user.userId)
+        const newAdsId = await advertisement_service.updateActiveAds(adsId, payload, user.userId)
         return response.status(200).json({ message: 'Advertisement has been updated.', adsId: newAdsId })
     }
 
@@ -142,7 +136,15 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         await advertisement_service.approveAds(adsId, user.userId)
-        return response.status(200).json({ message: 'Advertisement has been approved.' })
+        return response.status(200).json({ message: 'Advertisement has been approved.', adsId: adsId })
+    }
+
+    async rejectAds({ params, response, bouncer }: HttpContext) {
+        await bouncer.authorize(isAccess, appConfig.defaultApprove, this.adsActivityId)
+        const adsId = params.adsId
+
+        await advertisement_service.rejectWaitAprroveAds(adsId)
+        return response.status(200).json({ message: 'Advertisement has been rejected.', adsId: adsId })
     }
 
     async exportAdsExcel({ request, response, bouncer }: HttpContext) {

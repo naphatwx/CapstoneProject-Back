@@ -12,11 +12,15 @@ router.group(() => {
 
     router.get('/:adsId', [AdsController, 'getAdsDetail'])
 
-    router.post('', [AdsController, 'storeAds'])
+    router.post('', [AdsController, 'createAds'])
 
-    router.put('/:adsId', [AdsController, 'updateAds'])
+    router.put('/:adsId', [AdsController, 'updateDraftDate'])
+
+    router.patch('/active/:adsId', [AdsController, 'updateActiveAds'])
 
     router.patch('/image/:adsId', [AdsController, 'uploadAdsImageToLMS'])
 
     router.patch('/approve/:adsId', [AdsController, 'approveAds'])
+
+    router.patch('/reject/:adsId', [AdsController, 'rejectAds'])
 }).prefix('/api/ads').use(middleware.auth())
