@@ -28,7 +28,14 @@ export default class AdvertisementsController {
         })
 
         const adsPage = await advertisement_service.getAdsPage(
-            payload.page, payload.perPage, payload.search, payload.periodId, payload.packageId, payload.status, payload.orderField, payload.orderType
+            payload.page,
+            payload.perPage,
+            payload.search,
+            payload.periodId,
+            payload.packageId,
+            payload.status,
+            payload.orderField,
+            payload.orderType
         )
         return response.ok(adsPage)
     }
@@ -38,7 +45,7 @@ export default class AdvertisementsController {
         const token = session.get('tokenData')
         const adsId = params.adsId
 
-        const paylaod = await adsIdValidator.validate({ adsId: adsId })
+        const paylaod = await adsIdValidator.validate({ adsId })
 
         const ads = await advertisement_service.getAdsDetail(paylaod.adsId, token.authToken)
         return response.ok(ads)
@@ -100,9 +107,8 @@ export default class AdvertisementsController {
         const adsId = params.adsId
         const image = request.file('image')
 
-        const payload = await imageValidator.validate({
-            image: image
-        })
+        const payload = await imageValidator.validate({ image })
+
         if (payload.image) {
             const imageName = await file_service.uploadImage(payload.image)
             await advertisement_service.updateAdsImage(adsId, imageName!)
@@ -122,9 +128,7 @@ export default class AdvertisementsController {
         const adsId = params.adsId
         const image = request.file('image')
 
-        const payload = await imageValidator.validate({
-            image: image
-        })
+        const payload = await imageValidator.validate({ image })
 
         await advertisement_service.updateAdsImageToLMS(payload.image, adsId, token.authToken)
         return response.status(200).json({ message: 'User image is updated.' })
@@ -156,11 +160,7 @@ export default class AdvertisementsController {
         const monthYear = request.input('monthYear', null)  // Example 2020-08
 
         const payload = await registrationValidator.validate({
-            status,
-            orderField,
-            orderType,
-            periodId,
-            monthYear
+            status, orderField, orderType, periodId, monthYear
         })
 
         const filePath = await advertisement_service.getAdsExport(

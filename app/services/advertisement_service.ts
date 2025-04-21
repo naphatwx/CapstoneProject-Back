@@ -28,18 +28,9 @@ const getAdsPage = async (
             .if(search, (query) =>
                 query.where('adsName', 'LIKE', `%${search}%`)
                     .orWhere('redeemCode', 'LIKE', `%${search}%`))
-            .if(periodId, (query) => {
-                console.log('period id', periodId)
-                query.where('periodId', periodId!)
-            })
-            .if(packageId, (query) => {
-                console.log('packageId', packageId)
-                query.where('packageId', packageId!)
-            })
-            .if(status, (query) => {
-                console.log('status', status)
-                query.where('status', status!)
-            })
+            .if(periodId, (query) => query.where('periodId', periodId!))
+            .if(packageId, (query) => query.where('packageId', packageId!))
+            .if(status, (query) => query.where('status', status!))
 
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
@@ -294,8 +285,6 @@ const updateDraftAds = async (adsId: number, newAdsData: any, userId: string) =>
 
         // Update data and send it to approve. Must validate register date
         if (newAdsData.status === 'W') {
-            console.log('validate date')
-            console.log('')
             validateDate(newAdsData.rgsStrDate, newAdsData.rgsExpDate)
         }
 
@@ -317,8 +306,12 @@ const updateDraftAds = async (adsId: number, newAdsData: any, userId: string) =>
 const updateActiveAds = async (adsId: number, data: any, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
-        validateDateActiveAds(data.rgsStrDate, data.rgsExpDate)
 
+        if (ads.status !== 'A') {
+            throw new BadRequestException('Cannot update advertisement that not in active status.')
+        }
+
+        validateDateActiveAds(data.rgsStrDate, data.rgsExpDate)
         // Can update only regisLimit, rgsExpDate
         ads.regisLimit = data.regisLimit
         ads.rgsExpDate = data.rgsExpDate
@@ -451,7 +444,7 @@ const validateDateActiveAds = (rgsStrDate: any, rgsExpDate: any) => {
         message: 'Success'
     }
 
-    // rgsStrDate always have value. If ads is active.
+    // If ads is active. rgsStrDate always have value.
     if (rgsExpDate) {
         if (newRgsStrDate < newRgsExpDate && newRgsExpDate > DateTime.now()) {
             return success
@@ -463,32 +456,10 @@ const validateDateActiveAds = (rgsStrDate: any, rgsExpDate: any) => {
     }
 }
 
-const checkNewAdsStatus = (newStatus: string) => {
-    if (newStatus === 'A') {
-        return true
-    } else {
-        return false
-    }
-}
-
-const checkOldAdsStatus = (oldStatus: any, newStatus: string) => {
-    if (oldStatus && oldStatus === 'A' && newStatus === 'A') {
-        return true
-    } else {
-        return false
-    }
-}
-
 const setAdsValue = (ads: Advertisement, newAdsData: any, userId: string) => {
     // Required
     ads.adsName = newAdsData.adsName
     ads.adsCond = newAdsData.adsCond
-    // ads.approveUser = checkOldAdsStatus(ads.status, newAdsData.status)
-    //     ? ads.approveUser : (checkNewAdsStatus(newAdsData.status)
-    //         ? userId : null)
-    // ads.approveDate = checkOldAdsStatus(ads.status, newAdsData.status)
-    //     ? ads.approveDate : (checkNewAdsStatus(newAdsData.status)
-    //         ? time_service.getDateTimeNow() : null)
     ads.status = newAdsData.status
     ads.periodId = newAdsData.periodId
     ads.redeemCode = newAdsData.redeemCode

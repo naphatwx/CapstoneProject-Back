@@ -5,7 +5,9 @@ import ThaiProvince from "#models/thai_province"
 import ThaiTambon from "#models/thai_tambon"
 
 const getGeographies = async () => {
-    const geographies = await ThaiGeography.query().select('id', 'name')
+    const geographies = await ThaiGeography.query()
+        .select('id', 'name')
+        .orderBy('name', 'asc')
     return geographies
 }
 
@@ -13,6 +15,7 @@ const getProvinces = async (geographyId: number | null = null) => {
     const provinces = await ThaiProvince.query()
         .select('id', 'nameEn', 'nameTh')
         .if(geographyId, (query) => query.where('geographyId', geographyId!))
+        .orderBy('nameTh', 'asc')
     return provinces
 }
 
