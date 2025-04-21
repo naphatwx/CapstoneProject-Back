@@ -79,16 +79,10 @@ const validateYearAndQuarter = (year: number | string | null = null, quarter: nu
 }
 
 const extractYearMonth = (dateString: any) => {
-    // Create a Date object if the input is a string
-    const date = dateString instanceof Date ? dateString : new Date(dateString);
-
-    // Extract the year and month
-    const year = date.getFullYear();
-    // getMonth() returns 0-11, so add 1 and pad with leading zero if needed
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-
-    // Return in YYYY-MM format
-    return `${year}-${month}`;
+    const date = dateString instanceof Date ? dateString : new Date(dateString) // Create a Date object if the input is a string
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0') // getMonth() returns 0-11, so add 1 and pad with leading zero if needed
+    return `${year}-${month}` // Return in YYYY-MM format
 }
 
 const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
@@ -100,23 +94,17 @@ const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
         throw new BadRequestException('Start date should not be more than end date.')
     }
 
-    // Results array
     const monthsArray = []
 
-    // Set a date to the first day of the start month
-    let currentDate = startDate.startOf('month')
+    let currentDate = startDate.startOf('month') // Set a date to the first day of the start month
     const lastDate = endDate.startOf('month')
 
     // Loop through each month until we reach or exceed the end month
     while (currentDate <= lastDate) {
         const year = currentDate.year
         const month = currentDate.month.toString().padStart(2, '0') // padStart => If number is single digit (1-9), it will add 0 before (01-09)
-
-        // Add the formatted month to the array
-        monthsArray.push(`${year}-${month}`)
-
-        // Move to the next month
-        currentDate = currentDate.plus({ months: 1 })
+        monthsArray.push(`${year}-${month}`) // Add the formatted month to the array
+        currentDate = currentDate.plus({ months: 1 }) // Move to the next month
     }
 
     return monthsArray
@@ -127,14 +115,10 @@ const setTimeToStartOfDay = (dateTime: string) => {
     if (!dateTime) {
         return dateTime
     }
-    // Parse the input date string
-    const date: Date = new Date(dateTime)
 
-    // Set hours, minutes, seconds and milliseconds to 0
-    date.setUTCHours(0, 0, 0, 0)
-
-    // Return the new ISO string
-    return date.toISOString()
+    const date: Date = new Date(dateTime) // Parse the input date string
+    date.setUTCHours(0, 0, 0, 0) // Set hours, minutes, seconds and milliseconds to 0
+    return date.toISOString() // Return the new ISO string
 }
 
 const setTimeToEndOfDay = (dateTime: string) => {
@@ -142,13 +126,9 @@ const setTimeToEndOfDay = (dateTime: string) => {
     if (!dateTime) {
         return dateTime
     }
-    // Parse the input date string
+
     const date: Date = new Date(dateTime)
-
-    // Set hours, minutes, seconds and milliseconds to 0
     date.setUTCHours(23, 59, 59, 0)
-
-    // Return the new ISO string
     return date.toISOString()
 }
 
