@@ -94,7 +94,6 @@ const deleteImage = async (imageName: string) => {
     try {
         if (imageName) {
             const absolutePath = app.makePath('public/uploads', imageName)
-
             if (fs.existsSync(absolutePath)) {
                 await fs.promises.unlink(absolutePath)
             }
@@ -186,10 +185,8 @@ const createTableInWorksheet = async (worksheet: ExcelJS.Worksheet, data: any[])
     const columnCount = worksheet.columnCount
     for (let i = 1; i <= columnCount; i++) {
         const column = worksheet.getColumn(i)
-        // Get the current width or default to minWidth
-        const currentWidth = column.width || minWidth
-        // Set width between minWidth and maxWidth
-        column.width = Math.min(Math.max(currentWidth, minWidth), maxWidth)
+        const currentWidth = column.width || minWidth // Get the current width or default to minWidth
+        column.width = Math.min(Math.max(currentWidth, minWidth), maxWidth) // Set width between minWidth and maxWidth
     }
 
     return worksheet
@@ -210,12 +207,8 @@ const generateFileBuffer = async (filename: string, workbook: ExcelJS.Workbook) 
 }
 
 const convertMultipartFileToBlob = async (multipartFile: MultipartFile): Promise<Blob> => {
-    // Read the file as a buffer
-    const buffer = await fs.promises.readFile(multipartFile.tmpPath!)
-
-    // Create a Blob from the buffer
-    const blob = new Blob([buffer], { type: multipartFile.type })
-
+    const buffer = await fs.promises.readFile(multipartFile.tmpPath!) // Read the file as a buffer
+    const blob = new Blob([buffer], { type: multipartFile.type }) // Create a Blob from the buffer
     return blob
 }
 
