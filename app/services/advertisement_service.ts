@@ -66,7 +66,8 @@ const getAdsList = async (search: string = '') => {
         .whereIn('status', ['A', 'N'])
         .if(search, (query) => {
             if (my_service.isNumber(search)) {
-                // Ensure search is number => it will error at .where('adsId', search)
+                // If search is number => can filter adsId
+                // If search is not number => cannot filter adsId because it will error at .where('adsId', search)
                 query.where('adsId', search)
                     .orWhere('adsName', 'LIKE', `%${search}%`)
             } else {
@@ -106,7 +107,6 @@ const getAdsDetail = async (adsId: number, token: string) => {
             .firstOrFail()
 
         if (ads.approveUser) await ads.load('userApprove')
-        // if (ads.imageName) ads.imageName = await file_service.getImageUrl(ads.imageName)
         if (ads.imageName) ads.imageName = await file_service.downloadImageFromLMS(ads.imageName, token)
 
         const adsDTO: AdvertisementDetailDTO = new AdvertisementDetailDTO(ads)
@@ -333,8 +333,8 @@ const updateActiveAds = async (adsId: number, data: any, userId: string) => {
             throw new BadRequestException('Cannot update advertisement that not in active status.')
         }
 
-        validateDateActiveAds(data.rgsStrDate, data.rgsExpDate)
-        // Can update only regisLimit, rgsExpDate
+        validateDateActiveAds(ads.rgsStrDate, data.rgsExpDate)
+        // Only regisLimit, rgsExpDate can be updated.
         ads.regisLimit = data.regisLimit
         ads.rgsExpDate = data.rgsExpDate
         ads.updatedUser = userId
@@ -415,7 +415,7 @@ const rejectWaitAprroveAds = async (adsId: number) => {
 
 const inactivateAds = async (adsIds: number[]) => {
     await Advertisement.query().whereIn('adsId', adsIds).update({
-        status: 'N' // Inactive
+        status: 'N' // Inactive status
     })
 }
 
