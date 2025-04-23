@@ -407,7 +407,7 @@ const rejectWaitAprroveAds = async (adsId: number, userId: string) => {
 
         ads.status = 'D'
         await ads.save()
-        await log_service.createLog('Reject advertisement', userId, ads.adsId)
+        await log_service.createLog('Reject advertisement.', userId, ads.adsId)
         return ads.adsId
     } catch (error) {
         throw new HandlerException(error.status, error.message)
