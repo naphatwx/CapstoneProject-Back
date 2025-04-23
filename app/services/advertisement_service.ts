@@ -5,7 +5,6 @@ import log_service from './log_service.js'
 import time_service from './time_service.js'
 import AdsPackage from '#models/ads_package'
 import HandlerException from '#exceptions/handler_exception'
-import { DateTime } from 'luxon'
 import BadRequestException from '#exceptions/badrequest_exception'
 import file_service from './file_service.js'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
@@ -430,7 +429,7 @@ const getExpiredAds = async () => {
 
 const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
     const newRgsStrDate = rgsStrDate ? new Date(rgsStrDate) : null
-    const newRgsExpDate = rgsExpDate ? new Date(rgsExpDate) : null
+    const newRgsExpDate = rgsExpDate ? new Date(time_service.setISOTimeToEndOfDay(rgsExpDate)) : null
     const now = new Date(time_service.getDateTimeNow(0, DateTimeFormat.ISO8601))
 
     const success = {
