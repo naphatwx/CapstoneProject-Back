@@ -12,6 +12,7 @@ import { MultipartFile } from '@adonisjs/core/bodyparser'
 import my_service from './my_service.js'
 import ExcelJS from 'exceljs'
 import { RegistrationAdsExportDTO } from '../dtos/chart_dtos.js'
+import { DateTimeFormat } from '../enums/DateTimeFormat.js'
 
 const getAdsPage = async (
     page: number = 1,
@@ -336,7 +337,7 @@ const updateActiveAds = async (adsId: number, data: any, userId: string) => {
         validateDateActiveAds(ads.rgsStrDate, data.rgsExpDate)
         // Only regisLimit, rgsExpDate can be updated.
         ads.regisLimit = data.regisLimit
-        ads.rgsExpDate = data.rgsExpDate
+        ads.rgsExpDate = time_service.changeDateTimeFormat(time_service.setISOTimeToEndOfDay(data.rgsExpDate))
         ads.updatedUser = userId
         ads.updatedDate = time_service.getDateTimeNow()
 
@@ -428,8 +429,9 @@ const getExpiredAds = async () => {
 }
 
 const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
-    const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC') || null
-    const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC') || null
+    const newRgsStrDate = rgsStrDate ? new Date(rgsStrDate) : null
+    const newRgsExpDate = rgsExpDate ? new Date(rgsExpDate) : null
+    const now = new Date(time_service.getDateTimeNow(0, DateTimeFormat.ISO8601))
 
     const success = {
         isSuccess: true,
@@ -437,8 +439,8 @@ const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
     }
 
     // Must have rgsStrDate
-    if (rgsStrDate && rgsExpDate) {
-        if (newRgsStrDate > DateTime.now() && newRgsExpDate > DateTime.now()) {
+    if (newRgsStrDate && newRgsExpDate) {
+        if (newRgsStrDate > now && newRgsExpDate > now) {
             if (newRgsStrDate < newRgsExpDate) {
                 return success
             } else {
@@ -447,8 +449,8 @@ const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
         } else {
             throw new BadRequestException('Register start date and register expire date must be after now.')
         }
-    } else if (rgsStrDate && !rgsExpDate) {
-        if (newRgsStrDate > DateTime.now()) {
+    } else if (newRgsStrDate && !newRgsExpDate) {
+        if (newRgsStrDate > now) {
             return success
         } else {
             throw new BadRequestException('Register start date must be after now.')
@@ -459,22 +461,26 @@ const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
 }
 
 const validateDateActiveAds = (rgsStrDate: any, rgsExpDate: any) => {
-    const newRgsStrDate = DateTime.fromISO(rgsStrDate).setZone('UTC') || null
-    const newRgsExpDate = DateTime.fromISO(rgsExpDate).setZone('UTC') || null
+    const newRgsStrDate = rgsStrDate ? new Date(rgsStrDate) : null
+    const newRgsExpDate = rgsExpDate ? new Date(time_service.setISOTimeToEndOfDay(rgsExpDate)) : null
+    const now = new Date(time_service.getDateTimeNow(0, DateTimeFormat.ISO8601))
 
     const success = {
         isSuccess: true,
         message: 'Success'
     }
 
-    // If ads is active. rgsStrDate always have value.
-    if (rgsExpDate) {
-        if (newRgsStrDate < newRgsExpDate && newRgsExpDate > DateTime.now()) {
+    // If ads is active. Ads always have rgsStrDate.
+    if (newRgsStrDate && newRgsExpDate) {
+        if (newRgsStrDate < newRgsExpDate && newRgsExpDate > now!) {
             return success
+        } else if (newRgsStrDate >= newRgsExpDate) {
+            throw new BadRequestException('Register expired date must be after register start date.')
         } else {
-            throw new BadRequestException('Register expired date must be after now and must be after register start date.')
+            throw new BadRequestException('Register expired date must be after now.')
         }
     } else {
+        // newRgsStrDate && !newRgsExpDate
         return success
     }
 }
@@ -497,8 +503,8 @@ const setAdsValue = (ads: Advertisement, newAdsData: any, userId: string) => {
     ads.recInMth = newAdsData.recInMth
     ads.recNextMth = newAdsData.recNextMth
     ads.nextMth = newAdsData.nextMth
-    ads.rgsStrDate = newAdsData.rgsStrDate ? time_service.changeDateTimeFormat(time_service.setTimeToStartOfDay(newAdsData.rgsStrDate)) : null
-    ads.rgsExpDate = newAdsData.rgsExpDate ? time_service.changeDateTimeFormat(time_service.setTimeToEndOfDay(newAdsData.rgsExpDate)) : null
+    ads.rgsStrDate = newAdsData.rgsStrDate ? time_service.changeDateTimeFormat(time_service.setISOTimeToStartOfDay(newAdsData.rgsStrDate)) : null
+    ads.rgsExpDate = newAdsData.rgsExpDate ? time_service.changeDateTimeFormat(time_service.setISOTimeToEndOfDay(newAdsData.rgsExpDate)) : null
 
     return ads
 }

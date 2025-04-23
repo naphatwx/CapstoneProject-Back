@@ -1,9 +1,14 @@
 import BadRequestException from "#exceptions/badrequest_exception"
 import { DateTime } from "luxon"
+import { DateTimeFormat } from "../enums/DateTimeFormat.js"
 
 const defaultFormat = 'yyyy-MM-dd HH:mm:ss'
 
 const getDateTimeNow = (hoursToAdd: number = 0, formatDateTime: string = defaultFormat) => {
+    if (formatDateTime === DateTimeFormat.ISO8601) {
+        formatDateTime = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    }
+
     return DateTime.now().plus({ hours: hoursToAdd }).toFormat(formatDateTime)
 }
 
@@ -110,7 +115,7 @@ const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
     return monthsArray
 }
 
-const setTimeToStartOfDay = (dateTime: string) => {
+const setISOTimeToStartOfDay = (dateTime: string) => {
     dateTime = ensureDateTimeToString(dateTime)
     if (!dateTime) {
         return dateTime
@@ -121,7 +126,7 @@ const setTimeToStartOfDay = (dateTime: string) => {
     return date.toISOString() // Return the new ISO string
 }
 
-const setTimeToEndOfDay = (dateTime: string) => {
+const setISOTimeToEndOfDay = (dateTime: string) => {
     dateTime = ensureDateTimeToString(dateTime)
     if (!dateTime) {
         return dateTime
@@ -141,6 +146,6 @@ export default {
     extractYearMonth,
     getMonthsBetweenDates,
     ensureDateTimeToString,
-    setTimeToStartOfDay,
-    setTimeToEndOfDay
+    setISOTimeToStartOfDay,
+    setISOTimeToEndOfDay
 }
