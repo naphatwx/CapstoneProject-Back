@@ -15,17 +15,24 @@ const changeMediaFormat = (packages: Array<any>) => {
     return mediaList
 }
 
-const getMedias = async (status: boolean | null = null, orderField: string = 'mediaId', orderType: string = 'asc') => {
+const getMedias = async (
+    notInMediaIdList: number[] | null = null,
+    status: boolean | null = null,
+    orderField: string = 'mediaId',
+    orderType: string = 'asc'
+) => {
     try {
-        const media = await Media.query().select('mediaId', 'mediaDesc', 'status')
-            .if(status !== null, (query) => query.where('status', status!))
+        const mediaList = await Media.query()
+            .select('mediaId', 'mediaDesc', 'status')
+            .if(notInMediaIdList, (query) => query.whereNotIn('mediaId', notInMediaIdList!))
+            .if(status, (query) => query.where('status', status!))
             .orderBy(orderField!, orderType === 'asc' ? 'asc' : 'desc')
 
-        if (media.length === 0) {
+        if (mediaList.length === 0) {
             throw new NotFoundException('No media found.')
         }
 
-        return media
+        return mediaList
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }

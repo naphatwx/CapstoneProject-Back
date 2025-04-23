@@ -143,11 +143,12 @@ export default class AdvertisementsController {
         return response.status(200).json({ message: 'Advertisement has been approved.', adsId: adsId })
     }
 
-    async rejectAds({ params, response, bouncer }: HttpContext) {
+    async rejectAds({ params, response, bouncer, auth }: HttpContext) {
         await bouncer.authorize(isAccess, appConfig.defaultApprove, this.adsActivityId)
         const adsId = params.adsId
+        const user = auth.getUserOrFail()
 
-        await advertisement_service.rejectWaitAprroveAds(adsId)
+        await advertisement_service.rejectWaitAprroveAds(adsId, user.userId)
         return response.status(200).json({ message: 'Advertisement has been rejected.', adsId: adsId })
     }
 

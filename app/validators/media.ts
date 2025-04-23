@@ -1,6 +1,7 @@
 import vine from '@vinejs/vine'
 
 export const mediaValidator = vine.compile(vine.object({
+    notInMediaIdList: vine.array(vine.number()).optional(),
     status: vine.boolean().optional(),
     orderField: vine.enum(['mediaId', 'mediaDesc']).optional(),
     orderType: vine.enum(['asc', 'desc']).optional(),

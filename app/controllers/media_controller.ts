@@ -4,12 +4,20 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 export default class MediaController {
     async getMedias({ request, response }: HttpContext) {
+        const notInMediaIdList = request.input('notInMediaIdList', [])
         const status = request.input('status', null)
         const orderField = request.input('orderField', 'mediaId')
         const orderType = request.input('orderType', 'asc')
 
-        const payload = await mediaValidator.validate({ status: status, orderField: orderField, orderType: orderType })
-        const medias = await media_service.getMedias(payload.status, payload.orderField, payload.orderType)
+        const payload = await mediaValidator.validate({
+            notInMediaIdList: notInMediaIdList,
+            status: status,
+            orderField: orderField,
+            orderType: orderType
+        })
+        const medias = await media_service.getMedias(
+            payload.notInMediaIdList, payload.status, payload.orderField, payload.orderType
+        )
         return response.ok(medias)
     }
 

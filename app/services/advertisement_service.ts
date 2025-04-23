@@ -397,7 +397,7 @@ const approveAds = async (adsId: number, userId: string) => {
     }
 }
 
-const rejectWaitAprroveAds = async (adsId: number) => {
+const rejectWaitAprroveAds = async (adsId: number, userId: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
@@ -407,6 +407,7 @@ const rejectWaitAprroveAds = async (adsId: number) => {
 
         ads.status = 'D'
         await ads.save()
+        await log_service.createLog('Reject advertisement', userId, ads.adsId)
         return ads.adsId
     } catch (error) {
         throw new HandlerException(error.status, error.message)
