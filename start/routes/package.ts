@@ -6,4 +6,10 @@ router.group(() => {
     router.get('', [PackagesController, 'getPackages'])
 
     router.get('/:packageId', [PackagesController, 'getPackageById'])
+
+    router.post('', [PackagesController, 'createPackage'])
+
+    router.put('/:packageId', [PackagesController, 'updatePackage'])
+
+    router.patch('/inactivate/:packageId', [PackagesController, 'inactivatePackage'])
 }).prefix('/api/packages')
