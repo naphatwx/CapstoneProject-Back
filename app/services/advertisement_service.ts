@@ -105,6 +105,7 @@ const getAdsDetail = async (adsId: number, token: string) => {
             })
             .preload('userUpdate')
             .firstOrFail()
+        console.log(ads.packages)
 
         if (ads.approveUser) await ads.load('userApprove')
         if (ads.imageName) ads.imageName = await file_service.downloadImageFromLMS(ads.imageName, token)
