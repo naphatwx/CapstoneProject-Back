@@ -22,16 +22,7 @@ export class PlantListDTO {
         this.status = plant.status || false
         this.updatedUser = plant.updatedUser || ''
         this.updatedDate = time_service.ensureDateTimeToString(plant.updatedDate) || ''
-        if (plant.userUpdate) {
-            this.userUpdate = {
-                comCode: plant.userUpdate?.comCode || '',
-                userId: plant.userUpdate?.userId || '',
-                firstname: plant.userUpdate?.firstname || '',
-                lastname: plant.userUpdate?.lastname || ''
-            }
-        } else {
-            this.userUpdate = null
-        }
+        this.userUpdate = plant.userUpdate ? new UserShortDTO(plant.userUpdate) : null
     }
 }
 

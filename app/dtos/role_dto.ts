@@ -1,3 +1,5 @@
+import Role from "#models/role"
+
 export class RolesDTO {
     roleId: number
     roleName: string
@@ -10,16 +12,26 @@ export class RolesDTO {
     approve: boolean
     export: boolean
 
-    constructor(data: any) {
-        this.roleId = data.roleId || 0
-        this.roleName = data.roleName || ''
-        this.activityId = data.activityId || 0
-        this.activityName = data.activityName || ''
-        this.viewed = data.viewed || false
-        this.created = data.created || false
-        this.updated = data.updated || false
-        this.deleted = data.deleted || false
-        this.approve = data.approve || false
-        this.export = data.export || false
+    constructor(role: any) {
+        this.roleId = role.roleId || 0
+        this.roleName = role.roleName || ''
+        this.activityId = role.activityId || 0
+        this.activityName = role.activityName || ''
+        this.viewed = role.viewed || false
+        this.created = role.created || false
+        this.updated = role.updated || false
+        this.deleted = role.deleted || false
+        this.approve = role.approve || false
+        this.export = role.export || false
+    }
+}
+
+export class RoleShortDTO {
+    roldId: number
+    roleName: string
+
+    constructor(role: Partial<Role>) {
+        this.roldId = role.roleId || 0
+        this.roleName = role.roleName || ''
     }
 }
