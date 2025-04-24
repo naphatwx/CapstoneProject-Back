@@ -1,5 +1,7 @@
 import User from "#models/user"
 import time_service from "#services/time_service"
+import { CompanyDTO } from "./company_dtos.js"
+import { RoleShortDTO } from "./role_dto.js"
 
 export class UserShortDTO {
     comCode: string
@@ -15,6 +17,32 @@ export class UserShortDTO {
     }
 }
 
+export class UserDTO {
+    comCode: string
+    userId: string
+    firstname: string
+    lastname: string
+    email: string
+    telphone: string
+    loginTime: string
+    logoutTime: string
+    updatedUser: string
+    updatedDate: string
+
+    constructor(user: Partial<User>) {
+        this.comCode = user.comCode || ''
+        this.userId = user.userId || ''
+        this.firstname = user.firstname || ''
+        this.lastname = user.lastname || ''
+        this.email = user.email || ''
+        this.telphone = user.telphone || ''
+        this.loginTime = time_service.ensureDateTimeToString(user.loginTime) || ''
+        this.logoutTime = time_service.ensureDateTimeToString(user.logoutTime) || ''
+        this.updatedUser = user.updatedUser || ''
+        this.updatedDate = time_service.ensureDateTimeToString(user.updatedDate) || ''
+    }
+}
+
 export class UserListDTO {
     userId: string
     firstname: string
@@ -23,8 +51,8 @@ export class UserListDTO {
     updatedUser: string
     updatedDate: string
     userUpdate: UserShortDTO | null
-    company: any
-    role: any
+    company: CompanyDTO | null
+    role: RoleShortDTO | null
 
     constructor(user: Partial<User>) {
         this.userId = user.userId || ''
@@ -33,21 +61,12 @@ export class UserListDTO {
         this.status = user.status || false
         this.updatedUser = user.updatedUser || ''
         this.updatedDate = time_service.ensureDateTimeToString(user.updatedDate) || ''
-        if (user.userUpdate) {
-            this.userUpdate = {
-                comCode: user.userUpdate?.comCode || '',
-                userId: user.userUpdate?.userId || '',
-                firstname: user.userUpdate?.firstname || '',
-                lastname: user.userUpdate?.lastname || ''
-            }
-        } else {
-            this.userUpdate = null
-        }
-        this.company = user.company || null
-        this.role = {
+        this.userUpdate = user.userUpdate ? new UserShortDTO(user.userUpdate) : null
+        this.company = user.company ? new CompanyDTO(user.company) : null
+        this.role = user.userRoleId ? new RoleShortDTO({
             roleId: user.userRoleId,
             roleName: user.userRoleName
-        }
+        }) : null
     }
 }
 
@@ -64,8 +83,8 @@ export class UserDetailDTO {
     updatedUser: string
     updatedDate: string
     userUpdate: UserShortDTO | null
-    company: any
-    role: any
+    company: CompanyDTO | null
+    role: RoleShortDTO | null
 
     constructor(user: Partial<User>) {
         this.comCode = user.comCode || ''
@@ -79,20 +98,11 @@ export class UserDetailDTO {
         this.logoutTime = time_service.ensureDateTimeToString(user.logoutTime) || ''
         this.updatedUser = user.updatedUser || ''
         this.updatedDate = time_service.ensureDateTimeToString(user.updatedDate) || ''
-        if (user.userUpdate) {
-            this.userUpdate = {
-                comCode: user.userUpdate?.comCode || '',
-                userId: user.userUpdate?.userId || '',
-                firstname: user.userUpdate?.firstname || '',
-                lastname: user.userUpdate?.lastname || ''
-            }
-        } else {
-            this.userUpdate = null
-        }
-        this.company = user.company || null
-        this.role = {
+        this.userUpdate = user.userUpdate ? new UserShortDTO(user.userUpdate) : null
+        this.company = user.company ? new CompanyDTO(user.company) : null
+        this.role = user.userRoleId ? new RoleShortDTO({
             roleId: user.userRoleId,
             roleName: user.userRoleName
-        }
+        }) : null
     }
 }
