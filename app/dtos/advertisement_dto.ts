@@ -36,12 +36,7 @@ export class AdvertisementListDTO {
             periodDesc: ads.period?.periodDesc || '',
             period: ads.period?.period || 0
         }
-        this.userUpdate = {
-            comCode: ads.userUpdate?.comCode || '',
-            userId: ads.userUpdate?.userId || '',
-            firstname: ads.userUpdate?.firstname || '',
-            lastname: ads.userUpdate?.lastname || ''
-        }
+        this.userUpdate = ads.userUpdate ? new UserShortDTO(ads.userUpdate) : null
     }
 }
 
