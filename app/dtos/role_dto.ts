@@ -1,8 +1,8 @@
 export class RolesDTO {
-    roleId: number | null
-    roleName: string | null
-    activityId: number | null
-    activityName: string | null
+    roleId: number
+    roleName: string
+    activityId: number
+    activityName: string
     viewed: boolean
     created: boolean
     updated: boolean
@@ -11,10 +11,10 @@ export class RolesDTO {
     export: boolean
 
     constructor(data: any) {
-        this.roleId = data.roleId || null
-        this.roleName = data.roleName || null
-        this.activityId = data.activityId || null
-        this.activityName = data.activityName || null
+        this.roleId = data.roleId || 0
+        this.roleName = data.roleName || ''
+        this.activityId = data.activityId || 0
+        this.activityName = data.activityName || ''
         this.viewed = data.viewed || false
         this.created = data.created || false
         this.updated = data.updated || false
