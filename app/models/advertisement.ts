@@ -114,22 +114,28 @@ export default class Advertisement extends BaseModel {
     })
     declare registrations: HasMany<typeof Registration>
 
+    @computed() get packageIdPackage() {
+        if (this.packages && this.packages.length > 0) {
+            return this.packages[0].packageId
+        }
+        return 0
+    }
+
     @computed()
-    public get packageDesc() {
-        if (this.packages) {
+    public get packageDescPackage() {
+        if (this.packages && this.packages.length > 0) {
             return `${this.packages[0].packageDesc}`
         }
+        return ''
     }
 
     @computed()
     public get medias() {
-        if (this.packages) {
-            if (!this.packages[0].media) {
-                return
-            }
-
+        // There is packages and media
+        if (this.packages && this.packages.length > 0 && this.packages[0].media) {
             return mediaService.changeMediaFormat(this.packages)
         }
+        return []
     }
 
     // Override toJSON to exclude `packages` from serialization

@@ -37,7 +37,7 @@ export class AdsGroupPackageDTO {
 
     constructor(ads: Partial<Advertisement>, count: number) {
         this.packageId = ads.packageId || 0
-        this.packageDesc = ads.packageDesc || ''
+        this.packageDesc = ads.packageDescPackage || ''
         this.count = count || 0
     }
 }
