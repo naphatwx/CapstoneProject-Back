@@ -68,17 +68,17 @@ export default class User extends BaseModel {
 
     @computed()
     public get userRoleId() {
-        if (this.userRole) {
+        if (this.userRole.role) {
             return this.userRole.role.roleId
         }
-        return
+        return 0
     }
 
     @computed()
     public get userRoleName() {
-        if (this.userRole) {
+        if (this.userRole.role) {
             return this.userRole.role.roleName
         }
-        return
+        return ''
     }
 }
