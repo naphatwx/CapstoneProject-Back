@@ -1,31 +1,33 @@
+import Plant from "#models/plant"
+import time_service from "#services/time_service"
 import { UserShortDTO } from "./user_dto.js"
 
 export class PlantListDTO {
-    comCode: string | null
-    comName: string | null
-    plantCode: string | null
-    plantNameTh: string | null
-    plantNameEn: string | null
-    status: boolean | null
-    updatedUser: string | null
-    updatedDate: string | null
+    comCode: string
+    comName: string
+    plantCode: string
+    plantNameTh: string
+    plantNameEn: string
+    status: boolean
+    updatedUser: string
+    updatedDate: string
     userUpdate: UserShortDTO | null
 
-    constructor(data: any) {
-        this.comCode = data.comCode || null
-        this.comName = data.company?.comName || null
-        this.plantCode = data.plantCode || null
-        this.plantNameTh = data.plantNameTh || null
-        this.plantNameEn = data.plantNameEn || null
-        this.status = data.status || null
-        this.updatedUser = data.updatedUser || null
-        this.updatedDate = data.updatedDate || null
-        if (data.userUpdate) {
+    constructor(plant: Partial<Plant>) {
+        this.comCode = plant.comCode || ''
+        this.comName = plant.company?.comName || ''
+        this.plantCode = plant.plantCode || ''
+        this.plantNameTh = plant.plantNameTh || ''
+        this.plantNameEn = plant.plantNameEn || ''
+        this.status = plant.status || false
+        this.updatedUser = plant.updatedUser || ''
+        this.updatedDate = time_service.ensureDateTimeToString(plant.updatedDate) || ''
+        if (plant.userUpdate) {
             this.userUpdate = {
-                comCode: data.userUpdate?.comCode || null,
-                userId: data.userUpdate?.userId || null,
-                firstname: data.userUpdate?.firstname || null,
-                lastname: data.userUpdate?.lastname || null
+                comCode: plant.userUpdate?.comCode || '',
+                userId: plant.userUpdate?.userId || '',
+                firstname: plant.userUpdate?.firstname || '',
+                lastname: plant.userUpdate?.lastname || ''
             }
         } else {
             this.userUpdate = null
@@ -34,13 +36,13 @@ export class PlantListDTO {
 }
 
 export class PlantShortDTO {
-    plantCode: string | null
-    plantNameTh: string | null
-    plantNameEn: string | null
+    plantCode: string
+    plantNameTh: string
+    plantNameEn: string
 
-    constructor(data: any) {
-        this.plantCode = data.plantCode || null
-        this.plantNameTh = data.plantNameTh || null
-        this.plantNameEn = data.plantNameEn || null
+    constructor(plant: Partial<Plant>) {
+        this.plantCode = plant.plantCode || ''
+        this.plantNameTh = plant.plantNameTh || ''
+        this.plantNameEn = plant.plantNameEn || ''
     }
 }

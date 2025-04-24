@@ -5,36 +5,36 @@ import User from "#models/user"
 import time_service from "#services/time_service"
 
 export class AdvertisementListDTO {
-    adsId: number | null
-    adsName: string | null
-    status: string | null
-    periodId: number | null
-    redeemCode: string | null
-    packageId: number | null
-    packageDesc: string | null
-    updatedUser: string | null
-    updatedDate: string | null
-    rgsStrDate: string | null
+    adsId: number
+    adsName: string
+    status: string
+    periodId: number
+    redeemCode: string
+    packageId: number
+    packageDesc: string
+    updatedUser: string
+    updatedDate: string
+    rgsStrDate: string
     period: {
-        periodDesc: string | null
-        period: number | null
+        periodDesc: string
+        period: number
     }
     userUpdate: UserShortDTO | null
 
     constructor(ads: Partial<AdvertisementListDTO>) {
-        this.adsId = ads.adsId || null
-        this.adsName = ads.adsName || null
-        this.status = ads.status || null
-        this.periodId = ads.periodId || null
-        this.redeemCode = ads.redeemCode || null
-        this.packageId = ads.packageId || null
-        this.packageDesc = ads.packageDesc || null
-        this.updatedUser = ads.updatedUser || null
-        this.updatedDate = ads.updatedDate || null
-        this.rgsStrDate = ads.rgsStrDate || null
+        this.adsId = ads.adsId || 0
+        this.adsName = ads.adsName || ''
+        this.status = ads.status || ''
+        this.periodId = ads.periodId || 0
+        this.redeemCode = ads.redeemCode || ''
+        this.packageId = ads.packageId || 0
+        this.packageDesc = ads.packageDesc || ''
+        this.updatedUser = ads.updatedUser || ''
+        this.updatedDate = ads.updatedDate || ''
+        this.rgsStrDate = ads.rgsStrDate || ''
         this.period = {
-            periodDesc: ads.period?.periodDesc || null,
-            period: ads.period?.period || null
+            periodDesc: ads.period?.periodDesc || '',
+            period: ads.period?.period || 0
         }
         this.userUpdate = {
             comCode: ads.userUpdate?.comCode || '',
@@ -47,86 +47,86 @@ export class AdvertisementListDTO {
 
 export class AdvertisementShortDTO {
     adsId: number
-    adsName: string | null
-    status: string | null
+    adsName: string
+    status: string
 
     constructor(ads: Advertisement) {
         this.adsId = ads.adsId
-        this.adsName = ads.adsName || null
-        this.status = ads.status || null
+        this.adsName = ads.adsName || ''
+        this.status = ads.status || ''
     }
 }
 
 export class AdvertisementDetailDTO {
-    adsId: number | null
-    adsName: string | null
-    adsCond: string | null
-    status: string | null
-    periodId: number | null
-    redeemCode: string | null
-    packageId: number | null
-    packageDesc: string | null
-    regisLimit: number | null
-    updatedUser: string | null
-    updatedDate: DateTime | string | null
-    approveUser: string | null
-    approveDate: DateTime | string | null
-    imageUrl: string | null
-    refAdsId: number | null
-    consentDesc: string | null
+    adsId: number
+    adsName: string
+    adsCond: string
+    status: string
+    periodId: number
+    redeemCode: string
+    packageId: number
+    packageDesc: string
+    regisLimit: number
+    updatedUser: string
+    updatedDate: DateTime | string
+    approveUser: string
+    approveDate: DateTime | string
+    imageUrl: string
+    refAdsId: number
+    consentDesc: string
     recInMth: boolean
     recNextMth: boolean
-    nextMth: number | null
-    rgsStrDate: DateTime | string | null
-    rgsExpDate: DateTime | string | null
+    nextMth: number
+    rgsStrDate: DateTime | string
+    rgsExpDate: DateTime | string
     period: {
-        periodDesc: string | null
-        period: number | null
+        periodDesc: string
+        period: number
     }
     medias: {
-        mediaId: number | null
-        mediaDesc: string | null
+        mediaId: number
+        mediaDesc: string
     }[]
     adsPackages: {
-        mediaId: number | null
-        mediaDesc: string | null
+        mediaId: number
+        mediaDesc: string
     }[]
     userUpdate: User | null
     userApprove: User | null
     logs: {
-        itemNo: number | null
-        logHeader: string | null
-        updatedUser: string | null
-        updatedDate: DateTime | string | null
+        itemNo: number
+        logHeader: string
+        updatedUser: string
+        updatedDate: DateTime | string
         user: UserShortDTO
     }[]
 
     constructor(ads: Partial<Advertisement>) {
-        this.adsId = ads.adsId || null
-        this.adsName = ads.adsName || null
-        this.adsCond = ads.adsCond || null
-        this.status = ads.status || null
-        this.periodId = ads.periodId || null
-        this.redeemCode = ads.redeemCode || null
-        this.packageId = ads.packageId || null
-        this.packageDesc = ads.packageDesc || null
-        this.regisLimit = ads.regisLimit || null
-        this.updatedUser = ads.updatedUser || null
-        this.updatedDate = ads.updatedDate || null
-        this.approveUser = ads.approveUser || null
-        this.approveDate = ads.approveDate || null
-        this.imageUrl = ads.imageName || null
-        this.refAdsId = ads.refAdsId || null
-        this.consentDesc = ads.consentDesc || null
+        this.adsId = ads.adsId || 0
+        this.adsName = ads.adsName || ''
+        this.adsCond = ads.adsCond || ''
+        this.status = ads.status || ''
+        this.periodId = ads.periodId || 0
+        this.redeemCode = ads.redeemCode || ''
+        this.packageId = ads.packageId || 0
+        this.packageDesc = ads.packageDesc || ''
+        this.regisLimit = ads.regisLimit || 0
+        this.updatedUser = ads.updatedUser || ''
+        this.updatedDate = ads.updatedDate || ''
+        this.approveUser = ads.approveUser || ''
+        this.approveDate = ads.approveDate || ''
+        this.imageUrl = ads.imageName || ''
+        this.refAdsId = ads.refAdsId || 0
+        this.consentDesc = ads.consentDesc || ''
         this.recInMth = ads.recInMth || false
         this.recNextMth = ads.recNextMth || false
-        this.nextMth = ads.nextMth || null
-        this.rgsStrDate = ads.rgsStrDate || null
-        this.rgsExpDate = ads.rgsExpDate || null
+        this.nextMth = ads.nextMth || 0
+        this.rgsStrDate = ads.rgsStrDate || ''
+        this.rgsExpDate = ads.rgsExpDate || ''
 
         this.period = {
-            periodDesc: ads.period?.periodDesc || null,
-            period: ads.period?.period || null
+            periodDesc: ads.period?.periodDesc || '',
+            period: ads.period?.period || 0
         }
 
         this.medias = ads.medias?.map((media) => ({
@@ -135,20 +135,20 @@ export class AdvertisementDetailDTO {
         })) || []
 
         this.adsPackages = ads.adsPackages?.map((adsPackage) => ({
-            mediaId: adsPackage.mediaId,
-            mediaDesc: adsPackage.mediaDesc
+            mediaId: adsPackage.mediaId || 0,
+            mediaDesc: adsPackage.mediaDesc || ''
         })) || []
 
         if (ads.userUpdate) {
             this.userUpdate = new User()
             this.userUpdate.comCode = ads.userUpdate.comCode || ''
-            this.userUpdate.userId = ads.userUpdate.userId
-            this.userUpdate.firstname = ads.userUpdate.firstname || null
-            this.userUpdate.lastname = ads.userUpdate.lastname || null
+            this.userUpdate.userId = ads.userUpdate.userId || ''
+            this.userUpdate.firstname = ads.userUpdate.firstname || ''
+            this.userUpdate.lastname = ads.userUpdate.lastname || ''
             this.userUpdate.email = ads.userUpdate.email || ''
-            this.userUpdate.telphone = ads.userUpdate.telphone || null
-            this.userUpdate.loginTime = ads.userUpdate.loginTime || null
-            this.userUpdate.logoutTime = ads.userUpdate.logoutTime || null
+            this.userUpdate.telphone = ads.userUpdate.telphone || ''
+            this.userUpdate.loginTime = ads.userUpdate.loginTime || ''
+            this.userUpdate.logoutTime = ads.userUpdate.logoutTime || ''
             this.userUpdate.updatedUser = ads.userUpdate.updatedUser || ''
             this.userUpdate.updatedDate = ads.userUpdate.updatedDate || ''
         } else {
@@ -158,13 +158,13 @@ export class AdvertisementDetailDTO {
         if (ads.userApprove) {
             this.userApprove = new User()
             this.userApprove.comCode = ads.userApprove.comCode || ''
-            this.userApprove.userId = ads.userApprove.userId
-            this.userApprove.firstname = ads.userApprove.firstname || null
-            this.userApprove.lastname = ads.userApprove.lastname || null
+            this.userApprove.userId = ads.userApprove.userId || ''
+            this.userApprove.firstname = ads.userApprove.firstname || ''
+            this.userApprove.lastname = ads.userApprove.lastname || ''
             this.userApprove.email = ads.userApprove.email || ''
-            this.userApprove.telphone = ads.userApprove.telphone || null
-            this.userApprove.loginTime = ads.userApprove.loginTime || null
-            this.userApprove.logoutTime = ads.userApprove.logoutTime || null
+            this.userApprove.telphone = ads.userApprove.telphone || ''
+            this.userApprove.loginTime = ads.userApprove.loginTime || ''
+            this.userApprove.logoutTime = ads.userApprove.logoutTime || ''
             this.userApprove.updatedUser = ads.userApprove.updatedUser || ''
             this.userApprove.updatedDate = ads.userApprove.updatedDate || ''
         } else {
@@ -172,10 +172,10 @@ export class AdvertisementDetailDTO {
         }
 
         this.logs = ads.logs?.map((log) => ({
-            itemNo: log.itemNo,
-            logHeader: log.logHeader,
-            updatedUser: log.updatedUser,
-            updatedDate: log.updatedDate,
+            itemNo: log.itemNo || 0,
+            logHeader: log.logHeader || '',
+            updatedUser: log.updatedUser || '',
+            updatedDate: log.updatedDate || '',
             user: {
                 comCode: log.user.comCode || '',
                 userId: log.user.userId || '',
@@ -277,46 +277,46 @@ export class CreateOrUpdateAdvertisementDTO {
 }
 
 export class AdsRegisDTO {
-    adsId: number | null
-    adsName: string | null
-    totalRegistration: number | null
-    rgsStrDate: string | null
-    regisLimit: number | null
-    status: string | null
-    periodId: number | null
+    adsId: number
+    adsName: string
+    totalRegistration: number
+    rgsStrDate: string
+    regisLimit: number
+    status: string
+    periodId: number
 
     constructor(ads: Partial<Advertisement>, totalRegistration: number) {
-        this.adsId = ads.adsId || null
-        this.adsName = ads.adsName || null
-        this.totalRegistration = totalRegistration || null
-        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || null
-        this.regisLimit = ads.regisLimit || null
-        this.status = ads.status || null
-        this.periodId = ads.periodId || null
+        this.adsId = ads.adsId || 0
+        this.adsName = ads.adsName || ''
+        this.totalRegistration = totalRegistration || 0
+        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || ''
+        this.regisLimit = ads.regisLimit || 0
+        this.status = ads.status || ''
+        this.periodId = ads.periodId || 0
     }
 }
 
 export class AdsShortDTO {
-    adsId: number | null
-    adsName: string | null
-    status: string | null
-    periodId: number | null
-    periodDesc: string | null
-    packageId: number | null
-    packageDesc: string | null
-    rgsStrDate: string | null
-    rgsExpDate: string | null
+    adsId: number
+    adsName: string
+    status: string
+    periodId: number
+    periodDesc: string
+    packageId: number
+    packageDesc: string
+    rgsStrDate: string
+    rgsExpDate: string
 
     constructor(ads: Partial<Advertisement>) {
-        this.adsId = ads.adsId || null
-        this.adsName = ads.adsName || null
-        this.status = ads.status || null
-        this.periodId = ads.periodId || null
-        this.periodDesc = ads.period?.periodDesc || null
-        this.packageId = ads.packageId || null
-        this.packageDesc = ads.packageDesc || null
-        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || null
-        this.rgsExpDate = time_service.ensureDateTimeToString(ads.rgsExpDate) || null
+        this.adsId = ads.adsId || 0
+        this.adsName = ads.adsName || ''
+        this.status = ads.status || ''
+        this.periodId = ads.periodId || 0
+        this.periodDesc = ads.period?.periodDesc || ''
+        this.packageId = ads.packageId || 0
+        this.packageDesc = ads.packageDesc || ''
+        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || ''
+        this.rgsExpDate = time_service.ensureDateTimeToString(ads.rgsExpDate) || ''
     }
 }
 
