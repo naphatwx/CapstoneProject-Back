@@ -1,11 +1,11 @@
 import AdsPackage from "#models/ads_package"
 
 export class AdsPackageDTO {
-    mediaId: number
-    mediaDesc: string
+    mediaId: number | null
+    mediaDesc: string | null
 
     constructor(media: Partial<AdsPackage>) {
-        this.mediaId = media.mediaId || 0
-        this.mediaDesc = media.mediaDesc || ''
+        this.mediaId = media.mediaId || null
+        this.mediaDesc = media.mediaDesc || null
     }
 }

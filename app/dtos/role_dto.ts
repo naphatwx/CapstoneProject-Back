@@ -1,10 +1,10 @@
 import Role from "#models/role"
 
 export class RolesDTO {
-    roleId: number
-    roleName: string
-    activityId: number
-    activityName: string
+    roleId: number | null
+    roleName: string | null
+    activityId: number | null
+    activityName: string | null
     viewed: boolean
     created: boolean
     updated: boolean
@@ -13,10 +13,10 @@ export class RolesDTO {
     export: boolean
 
     constructor(role: any) {
-        this.roleId = role.roleId || 0
-        this.roleName = role.roleName || ''
-        this.activityId = role.activityId || 0
-        this.activityName = role.activityName || ''
+        this.roleId = role.roleId || null
+        this.roleName = role.roleName || null
+        this.activityId = role.activityId || null
+        this.activityName = role.activityName || null
         this.viewed = role.viewed || false
         this.created = role.created || false
         this.updated = role.updated || false
@@ -27,11 +27,11 @@ export class RolesDTO {
 }
 
 export class RoleShortDTO {
-    roldId: number
-    roleName: string
+    roleId: number | null
+    roleName: string | null
 
     constructor(role: Partial<Role>) {
-        this.roldId = role.roleId || 0
-        this.roleName = role.roleName || ''
+        this.roleId = role.roleId || null
+        this.roleName = role.roleName || null
     }
 }

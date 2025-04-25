@@ -35,10 +35,10 @@ export default class User extends BaseModel {
     declare logoutTime: DateTime | string | null
 
     @column({ columnName: 'UPDATED_USER' })
-    declare updatedUser: string
+    declare updatedUser: string | null
 
     @column({ columnName: 'UPDATED_DATE' })
-    declare updatedDate: DateTime | string
+    declare updatedDate: DateTime | string | null
 
     @hasOne(() => User, {
         foreignKey: 'userId',

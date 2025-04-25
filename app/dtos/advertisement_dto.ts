@@ -7,98 +7,98 @@ import { AdsPackageDTO } from "./ads_package_dtos.js"
 import { LogDTO } from "./log_dtos.js"
 
 export class AdvertisementListDTO {
-    adsId: number
-    adsName: string
-    status: string
-    periodId: number
-    redeemCode: string
-    packageId: number
-    packageDesc: string
-    updatedUser: string
-    updatedDate: string
-    rgsStrDate: string
+    adsId: number | null
+    adsName: string | null
+    status: string | null
+    periodId: number | null
+    redeemCode: string | null
+    packageId: number | null
+    packageDesc: string | null
+    updatedUser: string | null
+    updatedDate: string | null
+    rgsStrDate: string | null
     period: PeriodDTO | null
     userUpdate: UserShortDTO | null
 
     constructor(ads: Partial<Advertisement>) {
-        this.adsId = ads.adsId || 0
-        this.adsName = ads.adsName || ''
-        this.status = ads.status || ''
-        this.periodId = ads.period?.periodId || 0
-        this.redeemCode = ads.redeemCode || ''
-        this.packageId = ads.packageIdPackage || 0
-        this.packageDesc = ads.packageDescPackage || ''
-        this.updatedUser = ads.updatedUser || ''
-        this.updatedDate = time_service.ensureDateTimeToString(ads.updatedDate) || ''
-        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || ''
+        this.adsId = ads.adsId || null
+        this.adsName = ads.adsName || null
+        this.status = ads.status || null
+        this.periodId = ads.period?.periodId || null
+        this.redeemCode = ads.redeemCode || null
+        this.packageId = ads.packageIdPackage || null
+        this.packageDesc = ads.packageDescPackage || null
+        this.updatedUser = ads.updatedUser || null
+        this.updatedDate = time_service.ensureDateTimeToString(ads.updatedDate) || null
+        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || null
         this.period = ads.period ? new PeriodDTO(ads.period) : null
         this.userUpdate = ads.userUpdate ? new UserShortDTO(ads.userUpdate) : null
     }
 }
 
 export class AdvertisementShortDTO {
-    adsId: number
-    adsName: string
-    status: string
+    adsId: number | null
+    adsName: string | null
+    status: string | null
 
     constructor(ads: Advertisement) {
-        this.adsId = ads.adsId
-        this.adsName = ads.adsName || ''
-        this.status = ads.status || ''
+        this.adsId = ads.adsId || null
+        this.adsName = ads.adsName || null
+        this.status = ads.status || null
     }
 }
 
 export class AdvertisementDetailDTO {
-    adsId: number
-    adsName: string
-    adsCond: string
-    status: string
-    periodId: number
-    redeemCode: string
-    packageId: number
-    packageDesc: string
-    regisLimit: number
-    updatedUser: string
-    updatedDate: string
-    approveUser: string
-    approveDate: string
-    imageUrl: string
-    refAdsId: number
-    consentDesc: string
+    adsId: number | null
+    adsName: string | null
+    adsCond: string | null
+    status: string | null
+    periodId: number | null
+    redeemCode: string | null
+    packageId: number | null
+    packageDesc: string | null
+    regisLimit: number | null
+    updatedUser: string | null
+    updatedDate: string | null
+    approveUser: string | null
+    approveDate: string | null
+    imageUrl: string | null
+    refAdsId: number | null
+    consentDesc: string | null
     recInMth: boolean
     recNextMth: boolean
-    nextMth: number
-    rgsStrDate: string
-    rgsExpDate: string
+    nextMth: number | null
+    rgsStrDate: string | null
+    rgsExpDate: string | null
     period: PeriodDTO | null
     medias: MediaDTO[]
     adsPackagess: AdsPackageDTO[]
     userUpdate: UserDTO | null
     userApprove: UserDTO | null
-    logs: LogDTO[] | null
+    logs: LogDTO[]
 
     constructor(ads: Partial<Advertisement>) {
-        this.adsId = ads.adsId || 0
-        this.adsName = ads.adsName || ''
-        this.adsCond = ads.adsCond || ''
-        this.status = ads.status || ''
-        this.periodId = ads.period?.periodId || 0
-        this.redeemCode = ads.redeemCode || ''
-        this.packageId = ads.packageIdPackage || 0
-        this.packageDesc = ads.packageDescPackage || ''
-        this.regisLimit = ads.regisLimit || 0
-        this.updatedUser = ads.updatedUser || ''
-        this.updatedDate = time_service.ensureDateTimeToString(ads.updatedDate) || ''
-        this.approveUser = ads.approveUser || ''
-        this.approveDate = time_service.ensureDateTimeToString(ads.approveDate) || ''
-        this.imageUrl = ads.imageName || ''
-        this.refAdsId = ads.refAdsId || 0
-        this.consentDesc = ads.consentDesc || ''
+        this.adsId = ads.adsId || null
+        this.adsName = ads.adsName || null
+        this.adsCond = ads.adsCond || null
+        this.status = ads.status || null
+        this.periodId = ads.period?.periodId || null
+        this.redeemCode = ads.redeemCode || null
+        this.packageId = ads.packageIdPackage || null
+        this.packageDesc = ads.packageDescPackage || null
+        this.regisLimit = ads.regisLimit || null
+        this.updatedUser = ads.updatedUser || null
+        this.updatedDate = time_service.ensureDateTimeToString(ads.updatedDate) || null
+        this.approveUser = ads.approveUser || null
+        this.approveDate = time_service.ensureDateTimeToString(ads.approveDate) || null
+        this.imageUrl = ads.imageName || null
+        this.refAdsId = ads.refAdsId || null
+        this.consentDesc = ads.consentDesc || null
         this.recInMth = ads.recInMth || false
         this.recNextMth = ads.recNextMth || false
-        this.nextMth = ads.nextMth || 0
-        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || ''
-        this.rgsExpDate = time_service.ensureDateTimeToString(ads.rgsExpDate) || ''
+        this.nextMth = ads.nextMth || null
+        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || null
+        this.rgsExpDate = time_service.ensureDateTimeToString(ads.rgsExpDate) || null
         this.period = ads.period ? new PeriodDTO(ads.period) : null
         this.medias = ads.medias && ads.medias.length > 0 ? ads.medias.map((media) => {
             return new MediaDTO(media)
@@ -115,92 +115,92 @@ export class AdvertisementDetailDTO {
 }
 
 export class AdvertisementExportDTO {
-    adsId: number
-    adsName: string
-    status: string
-    period: string
-    redeemCode: string
-    package: string
-    regisLimit: number
-    updatedUser: string
-    updatedDate: string
-    approveUser: string
-    approveDate: string
-    consentDesc: string
-    refAdsId: number
-    rgsStrDate: string
-    rgsExpDate: string
+    adsId: number | null
+    adsName: string | null
+    status: string | null
+    period: string | null
+    redeemCode: string | null
+    package: string | null
+    regisLimit: number | null
+    updatedUser: string | null
+    updatedDate: string | null
+    approveUser: string | null
+    approveDate: string | null
+    consentDesc: string | null
+    refAdsId: number | null
+    rgsStrDate: string | null
+    rgsExpDate: string | null
     recInMth: boolean
     recNextMth: boolean
-    nextMth: number
+    nextMth: number | null
     totalRegistration: number
 
     constructor(ads: Partial<Advertisement>, totalRegistration: number) {
         const dateTimeFormat = 'dd LLLL yyyy HH:mm:ss'
 
-        this.adsId = ads.adsId || 0
-        this.adsName = ads.adsName || ''
-        this.status = ads.status || ''
-        this.period = ads.period?.periodDesc || ''
-        this.redeemCode = ads.redeemCode || ''
-        this.package = ads.packageDescPackage || ''
-        this.regisLimit = ads.regisLimit || 0
-        this.updatedUser = (ads.userUpdate?.firstname + ' ' + ads.userUpdate?.lastname || null) || ''
-        this.updatedDate = time_service.changeDateTimeFormat(ads.updatedDate, dateTimeFormat) || ''
-        this.approveUser = (ads.userApprove ? ads.userApprove?.firstname + ' ' + ads.userApprove?.lastname : null) || ''
-        this.approveDate = time_service.changeDateTimeFormat(ads.approveDate, dateTimeFormat) || ''
-        this.consentDesc = ads.consentDesc || ''
-        this.refAdsId = ads.refAdsId || 0
-        this.rgsStrDate = time_service.changeDateTimeFormat(ads.rgsStrDate, dateTimeFormat) || ''
-        this.rgsExpDate = time_service.changeDateTimeFormat(ads.rgsExpDate, dateTimeFormat) || ''
+        this.adsId = ads.adsId || null
+        this.adsName = ads.adsName || null
+        this.status = ads.status || null
+        this.period = ads.period?.periodDesc || null
+        this.redeemCode = ads.redeemCode || null
+        this.package = ads.packageDescPackage || null
+        this.regisLimit = ads.regisLimit || null
+        this.updatedUser = ads.userUpdate ? ads.userUpdate?.firstname + ' ' + ads.userUpdate?.lastname : null
+        this.updatedDate = time_service.changeDateTimeFormat(ads.updatedDate, dateTimeFormat) || null
+        this.approveUser = ads.userApprove ? ads.userApprove?.firstname + ' ' + ads.userApprove?.lastname : null
+        this.approveDate = time_service.changeDateTimeFormat(ads.approveDate, dateTimeFormat) || null
+        this.consentDesc = ads.consentDesc || null
+        this.refAdsId = ads.refAdsId || null
+        this.rgsStrDate = time_service.changeDateTimeFormat(ads.rgsStrDate, dateTimeFormat) || null
+        this.rgsExpDate = time_service.changeDateTimeFormat(ads.rgsExpDate, dateTimeFormat) || null
         this.recInMth = ads.recInMth || false
         this.recNextMth = ads.recNextMth || false
-        this.nextMth = ads.nextMth || 0
+        this.nextMth = ads.nextMth || null
         this.totalRegistration = totalRegistration || 0
     }
 }
 
 export class AdsRegisDTO {
-    adsId: number
-    adsName: string
-    totalRegistration: number
-    rgsStrDate: string
-    regisLimit: number
-    status: string
-    periodId: number
+    adsId: number | null
+    adsName: string | null
+    totalRegistration: number | null
+    rgsStrDate: string | null
+    regisLimit: number | null
+    status: string | null
+    periodId: number | null
 
     constructor(ads: Partial<Advertisement>, totalRegistration: number) {
-        this.adsId = ads.adsId || 0
-        this.adsName = ads.adsName || ''
-        this.totalRegistration = totalRegistration || 0
-        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || ''
-        this.regisLimit = ads.regisLimit || 0
-        this.status = ads.status || ''
-        this.periodId = ads.periodId || 0
+        this.adsId = ads.adsId || null
+        this.adsName = ads.adsName || null
+        this.totalRegistration = totalRegistration || null
+        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || null
+        this.regisLimit = ads.regisLimit || null
+        this.status = ads.status || null
+        this.periodId = ads.periodId || null
     }
 }
 
 export class AdsShortDTO {
-    adsId: number
-    adsName: string
-    status: string
-    periodId: number
-    periodDesc: string
-    packageId: number
-    packageDesc: string
-    rgsStrDate: string
-    rgsExpDate: string
+    adsId: number | null
+    adsName: string | null
+    status: string | null
+    periodId: number | null
+    periodDesc: string | null
+    packageId: number | null
+    packageDesc: string | null
+    rgsStrDate: string | null
+    rgsExpDate: string | null
 
     constructor(ads: Partial<Advertisement>) {
-        this.adsId = ads.adsId || 0
-        this.adsName = ads.adsName || ''
-        this.status = ads.status || ''
-        this.periodId = ads.period?.periodId || 0
-        this.periodDesc = ads.period?.periodDesc || ''
-        this.packageId = ads.packageIdPackage || 0
-        this.packageDesc = ads.packageDescPackage || ''
-        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || ''
-        this.rgsExpDate = time_service.ensureDateTimeToString(ads.rgsExpDate) || ''
+        this.adsId = ads.adsId || null
+        this.adsName = ads.adsName || null
+        this.status = ads.status || null
+        this.periodId = ads.period?.periodId || null
+        this.periodDesc = ads.period?.periodDesc || null
+        this.packageId = ads.packageIdPackage || null
+        this.packageDesc = ads.packageDescPackage || null
+        this.rgsStrDate = time_service.ensureDateTimeToString(ads.rgsStrDate) || null
+        this.rgsExpDate = time_service.ensureDateTimeToString(ads.rgsExpDate) || null
     }
 }
 

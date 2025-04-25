@@ -1,11 +1,11 @@
 import Media from "#models/media"
 
 export class MediaDTO {
-    mediaId: number
-    mediaDesc: string
+    mediaId: number | null
+    mediaDesc: string | null
 
     constructor(media: Partial<Media>) {
-        this.mediaId = media.mediaId || 0
-        this.mediaDesc = media.mediaDesc || ''
+        this.mediaId = media.mediaId || null
+        this.mediaDesc = media.mediaDesc || null
     }
 }
