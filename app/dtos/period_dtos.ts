@@ -1,11 +1,11 @@
 import Period from "#models/period"
 
 export class PeriodDTO {
-    periodDesc: string
-    period: number
+    periodDesc: string | null
+    period: number | null
 
     constructor(period: Partial<Period>) {
-        this.periodDesc = period.periodDesc || ''
-        this.period = period.period || 0
+        this.periodDesc = period.periodDesc || null
+        this.period = period.period || null
     }
 }

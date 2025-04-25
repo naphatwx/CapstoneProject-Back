@@ -15,10 +15,10 @@ export const createUpdateAdvertisementValidator = vine.compile(
         periodId: vine.number(),
         redeemCode: vine.string().trim().maxLength(100),
         packageId: vine.number(),
-        regisLimit: vine.number().nullable(),
         logHeader: vine.string().trim().maxLength(250),
 
         // Not required
+        regisLimit: vine.number().nullable(),
         refAdsId: vine.number().nullable(),
         consentDesc: vine.string().trim().nullable(),
         recInMth: vine.boolean().nullable(),
@@ -32,8 +32,8 @@ export const createUpdateAdvertisementValidator = vine.compile(
 
 export const updateActiveAdsValidator = vine.compile(
     vine.object({
-        regisLimit: vine.number().optional(),
-        rgsExpDate: vine.string().trim().regex(regesDateTime).optional(),
+        regisLimit: vine.number().nullable(),
+        rgsExpDate: vine.string().trim().regex(regesDateTime).nullable(),
     })
 )
 

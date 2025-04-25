@@ -1,4 +1,3 @@
-
 import advertisement_service from '#services/advertisement_service'
 import scheduler from 'adonisjs-scheduler/services/main'
 
@@ -9,9 +8,8 @@ import scheduler from 'adonisjs-scheduler/services/main'
 // }).everySecond()
 
 scheduler.call(async () => {
-    const expiredAds = await advertisement_service.getExpiredAds()
-
-    if (expiredAds.length !== 0) {
-        await advertisement_service.inactivateAds(expiredAds.map(ads => ads.adsId))
+    const expiredAdsList = await advertisement_service.getExpiredAds()
+    if (expiredAdsList.length > 0) {
+        await advertisement_service.inactivateAds(expiredAdsList.map(ads => ads.adsId))
     }
 }).daily()

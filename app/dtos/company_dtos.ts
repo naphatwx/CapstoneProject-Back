@@ -1,11 +1,11 @@
 import Company from "#models/company"
 
 export class CompanyDTO {
-    comCode: string
-    comName: string
+    comCode: string | null
+    comName: string | null
 
     constructor(company: Partial<Company>) {
-        this.comCode = company.comCode || ''
-        this.comName = company.comName || ''
+        this.comCode = company.comCode || null
+        this.comName = company.comName || null
     }
 }

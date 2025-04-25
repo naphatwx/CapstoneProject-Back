@@ -252,24 +252,6 @@ const getAdsExport = async (
         await file_service.createTableInWorksheet(adsRegisWorksheet, registrationList)
         const filePath = await file_service.generateFileBuffer('Advertisement Data', workbook)
         return filePath
-
-        // let filePath = await file_service.exportExcel(adsDTO, 'Advertisement List', 'Advertisement Data', workbook)
-        // for (let i = 0; i < adsList.length; i++) {
-        //     const ads = adsList[i]
-        //     if (ads.$extras.totalRegistration > 0) {
-        //         const regisDTO = await Promise.all(
-        //             ads.registrations.map(async (regis) => {
-        //                 await regis.load('plant', (plantQuery) => {
-        //                     plantQuery.preload('company')
-        //                 })
-        //                 return new RegistrationAdsExportDTO(regis)
-        //             }))
-
-        //         filePath = await file_service.exportExcel(
-        //             regisDTO, `${ads.adsId}_${ads.adsName}`, 'Advertisement Data', workbook
-        //         )
-        //     }
-        // }
     } catch (error) {
         throw new HandlerException(error.status, error.message)
     }
@@ -337,7 +319,7 @@ const updateActiveAds = async (adsId: number, data: any, userId: string) => {
         validateDateActiveAds(ads.rgsStrDate, data.rgsExpDate)
         // Only regisLimit, rgsExpDate can be updated.
         ads.regisLimit = data.regisLimit
-        ads.rgsExpDate = time_service.changeDateTimeFormat(time_service.setISOTimeToEndOfDay(data.rgsExpDate))
+        ads.rgsExpDate = time_service.changeDateTimeFormat(time_service.setISOTimeToEndOfDay(data.rgsExpDate)) || null
         ads.updatedUser = userId
         ads.updatedDate = time_service.getDateTimeNow()
 
@@ -351,11 +333,7 @@ const updateActiveAds = async (adsId: number, data: any, userId: string) => {
 const updateAdsImage = async (adsId: number, imageName: string) => {
     try {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
-
-        if (ads.imageName) {
-            await file_service.deleteImage(ads.imageName)
-        }
-
+        if (ads.imageName) await file_service.deleteImage(ads.imageName)
         ads.imageName = imageName
         await ads.save()
     } catch (error) {
@@ -422,10 +400,11 @@ const inactivateAds = async (adsIds: number[]) => {
 }
 
 const getExpiredAds = async () => {
-    return await Advertisement.query()
+    const expiredAdsList = await Advertisement.query()
         .where('status', 'A')
-        .whereNotNull('rgsExpDate')
+        .whereNotNull('rgsExpDate') // Not null
         .where('rgsExpDate', '<=', time_service.getDateTimeNow())
+    return expiredAdsList
 }
 
 const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
@@ -494,17 +473,18 @@ const setAdsValue = (ads: Advertisement, newAdsData: any, userId: string) => {
     ads.redeemCode = newAdsData.redeemCode
     ads.packageId = newAdsData.packageId
 
-    // Not required
-    ads.regisLimit = newAdsData.regisLimit
     ads.updatedUser = userId
     ads.updatedDate = time_service.getDateTimeNow()
+
+    // Not required
+    ads.regisLimit = newAdsData.regisLimit
     ads.refAdsId = newAdsData.refAdsId
     ads.consentDesc = newAdsData.consentDesc
     ads.recInMth = newAdsData.recInMth
     ads.recNextMth = newAdsData.recNextMth
     ads.nextMth = newAdsData.nextMth
-    ads.rgsStrDate = newAdsData.rgsStrDate ? time_service.changeDateTimeFormat(time_service.setISOTimeToStartOfDay(newAdsData.rgsStrDate)) : null
-    ads.rgsExpDate = newAdsData.rgsExpDate ? time_service.changeDateTimeFormat(time_service.setISOTimeToEndOfDay(newAdsData.rgsExpDate)) : null
+    ads.rgsStrDate = time_service.changeDateTimeFormat(time_service.setISOTimeToStartOfDay(newAdsData.rgsStrDate)) || null
+    ads.rgsExpDate = time_service.changeDateTimeFormat(time_service.setISOTimeToEndOfDay(newAdsData.rgsExpDate)) || null
 
     return ads
 }

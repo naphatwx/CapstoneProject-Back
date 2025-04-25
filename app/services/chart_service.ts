@@ -13,8 +13,6 @@ const getAdsGroupStatus = async (year: number = DateTime.now().year) => {
     try {
         const ads = await Advertisement.query()
             .select('status')
-            .whereNotNull('status')
-            .where('status', '!=', '')
             .whereIn('status', ['A', 'N'])
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .count('* as count')
@@ -36,11 +34,7 @@ const getAdsGroupPeriod = async (year: number = DateTime.now().year) => {
             .select('periodId')
             .whereNotNull('periodId')
             .where('periodId', '!=', 0)
-            // Status
-            .whereNotNull('status')
-            .where('status', '!=', '')
             .whereIn('status', ['A', 'N'])
-
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .preload('period')
             .count('* as count')
@@ -62,11 +56,7 @@ const getAdsGroupPackage = async (year: number = DateTime.now().year) => {
             .select('packageId')
             .whereNotNull('packageId')
             .where('packageId', '!=', 0)
-            // Status
-            .whereNotNull('status')
-            .where('status', '!=', '')
             .whereIn('status', ['A', 'N'])
-
             .if(year, (query) => query.whereRaw(`FORMAT(RGS_STR_DATE, 'yyyy') = ?`, [year!]))
             .preload('packages')
             .count('* as count')
@@ -233,7 +223,7 @@ const exportTopRegisByPlant = async (
     const filePath = await file_service.generateFileBuffer('Plant data', workbook)
 
     return filePath
-    
+
     // for (let i = 0; i < plantList.length; i++) {
     //     const plant = plantList[i]
     //     if (plant.$extras.totalRegistration > 0) {
