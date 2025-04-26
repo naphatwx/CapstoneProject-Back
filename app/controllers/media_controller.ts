@@ -25,7 +25,7 @@ export default class MediaController {
         const data = request.body()
         const payload = await createMediaValidator.validate({ mediaDesc: data.mediaDesc })
         const mediaIdSucess = await media_service.createMedia(payload.mediaDesc)
-        return response.status(201).json({ message: 'Media created successfully', mediaId: mediaIdSucess })
+        return response.status(201).json({ message: 'สร้าง Media แล้ว', mediaId: mediaIdSucess })
     }
 
     async updateMedia({ params, request, response }: HttpContext) {
@@ -33,13 +33,13 @@ export default class MediaController {
         const data = request.body()
         const payload = await updateMediaValidator.validate({ mediaId: mediaId, mediaDesc: data.mediaDesc })
         const mediaIdSucess = await media_service.updateMedia(payload.mediaId, payload.mediaDesc)
-        return response.status(200).json({ message: 'Media updated successfully', mediaId: mediaIdSucess })
+        return response.status(200).json({ message: 'แก้ไข Media แล้ว', mediaId: mediaIdSucess })
     }
 
     async inactivateMedia({ params, response }: HttpContext) {
         const mediaId = params.mediaId
         const payload = await inactivateMediaValidator.validate({ mediaId: mediaId })
         await media_service.inactivateMedia(payload.mediaId)
-        return response.status(200).json({ message: 'Media inactivated successfully' })
+        return response.status(200).json({ message: 'ปิดใช้งาน Media แล้ว' })
     }
 }

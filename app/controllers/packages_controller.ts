@@ -19,7 +19,7 @@ export default class PackagesController {
         const data = request.body()
         const payload = await createUpdatePackageValidator.validate(data)
         const newPackageId = await package_service.createPackage(payload)
-        return response.status(201).json({ message: 'Package has been created.', packageId: newPackageId })
+        return response.status(201).json({ message: 'สร้าง Package แล้ว', packageId: newPackageId })
     }
 
     async updatePackage({ params, request, response }: HttpContext) {
@@ -30,13 +30,13 @@ export default class PackagesController {
         const paylaod = await createUpdatePackageValidator.validate(data)
 
         const newPackageId = await package_service.updatePackage(payloadPackageId.packageId, paylaod)
-        return response.status(200).json({ message: 'Package has been updated.', packaegId: newPackageId })
+        return response.status(200).json({ message: 'แก้ไข Package แล้ว', packaegId: newPackageId })
     }
 
     async inactivatePackage({ params, response }: HttpContext) {
         const packageId = params.packageId
         const payload = await packageIdValidator.validate({ packageId: packageId })
         await package_service.inactivatePackage(payload.packageId)
-        return response.status(200).json({ message: 'Package has been inactivated.' })
+        return response.status(200).json({ message: 'ปิดใช้งาน Package แล้ว' })
     }
 }

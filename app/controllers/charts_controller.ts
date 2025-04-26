@@ -50,7 +50,7 @@ export default class ChartsController {
 
         const result = await thai_location_service.validateProvinceInGeo(payload.geographyId, payload.provinceId)
         if (!result.isSuccess) {
-            throw new BadRequestException('Province is not in this geography.')
+            throw new BadRequestException('จังหวัดนี้ไม่ได้อยู่ในภาคนี้')
         }
 
         if (my_service.convertToBoolean(isExport)) {

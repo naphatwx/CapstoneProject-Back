@@ -8,7 +8,7 @@ export default class AdvertisementPolicy extends BasePolicy {
         if (user.userId === approveUserId) {
             return true
         } else {
-            throw new ForbiddenException('You cannot update active advertisement. Only approver can update active advertisement.')
+            throw new ForbiddenException('คุณไม่มีสิทธิ์อัปเดตโครงการโฆษณานี้ มีแค่ผู้อนุมมัติโครงการโฆษณาที่สามารถแก้ไขได้')
         }
     }
 }

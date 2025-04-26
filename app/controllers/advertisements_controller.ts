@@ -64,7 +64,7 @@ export default class AdvertisementsController {
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
         const newAdsId = await advertisement_service.createAds(payload, user.userId)
-        return response.status(201).json({ message: 'Advertisement has been created.', adsId: newAdsId })
+        return response.status(201).json({ message: 'สร้างโครงการโฆษณาแล้ว', adsId: newAdsId })
     }
 
     async updateDraftDate({ params, request, response, auth, bouncer }: HttpContext) {
@@ -76,7 +76,7 @@ export default class AdvertisementsController {
         const payload = await createUpdateAdvertisementValidator.validate(data)
 
         const newAdsId = await advertisement_service.updateDraftAds(adsId, payload, user.userId)
-        return response.status(200).json({ message: 'Advertisement has been updated.', adsId: newAdsId })
+        return response.status(200).json({ message: 'แก้ไขโครงการโฆษณาแล้ว', adsId: newAdsId })
     }
 
     async updateActiveAds({ params, request, response, auth, bouncer, session }: HttpContext) {
@@ -94,7 +94,7 @@ export default class AdvertisementsController {
         }
 
         const newAdsId = await advertisement_service.updateActiveAds(adsId, payload, user.userId)
-        return response.status(200).json({ message: 'Advertisement has been updated.', adsId: newAdsId })
+        return response.status(200).json({ message: 'แก้ไขโครงการโฆษณาแล้ว', adsId: newAdsId })
     }
 
     async uploadAdsImage({ params, request, response, bouncer }: HttpContext) {
@@ -114,7 +114,7 @@ export default class AdvertisementsController {
             await advertisement_service.updateAdsImage(adsId, imageName!)
         }
 
-        return response.status(200).json({ message: 'User image is updated.' })
+        return response.status(200).json({ message: 'แก้ไขรูปภาพโครงการโฆษณาเเล้ว' })
     }
 
     async uploadAdsImageToLMS({ params, request, response, bouncer, session }: HttpContext) {
@@ -131,7 +131,7 @@ export default class AdvertisementsController {
         const payload = await imageValidator.validate({ image })
 
         await advertisement_service.updateAdsImageToLMS(payload.image, adsId, token.authToken)
-        return response.status(200).json({ message: 'User image is updated.' })
+        return response.status(200).json({ message: 'แก้ไขรูปภาพโครงการโฆษณาเเล้ว' })
     }
 
     async approveAds({ params, response, auth, bouncer }: HttpContext) {
@@ -140,7 +140,7 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         await advertisement_service.approveAds(adsId, user.userId)
-        return response.status(200).json({ message: 'Advertisement has been approved.', adsId: adsId })
+        return response.status(200).json({ message: 'อนุมัติโครงการโฆษณาแล้ว', adsId: adsId })
     }
 
     async rejectAds({ params, response, bouncer, auth }: HttpContext) {
@@ -149,7 +149,7 @@ export default class AdvertisementsController {
         const user = auth.getUserOrFail()
 
         await advertisement_service.rejectWaitAprroveAds(adsId, user.userId)
-        return response.status(200).json({ message: 'Advertisement has been rejected.', adsId: adsId })
+        return response.status(200).json({ message: 'ปฎิเสธโครงการโฆษณาแล้ว', adsId: adsId })
     }
 
     async exportAdsExcel({ request, response, bouncer }: HttpContext) {

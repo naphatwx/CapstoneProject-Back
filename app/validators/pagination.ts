@@ -2,9 +2,9 @@ import vine from '@vinejs/vine'
 
 export const pageAndSearchValidator = vine.compile(
     vine.object({
-        page: vine.number().optional(),
-        perPage: vine.number().optional(),
-        search: vine.string().trim().optional()
+        page: vine.number(),
+        perPage: vine.number(),
+        search: vine.string().trim()
     })
 )
 

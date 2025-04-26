@@ -105,7 +105,6 @@ const getAdsDetail = async (adsId: number, token: string) => {
             })
             .preload('userUpdate')
             .firstOrFail()
-        console.log(ads.packages)
 
         if (ads.approveUser) await ads.load('userApprove')
         if (ads.imageName) ads.imageName = await file_service.downloadImageFromLMS(ads.imageName, token)
@@ -285,7 +284,7 @@ const updateDraftAds = async (adsId: number, newAdsData: any, userId: string) =>
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
         if (ads.status !== 'D') {
-            throw new BadRequestException('Cannot update advertisement that not in draft status.')
+            throw new BadRequestException('ไม่สามารถแก้ไขโครงการโฆษณาที่ไม่อยู่ในสถานะ Draft ได้')
         }
 
         // Update data and send it to approve. Must validate register date
@@ -313,7 +312,7 @@ const updateActiveAds = async (adsId: number, data: any, userId: string) => {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
         if (ads.status !== 'A') {
-            throw new BadRequestException('Cannot update advertisement that not in active status.')
+            throw new BadRequestException('ไม่สามารถแก้ไขโครงการโฆษณาที่ไม่อยู่ในสถานะ Active ได้')
         }
 
         validateDateActiveAds(ads.rgsStrDate, data.rgsExpDate)
@@ -356,11 +355,11 @@ const approveAds = async (adsId: number, userId: string) => {
 
         switch (ads.status) {
             case 'D':
-                throw new BadRequestException('Cannot approve draft advertisement.')
+                throw new BadRequestException('ไม่สามารถอนุมัติโครงการโฆษณาที่อยู่ในสถานะ Draft')
             case 'A':
-                throw new BadRequestException('Advertisement is already approved.')
+                throw new BadRequestException('โครงการโฆษณาเปิดใช้งานเเล้ว')
             case 'N':
-                throw new BadRequestException('Advertisement is already inactivated.')
+                throw new BadRequestException('โครงการโฆษณาปิดใช้งานเเล้ว')
             default:
                 break
         }
@@ -381,7 +380,7 @@ const rejectWaitAprroveAds = async (adsId: number, userId: string) => {
         const ads = await Advertisement.query().where('adsId', adsId).firstOrFail()
 
         if (ads.status !== 'W') {
-            throw new BadRequestException('Cannot reject advertisement that not in waiting approve status')
+            throw new BadRequestException('ไม่สามารถปฎิเสธโครงการโฆษณาที่ไม่อยู่ในสถานะ Wait Approve ได้')
         }
 
         ads.status = 'D'
@@ -423,19 +422,19 @@ const validateDate = (rgsStrDate: any, rgsExpDate: any) => {
             if (newRgsStrDate < newRgsExpDate) {
                 return success
             } else {
-                throw new BadRequestException('Register start date must be before register expire date.')
+                throw new BadRequestException('วันเริ่มลงทะเบียนโครงการต้องอยู่หลังวันสิ้นสุดลงทะเบียน')
             }
         } else {
-            throw new BadRequestException('Register start date and register expire date must be after now.')
+            throw new BadRequestException('วันเริ่มลงทะเบียนเเละวันสิ้นสุดลงทะเบียนต้องอยู่หลังปัจจุบัน')
         }
     } else if (newRgsStrDate && !newRgsExpDate) {
         if (newRgsStrDate > now) {
             return success
         } else {
-            throw new BadRequestException('Register start date must be after now.')
+            throw new BadRequestException('วันเริ่มลงทะเบียนต้องอยู่หลังปัจจุบัน')
         }
     } else {
-        throw new BadRequestException('Register start date must be defined.')
+        throw new BadRequestException('ต้องระบุวันเริ่มลงทะเบียน')
     }
 }
 
@@ -454,9 +453,9 @@ const validateDateActiveAds = (rgsStrDate: any, rgsExpDate: any) => {
         if (newRgsStrDate < newRgsExpDate && newRgsExpDate > now!) {
             return success
         } else if (newRgsStrDate >= newRgsExpDate) {
-            throw new BadRequestException('Register expired date must be after register start date.')
+            throw new BadRequestException('วันสิ้นสุดลงทะเบียนโครงการต้องอยู่หลังวันเริ่มลงทะเบียน')
         } else {
-            throw new BadRequestException('Register expired date must be after now.')
+            throw new BadRequestException('วันสิ้นสุดลงทะเบียนต้องอยู่หลังปัจจุบัน')
         }
     } else {
         // newRgsStrDate && !newRgsExpDate

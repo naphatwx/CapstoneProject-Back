@@ -16,7 +16,7 @@ export default class PlantsController {
             search: search
         })
 
-        const plants = await plant_service.getPlants(payload.page, payload.perPage, payload.search)
+        const plants = await plant_service.getPlants(payload.page!, payload.perPage!, payload.search!)
         return response.ok(plants)
     }
 
@@ -37,7 +37,7 @@ export default class PlantsController {
         const data = request.all()
         const payload = await createPlantValidator.validate(data)
         await plant_service.createPlant(payload, user.userId)
-        return response.status(201).json({ message: 'Plant is created.' })
+        return response.status(201).json({ message: 'สร้างสาขาเเล้ว' })
     }
 
     async updatePlant({ request, response, auth }: HttpContext) {
@@ -45,6 +45,6 @@ export default class PlantsController {
         const data = request.all()
         const payload = await updatePlantValidator.validate(data)
         await plant_service.updatePlant(payload, user.userId)
-        return response.status(200).json({ message: 'Plant is updated.' })
+        return response.status(200).json({ message: 'แก้ไขสาขาเเล้ว' })
     }
 }

@@ -72,7 +72,7 @@ const updateUser = async (userId: string, data: any, updatedUserId: string) => {
         const user = await User.query().where('userId', userId).firstOrFail()
 
         if (!user.status) {
-            throw new ForbiddenException('This user is inactive and cannot perform this action.')
+            throw new ForbiddenException('ผู้ใช้งานนี้ปิดใช้งานอยู่ ไม่สามารถแก้ไขได้')
         }
 
         const newUser = setValue(user, data, updatedUserId)
@@ -122,13 +122,13 @@ const updateUserLogoutTime = async (userId: string) => {
 const inactivateUser = async (userId: string) => {
     try {
         if (await user_role_service.isLastAdmin()) {
-            throw new BadRequestException('Cannot inactivate last admin.')
+            throw new BadRequestException('ไม่สามารถปิดใช้งาน Admin คนสุดท้ายได้')
         }
 
         const user = await User.query().where('userId', userId).firstOrFail()
 
         if (!user.status) {
-            throw new BadRequestException('User is already inactive.')
+            throw new BadRequestException('ผู้ใช้งานปิดใช้งานอยู่เเล้ว')
         }
 
         user.status = false
