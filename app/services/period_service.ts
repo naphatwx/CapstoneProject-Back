@@ -1,6 +1,5 @@
 import ConflictException from "#exceptions/conflict_exception"
 import HandlerException from "#exceptions/handler_exception"
-import NotFoundException from "#exceptions/notfound_exception"
 import Period from "#models/period"
 
 const getPeriods = async (status: boolean | null = null, orderField: string = 'periodId', orderType: string = 'asc') => {
@@ -8,10 +7,6 @@ const getPeriods = async (status: boolean | null = null, orderField: string = 'p
         const periods = await Period.query().select('periodId', 'periodDesc', 'period', 'status')
             .if(status !== null, (query) => query.where('status', status!))
             .orderBy(orderField!, orderType === 'asc' ? 'asc' : 'desc')
-
-        if (periods.length === 0) {
-            throw new NotFoundException('No periods found.')
-        }
 
         return periods
     } catch (error) {

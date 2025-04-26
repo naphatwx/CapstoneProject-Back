@@ -27,7 +27,7 @@ const getAmphureByTambonId = async (tambonId: number) => {
         .firstOrFail()
 
     if (!tambon.amphure) {
-        throw new NotFoundException('No amphure found for this tambon')
+        throw new NotFoundException('ไม่พบอำเภอสำหรับตำบลนี้')
     }
     return tambon.amphure
 }
@@ -39,7 +39,7 @@ const getProvinceByAmphureId = async (amphureId: number) => {
         .firstOrFail()
 
     if (!amphure.province) {
-        throw new NotFoundException('No province found for this amphure')
+        throw new NotFoundException('ไม่พบจังหวัดสำหรับอำเภอนี้')
     }
     return amphure.province
 }
@@ -51,7 +51,7 @@ const getGeographyByProvinceId = async (provinceId: number) => {
         .firstOrFail()
 
     if (!province.geography) {
-        throw new NotFoundException('No geography found for this province')
+        throw new NotFoundException('ไม่พบภาคสำหรับจังหวัดนี้')
     }
     return province.geography
 }
@@ -64,7 +64,7 @@ const getProvincesByGeographyId = async (geographyId: number) => {
         .firstOrFail()
 
     if (geography.provinces.length === 0) {
-        throw new NotFoundException('No province found for this geography')
+        throw new NotFoundException('ไม่พบจังหวัดในภาคนี้')
     }
     console.log(geography.provinces)
     return geography.provinces
@@ -77,7 +77,7 @@ const getAmphuresByProvinceId = async (provinceId: number) => {
         .firstOrFail()
 
     if (province.amphures.length === 0) {
-        throw new NotFoundException('No amphure found for this province')
+        throw new NotFoundException('ไม่พบอำเภอในจังหวัดนี้')
     }
     return province.amphures
 }
@@ -89,7 +89,7 @@ const getTambonsByAmphureId = async (amphureId: number) => {
         .firstOrFail()
 
     if (amphure.tambons.length === 0) {
-        throw new NotFoundException('No tambon found for this amphure')
+        throw new NotFoundException('ไม่พบตำบลในอำเภอนี้')
     }
     return amphure.tambons
 }
@@ -111,7 +111,7 @@ const validateProvinceInGeo = async (
         if (isInProvinces) {
             return success
         } else {
-            fail.message = 'Province is not in this geography.'
+            fail.message = 'จังหวัดไม่ได้อยู่ในภาคนี้'
             return fail
         }
     }

@@ -30,7 +30,7 @@ export default class UsersController {
                 headers: { 'Content-Type': 'application/json' }
             })
         } catch (error) {
-            throw new UnauthorizedException('Password is not correct.')
+            throw new UnauthorizedException('รหัสผ่านไม่ถูกต้อง')
         }
 
         const user = await user_service.getOnlyUserById(userId)
@@ -41,7 +41,7 @@ export default class UsersController {
             await user_service.updateUserLoginTime(userId)
             return await auth.use('jwt').generate(user)
         } else {
-            throw new ForbiddenException('User is inactive.')
+            throw new ForbiddenException('ผู้ใช้งานปิดใช้งานอยู่')
         }
     }
 
@@ -50,13 +50,12 @@ export default class UsersController {
         session.forget('tokenData')
         await session.commit()
         await user_service.updateUserLogoutTime(user.userId)
-        return response.status(200).json({ message: 'Logout successfully.' })
+        return response.status(200).json({ message: 'Logout สำเร็จ' })
     }
 
     async authenticateToken({ auth, response }: HttpContext) {
         if (await auth.authenticate()) {
-            console.log('Token has been unacthenticated.')
-            return response.status(200).json({ message: 'Token has been unacthenticated' })
+            return response.status(200).json({ message: 'ตรวจสอบ Token แล้ว' })
         }
     }
 
@@ -96,7 +95,7 @@ export default class UsersController {
         const payload = await createUserValidator.validate(data)
 
         await user_service.createUser(payload, user.userId)
-        return response.status(201).json({ message: 'User has been created.' })
+        return response.status(201).json({ message: 'สร้างผู้ใช้งานเเล้ว' })
     }
 
     async updateUser({ params, request, response, auth, bouncer }: HttpContext) {
@@ -108,7 +107,7 @@ export default class UsersController {
         const payload = await updateUserValidator.validate(data)
 
         await user_service.updateUser(userId, payload, user.userId)
-        return response.status(200).json({ message: 'User has been updated.' })
+        return response.status(200).json({ message: 'แก้ไขผู้ใช้งานเเล้ว' })
     }
 
     async inactivateUser({ params, response, bouncer }: HttpContext) {
@@ -122,6 +121,6 @@ export default class UsersController {
         await bouncer.with('UserPolicy').authorize('inactivate', payload.userId)
 
         await user_service.inactivateUser(payload.userId)
-        return response.status(200).json({ message: 'User has been inactivated.' })
+        return response.status(200).json({ message: 'ปิดใช้งานผผู้ใช้งานเเล้ว' })
     }
 }

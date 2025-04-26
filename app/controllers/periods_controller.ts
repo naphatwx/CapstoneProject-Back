@@ -18,7 +18,7 @@ export default class PeriodsController {
         const payload = await createOrUpdatePeriodValidator.validate(data)
 
         const periodIdSuccess = await period_service.createPeriod(payload)
-        return response.status(201).json({ message: 'Period has been created', periodId: periodIdSuccess })
+        return response.status(201).json({ message: 'สร้าง Period แล้ว', periodId: periodIdSuccess })
     }
 
     async updatePeriod({ params, request, response }: HttpContext) {
@@ -29,7 +29,7 @@ export default class PeriodsController {
         const payload = await createOrUpdatePeriodValidator.validate(data)
 
         const periodIdSuccess = await period_service.updatePeriod(periodIdValidated.periodId, payload)
-        return response.status(200).json({ message: 'Period has been updated', periodId: periodIdSuccess })
+        return response.status(200).json({ message: 'แก้ไข Period แล้ว', periodId: periodIdSuccess })
     }
 
     async inactivatePeriod({ params, response }: HttpContext) {
@@ -37,6 +37,6 @@ export default class PeriodsController {
         const periodIdValidated = await periodIdValidator.validate({ periodId: periodId })
 
         await period_service.inactivatePeriod(periodIdValidated.periodId)
-        return response.status(200).json({ message: 'Period has been inactivated.' })
+        return response.status(200).json({ message: 'ปิดใช้งาน Period แล้ว' })
     }
 }

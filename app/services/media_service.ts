@@ -1,5 +1,4 @@
 import HandlerException from "#exceptions/handler_exception"
-import NotFoundException from "#exceptions/notfound_exception"
 import Media from "#models/media"
 
 const changeMediaFormat = (packages: Array<any>) => {
@@ -27,10 +26,6 @@ const getMedias = async (
             .if(notInMediaIdList, (query) => query.whereNotIn('mediaId', notInMediaIdList!))
             .if(status, (query) => query.where('status', status!))
             .orderBy(orderField!, orderType === 'asc' ? 'asc' : 'desc')
-
-        if (mediaList.length === 0) {
-            throw new NotFoundException('No media found.')
-        }
 
         return mediaList
     } catch (error) {

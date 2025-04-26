@@ -17,7 +17,7 @@ async function isUnique(value: unknown, options: Options, field: FieldContext) {
             .first()
 
         if (result) {
-            field.report('This {{field}} is already taken.', 'isUnique', field)
+            field.report('{{field}} ถูกใช้ไปแล้ว', 'isUnique', field)
         }
     }
 

@@ -73,13 +73,13 @@ const convertQuarterToMonth = (quarter: number) => {
                 end: '12' // December
             }
         default:
-            throw new Error('Invalid quarter value. Must be between 1 and 4.')
+            throw new BadRequestException('ค่าไตรมาสไม่ถูกต้อง ค่าไตรมาสต้องอยู่ระหว่าง 1-4')
     }
 }
 
 const validateYearAndQuarter = (year: number | string | null = null, quarter: number | string | null = null) => {
     if (!year && quarter) {
-        throw new BadRequestException('Quarter cannot be specified without specifying a year')
+        throw new BadRequestException('ไม่สามารถระบุไตรมาสโดยไม่ระบุปีได้')
     }
 }
 
@@ -96,7 +96,7 @@ const getMonthsBetweenDates = (startDateStr: any, endDateStr: any) => {
     const endDate = endDateStr ? DateTime.fromISO(ensureDateTimeToString(endDateStr), { zone: 'utc' }) : DateTime.now().toUTC()
 
     if (startDate > endDate) {
-        throw new BadRequestException('Start date should not be more than end date.')
+        throw new BadRequestException('วันเริ่มต้องไม่อยู่หลังวันสิ้นสุด')
     }
 
     const monthsArray = []
