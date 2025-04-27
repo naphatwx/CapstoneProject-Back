@@ -25,30 +25,33 @@ const getAdsPage = async (
 ) => {
     try {
         const adsList = await Advertisement.query()
-            .if(search, (query) =>
-                query.where('adsName', 'LIKE', `%${search}%`)
-                    .orWhere('redeemCode', 'LIKE', `%${search}%`))
-            .if(periodId, (query) => query.where('periodId', periodId!))
-            .if(packageId, (query) => query.where('packageId', packageId!))
-            .if(status, (query) => query.where('status', status!))
+            .where((query) => {
+                // Apply search condition first
+                if (search) {
+                    query.where((subQuery) => {
+                        subQuery.where('adsName', 'LIKE', `%${search}%`)
+                            .orWhere('redeemCode', 'LIKE', `%${search}%`)
+                    })
+                }
 
+                // Then apply other filters with AND logic
+                if (periodId) {
+                    query.andWhere('periodId', periodId)
+                }
+                if (packageId) {
+                    query.andWhere('packageId', packageId)
+                }
+                if (status) {
+                    query.andWhere('status', status)
+                }
+            })
             .preload('period', (periodQuery) => {
                 periodQuery.where('status', true)
             })
-            // .orWhereHas('period', (periodQuery) => {
-            //     periodQuery.where('periodDesc', 'LIKE', `%${search}%`)
-            // })
             .preload('packages', (packageQuery) => {
                 packageQuery.where('status', true)
             })
-            // .orWhereHas('packages', (packageQuery) => {
-            //     packageQuery.where('packageDesc', 'LIKE', `%${search}%`)
-            // })
             .preload('userUpdate')
-            // .orWhereHas('userUpdate', (userQuery) => {
-            //     userQuery.whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", [`%${search}%`])
-            // })
-
             .orderBy(orderField, orderType === 'asc' ? 'asc' : 'desc')
             .paginate(page, perPage)
 
