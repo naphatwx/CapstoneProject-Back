@@ -14,10 +14,10 @@ export default class UsersController {
     async login({ auth, request, session }: HttpContext) {
         const { userId, password } = request.all()
 
-        // if (userId === '22222' || userId === '33333' || userId === '44444') {
-        //     const user = await user_service.getOnlyUserById(userId)
-        //     return await auth.use('jwt').generate(user)
-        // }
+        if (userId === '22222' || userId === '33333' || userId === '44444') {
+            const user = await user_service.getOnlyUserById(userId)
+            return await auth.use('jwt').generate(user)
+        }
 
         let responseAPI
         try {
