@@ -16,7 +16,7 @@ export const paramsAdsPageValidator = vine.compile(
         periodId: vine.number().optional(),
         packageId: vine.number().optional(),
         status: vine.string().trim().optional(),
-        orderField: vine.string().trim().optional(),
+        orderField: vine.enum(['adsId', 'updatedDate', 'rgsStrDate']).optional(),
         orderType: vine.enum(['asc', 'desc']).optional(),
     })
 )
